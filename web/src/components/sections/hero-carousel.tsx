@@ -66,7 +66,7 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative h-full container mx-auto px-4 flex items-center">
+      <div className="relative h-full flex items-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentItem._id}
@@ -192,7 +192,7 @@ export function HeroCarouselSkeleton() {
     <section className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
       <div className="absolute inset-0 skeleton" />
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-      <div className="relative h-full container mx-auto px-4 flex items-center">
+      <div className="relative h-full flex items-center">
         <div className="max-w-2xl space-y-4">
           <div className="h-12 w-3/4 rounded skeleton" />
           <div className="h-6 w-1/2 rounded skeleton" />

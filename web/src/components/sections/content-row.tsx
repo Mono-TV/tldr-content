@@ -39,7 +39,7 @@ export function ContentRow({
   return (
     <section className="relative py-6">
       {/* Header */}
-      <div className="container mx-auto px-4 mb-4">
+      <div className="mb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
           {href && (
@@ -90,8 +90,8 @@ export function ContentRow({
           ref={scrollRef}
           className={cn(
             'flex gap-4 overflow-x-auto hide-scrollbar',
-            'px-4 md:px-8',
-            showRank && 'pl-8 md:pl-16'
+            'pr-0',
+            showRank ? 'pl-8 md:pl-16' : 'pl-0'
           )}
         >
           {isLoading

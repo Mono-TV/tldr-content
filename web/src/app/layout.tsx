@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Red_Hat_Display } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { SPARedirect } from "@/components/spa-redirect";
 
 const inter = Inter({
-  variable: "--font-geist-sans",
+  variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const redHatDisplay = Red_Hat_Display({
+  variable: "--font-red-hat-display",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -30,11 +36,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} antialiased bg-background text-foreground`}>
+      <body className={`${inter.variable} ${redHatDisplay.variable} font-sans antialiased bg-background text-foreground`} style={{ fontFamily: 'var(--font-red-hat-display), system-ui, sans-serif' }}>
         <Providers>
           <SPARedirect />
           <Navbar />
-          <main className="min-h-screen">
+          <main className="min-h-screen w-full max-w-[1920px] mx-auto pl-12 lg:pl-16 pr-0">
             {children}
           </main>
         </Providers>

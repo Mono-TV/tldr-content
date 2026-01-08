@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Menu, X, User, Heart, LogOut, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, User, Heart, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -48,164 +48,22 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-background/80 backdrop-blur-md'
-          : 'bg-transparent'
+          ? 'bg-black/60 backdrop-blur-xl'
+          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent'
       )}
     >
-      <nav className="w-full max-w-[1920px] mx-auto px-16 h-20 flex items-center">
-        {/* Left Side - Profile (20% width) */}
-        <div className="w-[20%] flex justify-start">
-          <div className="relative profile-dropdown">
-          {loading ? (
-            <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
-          ) : user ? (
-            <>
-              <button
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl"
-                aria-label="Profile menu"
-              >
-                {user.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt={user.displayName || 'User'}
-                    width={28}
-                    height={28}
-                    className="rounded-full ring-2 ring-white/20"
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/80 to-yellow-500/80 flex items-center justify-center text-sm font-semibold text-black">
-                    {user.displayName?.[0] || user.email?.[0] || 'U'}
-                  </div>
-                )}
-                <ChevronDown className={cn(
-                  "w-4 h-4 text-white/60 transition-transform duration-300",
-                  isProfileDropdownOpen && "rotate-180"
-                )} />
-              </button>
+      <nav className="w-full max-w-[1920px] mx-auto px-12 lg:px-16 h-20 flex items-center justify-between">
 
-              {/* Dropdown Menu */}
-              <AnimatePresence>
-                {isProfileDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                    className="absolute left-0 mt-2 w-56 bg-black/80 backdrop-blur-2xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50"
-                  >
-                    <div className="p-4 border-b border-white/10">
-                      <p className="font-medium truncate text-white">{user.displayName || 'User'}</p>
-                      <p className="text-sm text-white/60 truncate">{user.email}</p>
-                    </div>
-                    <div className="p-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
-                      >
-                        <User className="w-4 h-4" />
-                        Profile
-                      </Link>
-                      <Link
-                        href="/watchlist"
-                        onClick={() => setIsProfileDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
-                      >
-                        <Heart className="w-4 h-4" />
-                        Watchlist
-                      </Link>
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setIsProfileDropdownOpen(false);
-                        }}
-                        className="flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/10 rounded-xl transition-colors w-full text-left"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          ) : (
-            <Link
-              href="/profile"
-              className="flex items-center gap-2 px-3 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl"
-              aria-label="Sign In"
-            >
-              <User className="w-5 h-5 text-white/90" />
-              <ChevronDown className="w-4 h-4 text-white/60" />
-            </Link>
-          )}
-          </div>
-        </div>
-
-        {/* Center - Search + Navigation Pills (60% width) */}
-        <div className="w-[60%] hidden md:flex items-center justify-center gap-3">
-          {/* Search Button - Light frosted glass */}
-          <Link
-            href="/search"
-            className="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 backdrop-blur-md shadow-lg hover:shadow-xl hover:scale-105"
-            aria-label="Search"
-          >
-            <Search className="w-6 h-6 text-white/60" />
-          </Link>
-
-          {/* Navigation Pills - Light container matching Figma */}
-          <div
-            className="flex items-center bg-stone-300/90 backdrop-blur-xl rounded-full px-4 py-2 shadow-lg"
-            style={{ fontFamily: 'var(--font-red-hat-display), sans-serif' }}
-          >
-            <div className="flex items-center gap-2">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href ||
-                  (link.href !== '/' && pathname?.startsWith(link.href));
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      'px-8 py-4 rounded-full text-xl transition-all duration-300 whitespace-nowrap tracking-wide',
-                      isActive
-                        ? 'bg-stone-500/50 text-stone-900 font-bold'
-                        : 'text-stone-600 font-semibold hover:text-stone-900 hover:bg-stone-400/30'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Logo + Mobile Menu (20% width) */}
-        <div className="w-[20%] flex items-center justify-end gap-4">
-          {/* Mobile Menu Button */}
-          <button
-            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-md border border-white/20 md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-5 h-5 text-white/90" />
-            ) : (
-              <Menu className="w-5 h-5 text-white/90" />
-            )}
-          </button>
-
-          {/* Logo with Gold Gradient */}
-          <Link href="/" className="flex items-center">
+        {/* Left - Logo */}
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center group">
             <span
-              className="text-[32px] font-bold tracking-wide"
+              className="text-[28px] font-bold tracking-wide transition-all duration-300 group-hover:opacity-80"
               style={{
                 fontFamily: 'var(--font-gia-variable), serif',
-                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4BA 25%, #D4AF37 50%, #B8860B 75%, #D4AF37 100%)',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4BA 30%, #D4AF37 60%, #B8860B 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -214,6 +72,181 @@ export function Navbar() {
               TLDR
             </span>
           </Link>
+        </div>
+
+        {/* Center - Navigation Pill */}
+        <div className="hidden md:flex items-center justify-center">
+          <div
+            className="flex items-center gap-12 px-8 py-1.5 rounded-full border border-white/20"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            {/* Search Icon */}
+            <Link
+              href="/search"
+              className="text-white/50 hover:text-white transition-all duration-300"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </Link>
+
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href ||
+                (link.href !== '/' && pathname?.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="relative py-2 group"
+                >
+                  <span
+                    className={cn(
+                      'text-lg tracking-wide transition-all duration-300',
+                      isActive
+                        ? 'text-white font-semibold'
+                        : 'text-white/50 font-medium group-hover:text-white'
+                    )}
+                  >
+                    {link.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right - Profile */}
+        <div className="flex items-center gap-2">
+          {/* Profile */}
+          <div className="relative profile-dropdown">
+            {loading ? (
+              <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse" />
+            ) : user ? (
+              <>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden ring-2 ring-transparent hover:ring-white/30 transition-all duration-300"
+                  aria-label="Profile menu"
+                >
+                  {user.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt={user.displayName || 'User'}
+                      width={36}
+                      height={36}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white">
+                      {user.displayName?.[0] || user.email?.[0] || 'U'}
+                    </div>
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isProfileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute right-0 mt-3 w-64 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                    >
+                      {/* User Info */}
+                      <div className="p-4 border-b border-white/10">
+                        <div className="flex items-center gap-3">
+                          {user.photoURL ? (
+                            <Image
+                              src={user.photoURL}
+                              alt={user.displayName || 'User'}
+                              width={40}
+                              height={40}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-base font-semibold text-white">
+                              {user.displayName?.[0] || user.email?.[0] || 'U'}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-white truncate">{user.displayName || 'User'}</p>
+                            <p className="text-sm text-white/50 truncate">{user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="p-2">
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          Profile
+                        </Link>
+                        <Link
+                          href="/watchlist"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                          <Heart className="w-4 h-4" />
+                          Watchlist
+                        </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Settings
+                        </Link>
+
+                        <div className="my-2 border-t border-white/10" />
+
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setIsProfileDropdownOpen(false);
+                          }}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 rounded-lg transition-colors w-full text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <Link
+                href="/profile"
+                className="p-2.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-300"
+                aria-label="Sign In"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="p-2.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-300 md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
         </div>
       </nav>
 
@@ -224,20 +257,10 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="md:hidden bg-stone-200/95 backdrop-blur-2xl border-t border-stone-300"
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5"
           >
-            <div className="w-full mx-auto px-4 py-4 flex flex-col gap-1.5">
-              {/* Mobile Search */}
-              <Link
-                href="/search"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-base font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-300/50 rounded-xl transition-all duration-300"
-              >
-                <Search className="w-5 h-5" />
-                Search
-              </Link>
-
+            <div className="px-6 py-6 flex flex-col gap-1">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
@@ -246,10 +269,10 @@ export function Navbar() {
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={cn(
-                      'px-4 py-3 text-base font-semibold rounded-xl transition-all duration-300',
+                      'px-4 py-3 text-lg rounded-lg transition-all duration-200',
                       isActive
-                        ? 'bg-stone-500/50 text-stone-900 font-bold'
-                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-300/50'
+                        ? 'text-white font-semibold bg-white/5'
+                        : 'text-white/60 font-medium hover:text-white hover:bg-white/5'
                     )}
                   >
                     {link.label}
@@ -257,10 +280,21 @@ export function Navbar() {
                 );
               })}
 
+              <div className="my-3 border-t border-white/10" />
+
+              <Link
+                href="/search"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-lg text-white/60 font-medium hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200"
+              >
+                <Search className="w-5 h-5" />
+                Search
+              </Link>
+
               <Link
                 href="/watchlist"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-base font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-300/50 rounded-xl transition-all duration-300"
+                className="flex items-center gap-3 px-4 py-3 text-lg text-white/60 font-medium hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200"
               >
                 <Heart className="w-5 h-5" />
                 Watchlist
