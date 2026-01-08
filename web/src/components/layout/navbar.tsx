@@ -50,14 +50,14 @@ export function Navbar() {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
         isScrolled
-          ? 'bg-black/60 backdrop-blur-xl'
-          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent'
+          ? 'bg-black/20 backdrop-blur-xl'
+          : 'bg-gradient-to-b from-black/40 via-black/20 to-transparent'
       )}
     >
-      {/* Center - Navigation Pill (Grid centered for perfect alignment) */}
-      <div className="hidden md:grid place-items-center absolute inset-0 pointer-events-none z-10">
+      {/* Center - Navigation Pill */}
+      <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 top-0 h-16 pointer-events-none z-10">
         <div
-          className="flex items-center gap-12 px-8 py-1.5 rounded-full border border-white/20 pointer-events-auto"
+          className="flex items-center gap-12 px-8 py-1 rounded-full border border-white/20 pointer-events-auto"
           style={{
             background: 'rgba(255, 255, 255, 0.08)',
             backdropFilter: 'blur(24px)',
@@ -81,7 +81,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative py-2 group"
+                className="relative py-1 group"
               >
                 <span
                   className={cn(
@@ -99,7 +99,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <nav className="w-full px-12 lg:px-16 h-20 flex items-center justify-between relative">
+      <nav className="w-full px-12 lg:px-16 h-16 flex items-center justify-between relative">
         {/* Left - Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center group">

@@ -19,7 +19,7 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
   const sizeClasses = {
     sm: 'w-32 md:w-36 lg:w-40',
     md: 'w-36 md:w-40 lg:w-48',
-    lg: 'w-40 md:w-48 lg:w-56',
+    lg: 'w-36 md:w-40 lg:w-48',
   };
 
   const aspectRatios = {
@@ -37,7 +37,7 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
     >
       {/* Rank Number */}
       {showRank && index !== undefined && (
-        <span className="top-number absolute -left-4 md:-left-8 bottom-0 z-0 select-none transition-all duration-300 group-hover:opacity-70">
+        <span className="top-number absolute -left-8 md:-left-14 lg:-left-20 bottom-10 md:bottom-12 z-0 select-none transition-all duration-300 group-hover:opacity-70" style={{ lineHeight: '0.85' }}>
           {index + 1}
         </span>
       )}
@@ -82,12 +82,12 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
           )}
         </div>
 
-        {/* Info with enhanced hover effects */}
-        <div className="mt-3 space-y-1 transition-all duration-300 group-hover:translate-y-1">
-          <h3 className="text-sm font-semibold truncate text-white/90 group-hover:text-white transition-all duration-300">
+        {/* Info with enhanced hover effects - Hidden by default, visible on hover */}
+        <div className="mt-3 space-y-1 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-y-1">
+          <h3 className="text-sm font-semibold truncate text-white transition-all duration-300">
             {content.title}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-colors duration-300">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground transition-colors duration-300">
             {content.year && <span>{content.year}</span>}
             {content.genres?.[0] && (
               <>
@@ -107,7 +107,7 @@ export function MovieCardSkeleton({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }
   const sizeClasses = {
     sm: 'w-32 md:w-36 lg:w-40',
     md: 'w-36 md:w-40 lg:w-48',
-    lg: 'w-40 md:w-48 lg:w-56',
+    lg: 'w-36 md:w-40 lg:w-48',
   };
 
   return (

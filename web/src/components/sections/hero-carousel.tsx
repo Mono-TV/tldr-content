@@ -123,7 +123,7 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
               <Link
                 href={`/content/${currentItem.imdb_id}`}
                 className={cn(
-                  'flex items-center gap-3 px-10 py-4 rounded-xl font-bold text-lg',
+                  'flex items-center gap-3 px-10 py-4 rounded-full font-bold text-lg',
                   'bg-white text-black hover:bg-white/90 transition-all duration-300',
                   'shadow-2xl hover:shadow-white/20 hover:scale-105'
                 )}
