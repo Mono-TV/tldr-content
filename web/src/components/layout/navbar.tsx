@@ -54,7 +54,7 @@ export function Navbar() {
           : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent'
       )}
     >
-      <nav className="w-full max-w-[1920px] mx-auto px-12 lg:px-16 h-20 flex items-center justify-between">
+      <nav className="w-full px-12 lg:px-16 h-20 flex items-center justify-between">
 
         {/* Left - Logo */}
         <div className="flex items-center">
