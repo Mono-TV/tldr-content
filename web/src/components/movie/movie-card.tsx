@@ -17,9 +17,9 @@ interface MovieCardProps {
 
 export function MovieCard({ content, index, showRank = false, size = 'md', className }: MovieCardProps) {
   const sizeClasses = {
-    sm: 'w-32 md:w-36',
-    md: 'w-40 md:w-48',
-    lg: 'w-48 md:w-56',
+    sm: 'w-44 md:w-52 lg:w-60',
+    md: 'w-52 md:w-60 lg:w-[290px]',
+    lg: 'w-60 md:w-72 lg:w-[340px]',
   };
 
   const aspectRatios = {
@@ -94,9 +94,9 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
 // Skeleton loader for MovieCard
 export function MovieCardSkeleton({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClasses = {
-    sm: 'w-32 md:w-36',
-    md: 'w-40 md:w-48',
-    lg: 'w-48 md:w-56',
+    sm: 'w-44 md:w-52 lg:w-60',
+    md: 'w-52 md:w-60 lg:w-[290px]',
+    lg: 'w-60 md:w-72 lg:w-[340px]',
   };
 
   return (

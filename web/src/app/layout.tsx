@@ -40,7 +40,7 @@ export default function RootLayout({
         <Providers>
           <SPARedirect />
           <Navbar />
-          <main className="min-h-screen w-full pl-12 lg:pl-16 pr-0">
+          <main className="min-h-screen w-full">
             {children}
           </main>
         </Providers>

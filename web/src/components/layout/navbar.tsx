@@ -54,8 +54,52 @@ export function Navbar() {
           : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent'
       )}
     >
-      <nav className="w-full px-12 lg:px-16 h-20 flex items-center justify-between">
+      {/* Center - Navigation Pill (Grid centered for perfect alignment) */}
+      <div className="hidden md:grid place-items-center absolute inset-0 pointer-events-none z-10">
+        <div
+          className="flex items-center gap-12 px-8 py-1.5 rounded-full border border-white/20 pointer-events-auto"
+          style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          {/* Search Icon */}
+          <Link
+            href="/search"
+            className="text-white/50 hover:text-white transition-all duration-300"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
+          </Link>
 
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href ||
+              (link.href !== '/' && pathname?.startsWith(link.href));
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative py-2 group"
+              >
+                <span
+                  className={cn(
+                    'text-lg tracking-wide transition-all duration-300',
+                    isActive
+                      ? 'text-white font-semibold'
+                      : 'text-white/50 font-medium group-hover:text-white'
+                  )}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      <nav className="w-full px-12 lg:px-16 h-20 flex items-center justify-between relative">
         {/* Left - Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center group">
@@ -72,51 +116,6 @@ export function Navbar() {
               TLDR
             </span>
           </Link>
-        </div>
-
-        {/* Center - Navigation Pill */}
-        <div className="hidden md:flex items-center justify-center">
-          <div
-            className="flex items-center gap-12 px-8 py-1.5 rounded-full border border-white/20"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
-            }}
-          >
-            {/* Search Icon */}
-            <Link
-              href="/search"
-              className="text-white/50 hover:text-white transition-all duration-300"
-              aria-label="Search"
-            >
-              <Search className="w-5 h-5" />
-            </Link>
-
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href ||
-                (link.href !== '/' && pathname?.startsWith(link.href));
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="relative py-2 group"
-                >
-                  <span
-                    className={cn(
-                      'text-lg tracking-wide transition-all duration-300',
-                      isActive
-                        ? 'text-white font-semibold'
-                        : 'text-white/50 font-medium group-hover:text-white'
-                    )}
-                  >
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
         </div>
 
         {/* Right - Profile */}

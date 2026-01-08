@@ -67,7 +67,7 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative h-full flex items-center">
+      <div className="relative h-full flex items-center px-12 lg:px-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentItem._id}
@@ -130,18 +130,6 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
               >
                 <Play className="w-6 h-6 fill-black" />
                 Watch Now
-              </Link>
-              <Link
-                href={`/content/${currentItem.imdb_id}`}
-                className={cn(
-                  'flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg',
-                  'bg-white/20 backdrop-blur-md border border-white/30 text-white',
-                  'hover:bg-white/30 transition-all duration-300',
-                  'hover:scale-105'
-                )}
-              >
-                <Info className="w-5 h-5" />
-                More Info
               </Link>
               <button
                 className={cn(

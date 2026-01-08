@@ -89,7 +89,7 @@ export function ContentRow({
         <div
           ref={scrollRef}
           className={cn(
-            'flex gap-4 overflow-x-auto hide-scrollbar',
+            'flex gap-6 overflow-x-auto hide-scrollbar',
             'pr-0',
             showRank ? 'pl-8 md:pl-16' : 'pl-0'
           )}

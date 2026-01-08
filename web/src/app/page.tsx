@@ -82,7 +82,7 @@ export default function HomePage() {
       )}
 
       {/* Content Sections */}
-      <div className="-mt-20 relative z-10 space-y-8">
+      <div className="-mt-20 relative z-10 space-y-8 pl-12 lg:pl-16">
         {/* Trending Now */}
         <ContentRow
           title="Trending Now"
