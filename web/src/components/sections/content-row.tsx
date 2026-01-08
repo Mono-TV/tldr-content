@@ -54,7 +54,7 @@ export function ContentRow({
       </div>
 
       {/* Carousel Container */}
-      <div className="relative group">
+      <div className="relative group/carousel">
         {/* Left Arrow */}
         <button
           onClick={() => scroll('left')}
@@ -62,7 +62,7 @@ export function ContentRow({
             'absolute left-0 top-1/2 -translate-y-1/2 z-20',
             'w-12 h-24 flex items-center justify-center',
             'bg-gradient-to-r from-background to-transparent',
-            'opacity-0 group-hover:opacity-100 transition-opacity',
+            'opacity-0 group-hover/carousel:opacity-100 transition-opacity',
             'hover:from-background/90'
           )}
           aria-label="Scroll left"
@@ -77,7 +77,7 @@ export function ContentRow({
             'absolute right-0 top-1/2 -translate-y-1/2 z-20',
             'w-12 h-24 flex items-center justify-center',
             'bg-gradient-to-l from-background to-transparent',
-            'opacity-0 group-hover:opacity-100 transition-opacity',
+            'opacity-0 group-hover/carousel:opacity-100 transition-opacity',
             'hover:from-background/90'
           )}
           aria-label="Scroll right"
@@ -89,7 +89,7 @@ export function ContentRow({
         <div
           ref={scrollRef}
           className={cn(
-            'flex gap-6 overflow-x-auto hide-scrollbar',
+            'flex gap-8 overflow-x-auto hide-scrollbar',
             'pr-0',
             showRank ? 'pl-8 md:pl-16' : 'pl-0'
           )}

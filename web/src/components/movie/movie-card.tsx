@@ -17,9 +17,9 @@ interface MovieCardProps {
 
 export function MovieCard({ content, index, showRank = false, size = 'md', className }: MovieCardProps) {
   const sizeClasses = {
-    sm: 'w-44 md:w-52 lg:w-60',
-    md: 'w-52 md:w-60 lg:w-[290px]',
-    lg: 'w-60 md:w-72 lg:w-[340px]',
+    sm: 'w-32 md:w-36 lg:w-40',
+    md: 'w-36 md:w-40 lg:w-48',
+    lg: 'w-40 md:w-48 lg:w-56',
   };
 
   const aspectRatios = {
@@ -37,46 +37,57 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
     >
       {/* Rank Number */}
       {showRank && index !== undefined && (
-        <span className="top-number absolute -left-4 md:-left-8 bottom-0 z-0 select-none">
+        <span className="top-number absolute -left-4 md:-left-8 bottom-0 z-0 select-none transition-all duration-300 group-hover:opacity-70">
           {index + 1}
         </span>
       )}
 
       <Link href={`/content/${content.imdb_id}`} className="block relative z-10">
-        {/* Poster */}
-        <div className={cn('relative overflow-hidden rounded-lg bg-card', aspectRatios[size])}>
+        {/* Poster with enhanced hover effects */}
+        <div className={cn(
+          'relative overflow-hidden rounded-lg bg-card',
+          'transform-gpu transition-all duration-500 ease-out',
+          'group-hover:scale-[1.02] group-hover:-translate-y-2',
+          'group-hover:shadow-2xl group-hover:shadow-accent/20',
+          aspectRatios[size]
+        )}>
           <Image
             src={getImageUrl(content.poster_url)}
             alt={content.title}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             sizes="(max-width: 768px) 150px, 200px"
           />
 
-          {/* Hover Overlay */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <div className="p-3 rounded-full bg-accent/90 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-              <Play className="w-6 h-6 text-white fill-white" />
+          {/* Gradient Overlay - Always visible, enhanced on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+
+          {/* Hover Overlay with Play Button */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+            <div className="transform scale-50 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500 ease-out delay-100">
+              <div className="p-4 rounded-full bg-white/95 backdrop-blur-sm shadow-2xl hover:bg-white transition-colors">
+                <Play className="w-7 h-7 text-black fill-black" />
+              </div>
             </div>
           </div>
 
-          {/* Rating Badge */}
+          {/* Rating Badge - Enhanced visibility on hover */}
           {content.imdb_rating && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded px-1.5 py-0.5">
-              <Star className="w-3 h-3 text-gold fill-gold" />
-              <span className={cn('text-xs font-semibold', getRatingColor(content.imdb_rating))}>
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded px-2 py-1 transition-all duration-300 group-hover:bg-black/90 group-hover:scale-105">
+              <Star className="w-3.5 h-3.5 text-gold fill-gold" />
+              <span className={cn('text-xs font-bold', getRatingColor(content.imdb_rating))}>
                 {formatRating(content.imdb_rating)}
               </span>
             </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="mt-2 space-y-0.5">
-          <h3 className="text-sm font-medium truncate group-hover:text-accent transition-colors">
+        {/* Info with enhanced hover effects */}
+        <div className="mt-3 space-y-1 transition-all duration-300 group-hover:translate-y-1">
+          <h3 className="text-sm font-semibold truncate text-white/90 group-hover:text-white transition-all duration-300">
             {content.title}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-muted-foreground/80 transition-colors duration-300">
             {content.year && <span>{content.year}</span>}
             {content.genres?.[0] && (
               <>
@@ -94,9 +105,9 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
 // Skeleton loader for MovieCard
 export function MovieCardSkeleton({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClasses = {
-    sm: 'w-44 md:w-52 lg:w-60',
-    md: 'w-52 md:w-60 lg:w-[290px]',
-    lg: 'w-60 md:w-72 lg:w-[340px]',
+    sm: 'w-32 md:w-36 lg:w-40',
+    md: 'w-36 md:w-40 lg:w-48',
+    lg: 'w-40 md:w-48 lg:w-56',
   };
 
   return (
