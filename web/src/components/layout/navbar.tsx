@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Menu, X, User, Heart } from 'lucide-react';
+import { Search, Menu, X, User, Heart, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/auth-context';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -18,6 +20,8 @@ export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const { user, signOut, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +30,18 @@ export function Navbar() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.profile-dropdown')) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   return (
@@ -82,14 +98,87 @@ export function Navbar() {
             <Heart className="w-5 h-5" />
           </Link>
 
-          {/* Profile Button */}
-          <Link
-            href="/profile"
-            className="p-2 rounded-full hover:bg-card transition-colors"
-            aria-label="Profile"
-          >
-            <User className="w-5 h-5" />
-          </Link>
+          {/* Profile Button / User Avatar */}
+          <div className="relative profile-dropdown">
+            {loading ? (
+              <div className="w-8 h-8 rounded-full bg-card animate-pulse" />
+            ) : user ? (
+              <>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center gap-2 p-1 rounded-full hover:bg-card transition-colors"
+                  aria-label="Profile menu"
+                >
+                  {user.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt={user.displayName || 'User'}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-semibold">
+                      {user.displayName?.[0] || user.email?.[0] || 'U'}
+                    </div>
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isProfileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-50"
+                    >
+                      <div className="p-3 border-b border-border">
+                        <p className="font-medium truncate">{user.displayName || 'User'}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                      </div>
+                      <div className="p-1">
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-background rounded-md transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          Profile
+                        </Link>
+                        <Link
+                          href="/watchlist"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-background rounded-md transition-colors"
+                        >
+                          <Heart className="w-4 h-4" />
+                          Watchlist
+                        </Link>
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setIsProfileDropdownOpen(false);
+                          }}
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-background rounded-md transition-colors w-full text-left text-red-400"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <Link
+                href="/profile"
+                className="p-2 rounded-full hover:bg-card transition-colors"
+                aria-label="Sign In"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button
