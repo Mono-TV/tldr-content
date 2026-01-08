@@ -32,6 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Skip auth state listener if Firebase is not configured
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -41,6 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!auth || !googleProvider) {
+      setError('Authentication is not configured');
+      return;
+    }
     try {
       setError(null);
       await signInWithPopup(auth, googleProvider);
@@ -52,6 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
+    if (!auth) {
+      setError('Authentication is not configured');
+      return;
+    }
     try {
       setError(null);
       await signInWithEmailAndPassword(auth, email, password);
@@ -63,6 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
+    if (!auth) {
+      setError('Authentication is not configured');
+      return;
+    }
     try {
       setError(null);
       await createUserWithEmailAndPassword(auth, email, password);
@@ -74,6 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!auth) {
+      setError('Authentication is not configured');
+      return;
+    }
     try {
       setError(null);
       await firebaseSignOut(auth);
@@ -85,6 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
+    if (!auth) {
+      setError('Authentication is not configured');
+      return;
+    }
     try {
       setError(null);
       await sendPasswordResetEmail(auth, email);
