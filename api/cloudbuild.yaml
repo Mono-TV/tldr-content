@@ -25,8 +25,8 @@ steps:
       - '8080'
       - '--memory'
       - '512Mi'
-      - '--set-env-vars'
-      - 'MONGO_URI=mongodb://content_user:TLDRContent2026@34.180.14.185:27017/content_db?authSource=content_db'
+      - '--set-secrets'
+      - 'MONGO_URI=content-api-mongo-uri:latest'
 
 images:
   - 'asia-south1-docker.pkg.dev/tldr-music/cloud-run-source-deploy/content-api:latest'

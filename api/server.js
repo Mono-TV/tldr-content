@@ -6,9 +6,14 @@ const compression = require('compression');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// MongoDB connection
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://content_user:TLDRContent2026@34.180.14.185:27017/content_db?authSource=content_db';
-const DB_NAME = 'content_db';
+// MongoDB connection - credentials must be set via environment variables
+const MONGO_URI = process.env.MONGO_URI;
+const DB_NAME = process.env.DB_NAME || 'content_db';
+
+if (!MONGO_URI) {
+  console.error('ERROR: MONGO_URI environment variable is required');
+  process.exit(1);
+}
 
 let db;
 let client;
