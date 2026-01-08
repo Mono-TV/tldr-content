@@ -20,8 +20,7 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:5173',
     'https://content.lumiolabs.in',
-    'https://manojitballav.github.io',
-    'https://manojitballav.com',
+    'https://mono-tv.github.io',
     /\.github\.io$/,
     /\.lumiolabs\.in$/
   ],
