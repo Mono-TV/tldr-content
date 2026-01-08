@@ -35,7 +35,7 @@ jobs:
       - name: Build
         working-directory: web
         env:
-          NEXT_PUBLIC_BASE_PATH: ""
+          NEXT_PUBLIC_BASE_PATH: /tldr-content
         run: npm run build
 
       - name: Setup Pages
