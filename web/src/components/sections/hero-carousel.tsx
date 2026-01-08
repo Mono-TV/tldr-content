@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Play, Info, ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { cn, getBackdropUrl, formatRating, truncateText } from '@/lib/utils';
 import type { Content } from '@/types';
 
@@ -59,9 +59,10 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
             className="object-cover"
             priority
           />
-          {/* Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+          {/* Enhanced Gradient Overlays for better text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
         </motion.div>
       </AnimatePresence>
 
@@ -76,59 +77,83 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
             transition={{ duration: 0.5 }}
             className="max-w-2xl"
           >
-            {/* Title */}
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+            {/* Title with enhanced text shadow */}
+            <h1
+              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+              style={{
+                textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)',
+              }}
+            >
               {currentItem.title}
             </h1>
 
-            {/* Meta Info */}
-            <div className="flex items-center gap-4 mb-4 text-sm md:text-base">
+            {/* Enhanced Meta Info */}
+            <div className="flex items-center gap-5 mb-6 text-base md:text-lg">
               {currentItem.imdb_rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-gold fill-gold" />
-                  <span className="font-semibold">{formatRating(currentItem.imdb_rating)}</span>
+                <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg backdrop-blur-sm">
+                  <Star className="w-5 h-5 text-gold fill-gold" />
+                  <span className="font-bold text-white">{formatRating(currentItem.imdb_rating)}</span>
                 </div>
               )}
               {currentItem.year && (
-                <span className="text-muted-foreground">{currentItem.year}</span>
+                <span className="font-semibold text-white/90">{currentItem.year}</span>
               )}
               {currentItem.runtime && (
-                <span className="text-muted-foreground">{currentItem.runtime} min</span>
+                <span className="font-medium text-white/70">{currentItem.runtime} min</span>
               )}
               {currentItem.genres?.[0] && (
-                <span className="px-2 py-0.5 bg-card rounded text-xs">
+                <span className="px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-lg text-sm font-medium border border-white/20">
                   {currentItem.genres[0].name}
                 </span>
               )}
             </div>
 
-            {/* Description */}
-            <p className="text-muted-foreground text-sm md:text-base mb-6 line-clamp-3">
-              {truncateText(currentItem.overview || currentItem.plot || '', 200)}
+            {/* Description with better readability */}
+            <p
+              className="text-white/80 text-base md:text-lg mb-8 line-clamp-3 leading-relaxed max-w-xl"
+              style={{
+                textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+              }}
+            >
+              {truncateText(currentItem.overview || currentItem.plot || '', 250)}
             </p>
 
-            {/* Buttons */}
-            <div className="flex items-center gap-4">
+            {/* Large Prominent CTA Buttons - Apple TV+ style */}
+            <div className="flex items-center gap-4 flex-wrap">
               <Link
                 href={`/content/${currentItem.imdb_id}`}
                 className={cn(
-                  'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold',
-                  'bg-accent hover:bg-accent-hover transition-colors'
+                  'flex items-center gap-3 px-10 py-4 rounded-xl font-bold text-lg',
+                  'bg-white text-black hover:bg-white/90 transition-all duration-300',
+                  'shadow-2xl hover:shadow-white/20 hover:scale-105'
                 )}
               >
-                <Play className="w-5 h-5 fill-white" />
+                <Play className="w-6 h-6 fill-black" />
                 Watch Now
               </Link>
               <Link
                 href={`/content/${currentItem.imdb_id}`}
                 className={cn(
-                  'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold',
-                  'bg-card/80 hover:bg-card transition-colors'
+                  'flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-lg',
+                  'bg-white/20 backdrop-blur-md border border-white/30 text-white',
+                  'hover:bg-white/30 transition-all duration-300',
+                  'hover:scale-105'
                 )}
               >
                 <Info className="w-5 h-5" />
                 More Info
               </Link>
+              <button
+                className={cn(
+                  'flex items-center justify-center w-14 h-14 rounded-full',
+                  'bg-black/40 backdrop-blur-md border border-white/30 text-white',
+                  'hover:bg-white/30 hover:border-white/50 transition-all duration-300',
+                  'hover:scale-110'
+                )}
+                aria-label="Add to watchlist"
+              >
+                <Heart className="w-6 h-6" />
+              </button>
             </div>
           </motion.div>
         </AnimatePresence>
