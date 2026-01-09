@@ -41,6 +41,14 @@ Different languages use different thresholds based on industry size and global r
 
 All rows maintain high rating standards (7.5-8.0+) while ensuring 15+ movies per row.
 
+**Tie-Breaker Strategy:**
+When multiple movies have the same IMDb rating, they are sorted using this multi-level hierarchy:
+1. **Primary:** IMDb rating (highest first)
+2. **Secondary:** Vote count (more votes = more reliable rating)
+3. **Tertiary:** Release date (newer content first)
+
+**Example:** Movies with 8.3 rating are ordered by votes: 234k → 137k → 134k → 70k → 56k → 50k
+
 ---
 
 ## Database Schema
@@ -242,14 +250,18 @@ const db = client.db('content_db');
 ### 1. Top Rated Movies (General - Last 5 Years)
 
 ```javascript
-// MongoDB Query
+// MongoDB Query with Tie-Breakers
 db.merged_catalog.find({
   content_type: "movie",
   imdb_rating: { $gte: 8.0 },
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2021 }  // Adjust year dynamically
 })
-.sort({ imdb_rating: -1 })
+.sort({
+  imdb_rating: -1,          // Primary: highest rating first
+  imdb_rating_count: -1,    // Secondary: more votes = more reliable
+  release_date: -1          // Tertiary: newer content first
+})
 .limit(15)
 .toArray();
 
@@ -266,7 +278,7 @@ db.merged_catalog.aggregate([
       year: { $gte: 2021 }
     }
   },
-  { $sort: { imdb_rating: -1 } },
+  { $sort: { imdb_rating: -1, imdb_rating_count: -1, release_date: -1 } },
   { $limit: 15 },
   {
     $project: {
@@ -323,7 +335,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2016 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 
@@ -343,7 +355,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2016 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 ```
@@ -374,7 +386,7 @@ db.merged_catalog.find({
   year: { $gte: 2016 },
   imdb_id: { $nin: ["tt9263550"] } // Exclude Rocketry (corrected to Hindi)
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 ```
@@ -408,7 +420,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2016 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 ```
@@ -436,7 +448,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2016 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 
@@ -448,7 +460,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2016 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 ```
@@ -465,7 +477,7 @@ db.merged_catalog.find({
   imdb_rating_count: { $gte: 50000 },
   year: { $gte: 2010, $lte: 2019 }
 })
-.sort({ imdb_rating: -1 })
+.sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
 .limit(15)
 .toArray();
 ```
@@ -556,6 +568,13 @@ db.merged_catalog.aggregate([
 ## API Query Examples
 
 Base URL: `https://content-api-401132033262.asia-south1.run.app`
+
+**Note:** When using `sort=rating`, the API automatically applies tie-breakers:
+1. Primary: IMDb rating (descending)
+2. Secondary: Vote count (descending)
+3. Tertiary: Release date (descending)
+
+This ensures consistent, deterministic ordering for movies with the same rating.
 
 ### 1. Top Rated Movies (Last 5 Years)
 

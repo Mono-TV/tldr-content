@@ -206,20 +206,36 @@ function buildFilterQuery(query) {
   return filter;
 }
 
-// Helper: Build sort options
+// Helper: Build sort options with tie-breakers
 function buildSortOptions(query) {
   const sortField = query.sort || 'release_date';
   const sortOrder = query.order === 'asc' ? 1 : -1;
 
   const sortMap = {
-    'release_date': { release_date: sortOrder },
-    'rating': { imdb_rating: sortOrder },
-    'title': { title: sortOrder },
-    'year': { year: sortOrder },
-    'popularity': { tmdb_popularity: sortOrder }
+    'release_date': {
+      release_date: sortOrder,
+      imdb_rating: -1  // Tie-breaker: prefer higher rated
+    },
+    'rating': {
+      imdb_rating: sortOrder,
+      imdb_rating_count: sortOrder,  // Tie-breaker 1: more votes = more reliable
+      release_date: -1                // Tie-breaker 2: newer content
+    },
+    'title': {
+      title: sortOrder,
+      imdb_rating: -1  // Tie-breaker: prefer higher rated
+    },
+    'year': {
+      year: sortOrder,
+      imdb_rating: -1  // Tie-breaker: prefer higher rated
+    },
+    'popularity': {
+      tmdb_popularity: sortOrder,
+      imdb_rating: -1  // Tie-breaker: prefer higher rated
+    }
   };
 
-  return sortMap[sortField] || { release_date: -1 };
+  return sortMap[sortField] || { release_date: -1, imdb_rating: -1 };
 }
 
 // Health check
@@ -262,6 +278,7 @@ app.get('/api/content', async (req, res) => {
           plot: 1,
           runtime: 1,
           imdb_rating: 1,
+          imdb_rating_count: 1,
           tmdb_vote_average: 1,
           genres: 1,
           languages: 1,
@@ -346,7 +363,7 @@ app.get('/api/search', async (req, res) => {
     const [items, total] = await Promise.all([
       db.collection('merged_catalog')
         .find(filter)
-        .sort({ imdb_rating: -1 })
+        .sort({ imdb_rating: -1, imdb_rating_count: -1, release_date: -1 })
         .skip(skip)
         .limit(limit)
         .project({
@@ -358,6 +375,7 @@ app.get('/api/search', async (req, res) => {
           release_date: 1,
           overview: 1,
           imdb_rating: 1,
+          imdb_rating_count: 1,
           tmdb_vote_average: 1,
           genres: 1,
           languages: 1,
