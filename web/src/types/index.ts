@@ -85,6 +85,7 @@ export interface ContentFilters {
   year_from?: number;
   year_to?: number;
   min_rating?: number;
+  min_votes?: number;
   type?: 'movie' | 'show';
   country?: string;
   sort?: 'release_date' | 'rating' | 'title' | 'year' | 'popularity';

@@ -107,6 +107,11 @@ function buildFilterQuery(query) {
     ];
   }
 
+  // Vote count filter (minimum)
+  if (query.min_votes) {
+    filter.imdb_rating_count = { $gte: parseInt(query.min_votes) };
+  }
+
   // Content type (movie/show)
   if (query.type) {
     filter.content_type = query.type;
