@@ -12,10 +12,28 @@ export default function HomePage() {
     queryFn: () => api.getContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 5 }),
   });
 
+  // Fetch top rated movies from last year (IMDb > 8, released in last 1 year)
+  const { data: topRatedRecentData, isLoading: topRatedRecentLoading } = useQuery({
+    queryKey: ['topRatedRecent'],
+    queryFn: () => {
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      const yearFrom = oneYearAgo.getFullYear();
+
+      return api.getContent({
+        min_rating: 8,
+        year_from: yearFrom,
+        sort: 'rating',
+        order: 'desc',
+        limit: 15
+      });
+    },
+  });
+
   // Fetch trending content
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending'],
-    queryFn: () => api.getTrending(20),
+    queryFn: () => api.getTrending(15),
   });
 
   // Fetch top rated for Top 10
@@ -27,49 +45,49 @@ export default function HomePage() {
   // Fetch new releases
   const { data: newReleasesData, isLoading: newReleasesLoading } = useQuery({
     queryKey: ['newReleases'],
-    queryFn: () => api.getNewReleases(20),
+    queryFn: () => api.getNewReleases(15),
   });
 
   // Fetch by genre - Action
   const { data: actionData, isLoading: actionLoading } = useQuery({
     queryKey: ['genre', 'Action'],
-    queryFn: () => api.getByGenre('Action', 20),
+    queryFn: () => api.getByGenre('Action', 15),
   });
 
   // Fetch by genre - Comedy
   const { data: comedyData, isLoading: comedyLoading } = useQuery({
     queryKey: ['genre', 'Comedy'],
-    queryFn: () => api.getByGenre('Comedy', 20),
+    queryFn: () => api.getByGenre('Comedy', 15),
   });
 
   // Fetch by genre - Drama
   const { data: dramaData, isLoading: dramaLoading } = useQuery({
     queryKey: ['genre', 'Drama'],
-    queryFn: () => api.getByGenre('Drama', 20),
+    queryFn: () => api.getByGenre('Drama', 15),
   });
 
   // Fetch by genre - Thriller
   const { data: thrillerData, isLoading: thrillerLoading } = useQuery({
     queryKey: ['genre', 'Thriller'],
-    queryFn: () => api.getByGenre('Thriller', 20),
+    queryFn: () => api.getByGenre('Thriller', 15),
   });
 
   // Fetch Hindi content
   const { data: hindiData, isLoading: hindiLoading } = useQuery({
     queryKey: ['language', 'Hindi'],
-    queryFn: () => api.getByLanguage('Hindi', 20),
+    queryFn: () => api.getByLanguage('Hindi', 15),
   });
 
   // Fetch Tamil content
   const { data: tamilData, isLoading: tamilLoading } = useQuery({
     queryKey: ['language', 'Tamil'],
-    queryFn: () => api.getByLanguage('Tamil', 20),
+    queryFn: () => api.getByLanguage('Tamil', 15),
   });
 
   // Fetch Telugu content
   const { data: teluguData, isLoading: teluguLoading } = useQuery({
     queryKey: ['language', 'Telugu'],
-    queryFn: () => api.getByLanguage('Telugu', 20),
+    queryFn: () => api.getByLanguage('Telugu', 15),
   });
 
   return (
@@ -83,6 +101,14 @@ export default function HomePage() {
 
       {/* Content Sections */}
       <div className="-mt-20 relative z-10 space-y-8 pl-12 lg:pl-16">
+        {/* Top Rated Movies (IMDb > 8, Last Year) */}
+        <ContentRow
+          title="Top Rated Movies"
+          contents={topRatedRecentData?.items || []}
+          isLoading={topRatedRecentLoading}
+          href="/browse?min_rating=8&sort=rating"
+        />
+
         {/* Trending Now */}
         <ContentRow
           title="Trending Now"
