@@ -81,6 +81,7 @@ export interface ContentFilters {
   search?: string;
   genre?: string;
   language?: string;
+  original_language?: string;
   year?: number;
   year_from?: number;
   year_to?: number;

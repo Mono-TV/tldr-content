@@ -82,9 +82,14 @@ function buildFilterQuery(query) {
     filter['genres.name'] = { $regex: new RegExp(query.genre, 'i') };
   }
 
-  // Language filter
+  // Language filter (searches in languages array)
   if (query.language) {
     filter.languages = { $regex: new RegExp(query.language, 'i') };
+  }
+
+  // Original language filter (searches in original_language field)
+  if (query.original_language) {
+    filter.original_language = { $regex: new RegExp(query.original_language, 'i') };
   }
 
   // Year filter
@@ -184,6 +189,7 @@ app.get('/api/content', async (req, res) => {
           tmdb_vote_average: 1,
           genres: 1,
           languages: 1,
+          original_language: 1,
           countries: 1,
           poster_url: 1,
           backdrop_url: 1,
@@ -279,6 +285,7 @@ app.get('/api/search', async (req, res) => {
           tmdb_vote_average: 1,
           genres: 1,
           languages: 1,
+          original_language: 1,
           poster_url: 1,
           content_type: 1
         })
