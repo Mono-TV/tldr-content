@@ -26,8 +26,10 @@ app.use(cors({
     'http://localhost:5173',
     'https://content.lumiolabs.in',
     'https://mono-tv.github.io',
+    'https://tldrcontent-ncrhtdqoiq-uc.a.run.app',
     /\.github\.io$/,
-    /\.lumiolabs\.in$/
+    /\.lumiolabs\.in$/,
+    /\.run\.app$/
   ],
   methods: ['GET', 'OPTIONS'],
   optionsSuccessStatus: 200
