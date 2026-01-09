@@ -34,3 +34,8 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+
+# Sensitive files
+github-actions-key.json
+GITHUB_SECRETS_TO_ADD.txt
+tmp/
