@@ -32,6 +32,129 @@ export default function HomePage() {
     },
   });
 
+  // Helper for language-specific top rated movies (10 year range)
+  const tenYearsAgo = new Date().getFullYear() - 10;
+
+  // Fetch top rated English movies
+  const { data: topRatedEnglishData, isLoading: topRatedEnglishLoading } = useQuery({
+    queryKey: ['topRatedEnglish'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'English',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Hindi movies
+  const { data: topRatedHindiData, isLoading: topRatedHindiLoading } = useQuery({
+    queryKey: ['topRatedHindi'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Hindi',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Bengali movies
+  const { data: topRatedBengaliData, isLoading: topRatedBengaliLoading } = useQuery({
+    queryKey: ['topRatedBengali'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Bengali',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Tamil movies
+  const { data: topRatedTamilData, isLoading: topRatedTamilLoading } = useQuery({
+    queryKey: ['topRatedTamil'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Tamil',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Telugu movies
+  const { data: topRatedTeluguData, isLoading: topRatedTeluguLoading } = useQuery({
+    queryKey: ['topRatedTelugu'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Telugu',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Malayalam movies
+  const { data: topRatedMalayalamData, isLoading: topRatedMalayalamLoading } = useQuery({
+    queryKey: ['topRatedMalayalam'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Malayalam',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Kannada movies
+  const { data: topRatedKannadaData, isLoading: topRatedKannadaLoading } = useQuery({
+    queryKey: ['topRatedKannada'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Kannada',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top rated Bhojpuri movies
+  const { data: topRatedBhojpuriData, isLoading: topRatedBhojpuriLoading } = useQuery({
+    queryKey: ['topRatedBhojpuri'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      language: 'Bhojpuri',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
   // Fetch trending content
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending'],
@@ -103,12 +226,76 @@ export default function HomePage() {
 
       {/* Content Sections */}
       <div className="-mt-20 relative z-10 space-y-8 pl-12 lg:pl-16">
-        {/* Top Rated Movies (IMDb > 8, Last Year) */}
+        {/* Top Rated Movies (IMDb > 8, Last 5 Years) */}
         <ContentRow
           title="Top Rated Movies"
           contents={topRatedRecentData?.items || []}
           isLoading={topRatedRecentLoading}
           href="/browse?min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated English Movies */}
+        <ContentRow
+          title="Top Rated English Movies"
+          contents={topRatedEnglishData?.items || []}
+          isLoading={topRatedEnglishLoading}
+          href="/browse?language=English&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Hindi Movies */}
+        <ContentRow
+          title="Top Rated Hindi Movies"
+          contents={topRatedHindiData?.items || []}
+          isLoading={topRatedHindiLoading}
+          href="/browse?language=Hindi&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Bengali Movies */}
+        <ContentRow
+          title="Top Rated Bengali Movies"
+          contents={topRatedBengaliData?.items || []}
+          isLoading={topRatedBengaliLoading}
+          href="/browse?language=Bengali&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Tamil Movies */}
+        <ContentRow
+          title="Top Rated Tamil Movies"
+          contents={topRatedTamilData?.items || []}
+          isLoading={topRatedTamilLoading}
+          href="/browse?language=Tamil&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Telugu Movies */}
+        <ContentRow
+          title="Top Rated Telugu Movies"
+          contents={topRatedTeluguData?.items || []}
+          isLoading={topRatedTeluguLoading}
+          href="/browse?language=Telugu&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Malayalam Movies */}
+        <ContentRow
+          title="Top Rated Malayalam Movies"
+          contents={topRatedMalayalamData?.items || []}
+          isLoading={topRatedMalayalamLoading}
+          href="/browse?language=Malayalam&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Kannada Movies */}
+        <ContentRow
+          title="Top Rated Kannada Movies"
+          contents={topRatedKannadaData?.items || []}
+          isLoading={topRatedKannadaLoading}
+          href="/browse?language=Kannada&min_rating=8&sort=rating"
+        />
+
+        {/* Top Rated Bhojpuri Movies */}
+        <ContentRow
+          title="Top Rated Bhojpuri Movies"
+          contents={topRatedBhojpuriData?.items || []}
+          isLoading={topRatedBhojpuriLoading}
+          href="/browse?language=Bhojpuri&min_rating=8&sort=rating"
         />
 
         {/* Trending Now */}
