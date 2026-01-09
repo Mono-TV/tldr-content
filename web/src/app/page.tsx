@@ -12,13 +12,13 @@ export default function HomePage() {
     queryFn: () => api.getContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 5 }),
   });
 
-  // Fetch top rated movies from last year (IMDb > 8, 50K+ votes, movies only, released in last 1 year)
+  // Fetch top rated movies from last 5 years (IMDb > 8, 50K+ votes, movies only, released in last 5 years)
   const { data: topRatedRecentData, isLoading: topRatedRecentLoading } = useQuery({
     queryKey: ['topRatedRecent'],
     queryFn: () => {
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      const yearFrom = oneYearAgo.getFullYear();
+      const fiveYearsAgo = new Date();
+      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+      const yearFrom = fiveYearsAgo.getFullYear();
 
       return api.getContent({
         min_rating: 8,
