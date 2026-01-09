@@ -12,7 +12,7 @@ export default function HomePage() {
     queryFn: () => api.getContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 5 }),
   });
 
-  // Fetch top rated movies from last year (IMDb > 8, 50K+ votes, released in last 1 year)
+  // Fetch top rated movies from last year (IMDb > 8, 50K+ votes, movies only, released in last 1 year)
   const { data: topRatedRecentData, isLoading: topRatedRecentLoading } = useQuery({
     queryKey: ['topRatedRecent'],
     queryFn: () => {
@@ -23,6 +23,7 @@ export default function HomePage() {
       return api.getContent({
         min_rating: 8,
         min_votes: 50000,
+        type: 'movie',
         year_from: yearFrom,
         sort: 'rating',
         order: 'desc',
