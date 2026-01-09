@@ -32,8 +32,9 @@ export default function HomePage() {
     },
   });
 
-  // Helper for language-specific top rated movies (10 year range)
+  // Helper for language-specific top rated movies
   const tenYearsAgo = new Date().getFullYear() - 10;
+  const fifteenYearsAgo = new Date().getFullYear() - 15;
 
   // Fetch top rated English movies
   const { data: topRatedEnglishData, isLoading: topRatedEnglishLoading } = useQuery({
@@ -65,15 +66,15 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top rated Bengali movies
+  // Fetch top rated Bengali movies (lower threshold due to smaller industry)
   const { data: topRatedBengaliData, isLoading: topRatedBengaliLoading } = useQuery({
     queryKey: ['topRatedBengali'],
     queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 50000,
+      min_rating: 7.5,
+      min_votes: 2000,
       type: 'movie',
       original_language: 'bn',
-      year_from: tenYearsAgo,
+      year_from: fifteenYearsAgo,
       sort: 'rating',
       order: 'desc',
       limit: 15
@@ -85,7 +86,7 @@ export default function HomePage() {
     queryKey: ['topRatedTamil'],
     queryFn: () => api.getContent({
       min_rating: 8,
-      min_votes: 50000,
+      min_votes: 15000,
       type: 'movie',
       original_language: 'ta',
       year_from: tenYearsAgo,
@@ -100,7 +101,7 @@ export default function HomePage() {
     queryKey: ['topRatedTelugu'],
     queryFn: () => api.getContent({
       min_rating: 8,
-      min_votes: 50000,
+      min_votes: 5000,
       type: 'movie',
       original_language: 'te',
       year_from: tenYearsAgo,
@@ -115,7 +116,7 @@ export default function HomePage() {
     queryKey: ['topRatedMalayalam'],
     queryFn: () => api.getContent({
       min_rating: 8,
-      min_votes: 50000,
+      min_votes: 5000,
       type: 'movie',
       original_language: 'ml',
       year_from: tenYearsAgo,
@@ -125,30 +126,15 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top rated Kannada movies
+  // Fetch top rated Kannada movies (extended year range for more results)
   const { data: topRatedKannadaData, isLoading: topRatedKannadaLoading } = useQuery({
     queryKey: ['topRatedKannada'],
     queryFn: () => api.getContent({
       min_rating: 8,
-      min_votes: 50000,
+      min_votes: 5000,
       type: 'movie',
       original_language: 'kn',
-      year_from: tenYearsAgo,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
-  });
-
-  // Fetch top rated Bhojpuri movies
-  const { data: topRatedBhojpuriData, isLoading: topRatedBhojpuriLoading } = useQuery({
-    queryKey: ['topRatedBhojpuri'],
-    queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 50000,
-      type: 'movie',
-      original_language: 'bho',
-      year_from: tenYearsAgo,
+      year_from: fifteenYearsAgo,
       sort: 'rating',
       order: 'desc',
       limit: 15
@@ -288,14 +274,6 @@ export default function HomePage() {
           contents={topRatedKannadaData?.items || []}
           isLoading={topRatedKannadaLoading}
           href="/browse?language=Kannada&min_rating=8&sort=rating"
-        />
-
-        {/* Top Rated Bhojpuri Movies */}
-        <ContentRow
-          title="Top Rated Bhojpuri Movies"
-          contents={topRatedBhojpuriData?.items || []}
-          isLoading={topRatedBhojpuriLoading}
-          href="/browse?language=Bhojpuri&min_rating=8&sort=rating"
         />
 
         {/* Trending Now */}
