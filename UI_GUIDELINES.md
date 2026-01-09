@@ -274,12 +274,12 @@ width={24} height={24}
 )}
 ```
 
-### Static Generation Strategy
-- **All content pages pre-rendered** at build time via `generateStaticParams()`
-- **API pagination**: Fetches all content in 100-item chunks
-- **Build time**: ~30-60 minutes for 100,000+ pages
-- **Output**: Static HTML for every content item (zero 500 errors)
-- **Deployment**: GitHub Pages with static export
+### ISR Strategy (Incremental Static Regeneration)
+- **Top 100 pages pre-rendered** at build time via `generateStaticParams()`
+- **Dynamic generation**: Remaining 105K+ pages generated on-demand
+- **Build time**: ~5 seconds (instant builds)
+- **Revalidation**: 1-hour cache with automatic regeneration
+- **Deployment**: Vercel with SSR/ISR support
 
 ---
 
@@ -352,9 +352,13 @@ npm run start
 ## Changelog
 
 ### Version 1.1 (January 9, 2026)
-- Added content detail pages with full static generation
-- Implemented trailer integration with YouTube embeds
+- **Migrated to SSR/ISR** from static export (5s builds vs 4-6 hour builds)
+- Added content detail pages with ISR (pre-render top 100, generate rest on-demand)
+- Implemented **image optimization** with size parameters (sm/md/lg/original)
+- Added trailer integration with YouTube embeds
 - Added streaming platform display with logos and deep links
 - Enhanced type definitions for trailer_url and streaming_platforms
 - Added helper functions: extractYouTubeId(), getPlatformLogoUrl()
 - Fixed Top 10 row rank number cropping issue
+- Supports all 105,569+ content pages dynamically
+- Ready for Vercel deployment
