@@ -1,237 +1,774 @@
 # Homepage Rows Documentation
 
-Complete guide to creating, managing, and customizing content rows on the homepage.
+Complete guide to creating, managing, and customizing Top Rated Movies rows on the homepage.
 
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Creating Homepage Rows](#creating-homepage-rows)
-4. [API Filters Reference](#api-filters-reference)
-5. [Language-Specific Rows](#language-specific-rows)
-6. [Manual Language Corrections](#manual-language-corrections)
-7. [Testing API Endpoints](#testing-api-endpoints)
+2. [Database Schema](#database-schema)
+3. [Top Rated Movies Row Variants](#top-rated-movies-row-variants)
+4. [MongoDB Query Examples](#mongodb-query-examples)
+5. [API Query Examples](#api-query-examples)
+6. [Frontend Implementation](#frontend-implementation)
+7. [Manual Language Corrections](#manual-language-corrections)
 8. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Overview
 
-The homepage displays curated content rows fetched from the backend API. Each row is powered by React Query for efficient data fetching and caching.
+The homepage displays curated **Top Rated Movies** rows with different filters (language, genre, year range, etc.). Each row shows 15 high-quality movies based on IMDb ratings and vote counts.
 
-**Key Features:**
-- 15 items per row (configurable)
-- Real-time filtering by rating, votes, language, genre, year, etc.
-- Manual correction system for incorrect metadata
-- Responsive design with horizontal scrolling
-- ISR (Incremental Static Regeneration) for content detail pages
+**Current Top Rated Movies Rows:**
+1. Top Rated Movies (Last 5 years)
+2. Top Rated English Movies (Last 10 years)
+3. Top Rated Hindi Movies (Last 10 years)
+4. Top Rated Bengali Movies (Last 10 years)
+5. Top Rated Tamil Movies (Last 10 years)
+6. Top Rated Telugu Movies (Last 10 years)
+7. Top Rated Malayalam Movies (Last 10 years)
+8. Top Rated Kannada Movies (Last 10 years)
+9. Top Rated Bhojpuri Movies (Last 10 years)
 
----
-
-## Architecture
-
-```
-Frontend (Next.js 16.1.1)
-├── /web/src/app/page.tsx          # Homepage with all rows
-├── /web/src/types/index.ts        # TypeScript interfaces
-├── /web/src/services/api.ts       # API client wrapper
-└── /web/src/components/sections/
-    └── content-row.tsx             # Row component
-
-Backend (Node.js + Express)
-├── /api/server.js                  # Main API server
-├── MongoDB (merged_catalog)        # Content database
-└── Cloud Run Deployment            # Serverless hosting
-```
+**Quality Filters:**
+- Minimum IMDb rating: 8.0
+- Minimum vote count: 50,000
+- Content type: Movies only
+- Sorted by: Rating (descending)
 
 ---
 
-## Creating Homepage Rows
+## Database Schema
 
-### Step 1: Define React Query Hook
+### Collection: `merged_catalog`
 
-In `/web/src/app/page.tsx`, add a new `useQuery` hook:
+**Database:** MongoDB (`content_db`)
+**Total Documents:** 105,569+ movies and shows
 
-```typescript
-const { data: yourRowData, isLoading: yourRowLoading } = useQuery({
-  queryKey: ['yourRowKey'],  // Unique key for caching
-  queryFn: () => api.getContent({
-    min_rating: 8,              // Minimum IMDb/TMDb rating
-    min_votes: 50000,           // Minimum vote count
-    type: 'movie',              // 'movie' or 'show'
-    original_language: 'en',    // ISO 639-1 code (optional)
-    year_from: 2016,            // Start year (optional)
-    sort: 'rating',             // Sort by: rating, popularity, release_date
-    order: 'desc',              // 'asc' or 'desc'
-    limit: 15                   // Number of items
-  }),
-});
+### Key Fields
+
+```javascript
+{
+  _id: ObjectId("..."),
+  imdb_id: "tt9263550",                    // IMDb identifier
+  title: "Rocketry: The Nambi Effect",     // English title
+  original_title: "रॉकेट्री",               // Original language title
+  year: 2022,                              // Release year
+  release_date: "2022-07-01",              // ISO date string
+
+  // Ratings & Popularity
+  imdb_rating: 8.6,                        // IMDb rating (0-10)
+  imdb_rating_count: 61000,                // Number of IMDb votes
+  tmdb_vote_average: 8.4,                  // TMDb rating (0-10)
+  tmdb_vote_count: 250,                    // Number of TMDb votes
+  tmdb_popularity: 45.6,                   // TMDb popularity score
+
+  // Content Info
+  content_type: "movie",                   // "movie" or "show"/"tv"/"series"
+  runtime: 157,                            // Duration in minutes
+  overview: "Biography of...",             // Plot summary
+  plot: "Detailed plot...",                // Full plot
+
+  // Language & Location
+  original_language: "ta",                 // ISO 639-1 code (ta = Tamil)
+  languages: ["Hindi", "English", "Tamil", "French"], // All available languages
+  countries: ["India"],                    // Production countries
+
+  // Classification
+  genres: [
+    { id: 18, name: "Drama" },
+    { id: 36, name: "History" }
+  ],
+
+  // Cast & Crew
+  cast: [
+    {
+      name: "R. Madhavan",
+      character: "Nambi Narayanan",
+      order: 0,
+      profile_path: "/..."
+    }
+  ],
+  directors: ["R. Madhavan"],
+  writers: ["R. Madhavan"],
+
+  // Media
+  poster_url: "https://image.tmdb.org/t/p/original/...",
+  backdrop_url: "https://m.media-amazon.com/...",
+  trailer_url: "https://www.youtube.com/watch?v=...",
+  trailer_key: "abc123xyz"
+}
 ```
 
-### Step 2: Add JSX ContentRow Component
+### Indexes
 
-```tsx
-<ContentRow
-  title="Your Row Title"
-  contents={yourRowData?.items || []}
-  isLoading={yourRowLoading}
-  href="/browse?your_filters_here"  // Link to browse page
-/>
+```javascript
+// Recommended indexes for query performance
+db.merged_catalog.createIndex({ imdb_rating: -1 })
+db.merged_catalog.createIndex({ original_language: 1 })
+db.merged_catalog.createIndex({ content_type: 1 })
+db.merged_catalog.createIndex({ year: -1 })
+db.merged_catalog.createIndex({ imdb_rating_count: -1 })
+db.merged_catalog.createIndex({ "genres.name": 1 })
 ```
 
-### Complete Example: Top Rated Science Fiction Movies
+---
+
+## Top Rated Movies Row Variants
+
+### 1. Top Rated Movies (General)
+
+**Filters:**
+- IMDb rating ≥ 8.0
+- Vote count ≥ 50,000
+- Content type: movie
+- Released in last 5 years
+- Sorted by rating (descending)
+
+**Use Case:** Show recent high-quality movies across all languages
+
+---
+
+### 2. Top Rated Movies by Language
+
+**Variants:**
+- Top Rated English Movies (`original_language: 'en'`)
+- Top Rated Hindi Movies (`original_language: 'hi'`)
+- Top Rated Tamil Movies (`original_language: 'ta'`)
+- Top Rated Telugu Movies (`original_language: 'te'`)
+- Top Rated Malayalam Movies (`original_language: 'ml'`)
+- Top Rated Kannada Movies (`original_language: 'kn'`)
+- Top Rated Bengali Movies (`original_language: 'bn'`)
+- Top Rated Bhojpuri Movies (`original_language: 'bho'`)
+
+**Filters:**
+- IMDb rating ≥ 8.0
+- Vote count ≥ 50,000
+- Content type: movie
+- Original language: specific ISO code
+- Released in last 10 years
+- Sorted by rating (descending)
+
+**Use Case:** Show original movies in specific languages (not dubbed versions)
+
+---
+
+### 3. Top Rated Movies by Genre
+
+**Variants:**
+- Top Rated Action Movies
+- Top Rated Drama Movies
+- Top Rated Comedy Movies
+- Top Rated Thriller Movies
+- Top Rated Science Fiction Movies
+- Top Rated Horror Movies
+
+**Filters:**
+- IMDb rating ≥ 8.0
+- Vote count ≥ 50,000
+- Content type: movie
+- Genre: specific genre name
+- Released in last 10 years
+- Sorted by rating (descending)
+
+**Use Case:** Show high-quality movies in specific genres
+
+---
+
+### 4. Top Rated Movies by Decade
+
+**Variants:**
+- Top Rated Movies 2020s (`year_from: 2020`)
+- Top Rated Movies 2010s (`year_from: 2010, year_to: 2019`)
+- Top Rated Movies 2000s (`year_from: 2000, year_to: 2009`)
+- Top Rated Classic Movies (`year_to: 1999`)
+
+**Filters:**
+- IMDb rating ≥ 8.0
+- Vote count ≥ 100,000 (higher for classics)
+- Content type: movie
+- Year range: specific decade
+- Sorted by rating (descending)
+
+**Use Case:** Show high-quality movies from different time periods
+
+---
+
+### 5. Top Rated Movies by Region
+
+**Variants:**
+- Top Rated Indian Movies (`country: 'India'`)
+- Top Rated Korean Movies (`original_language: 'ko'`)
+- Top Rated Japanese Movies (`original_language: 'ja'`)
+- Top Rated French Movies (`original_language: 'fr'`)
+
+**Filters:**
+- IMDb rating ≥ 8.0
+- Vote count ≥ 50,000
+- Content type: movie
+- Country or original_language filter
+- Released in last 10 years
+- Sorted by rating (descending)
+
+**Use Case:** Show high-quality movies from specific regions/countries
+
+---
+
+## MongoDB Query Examples
+
+### Connect to Database
+
+```bash
+# Using MongoDB shell
+mongosh "mongodb+srv://your-connection-string" --username your-user
+
+# Or in Node.js
+const { MongoClient } = require('mongodb');
+const client = new MongoClient(process.env.MONGO_URI);
+await client.connect();
+const db = client.db('content_db');
+```
+
+---
+
+### 1. Top Rated Movies (General - Last 5 Years)
+
+```javascript
+// MongoDB Query
+db.merged_catalog.find({
+  content_type: "movie",
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2021 }  // Adjust year dynamically
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+
+// With Aggregation Pipeline
+db.merged_catalog.aggregate([
+  {
+    $match: {
+      content_type: "movie",
+      $or: [
+        { imdb_rating: { $gte: 8.0 } },
+        { tmdb_vote_average: { $gte: 8.0 } }
+      ],
+      imdb_rating_count: { $gte: 50000 },
+      year: { $gte: 2021 }
+    }
+  },
+  { $sort: { imdb_rating: -1 } },
+  { $limit: 15 },
+  {
+    $project: {
+      _id: 1,
+      imdb_id: 1,
+      title: 1,
+      year: 1,
+      imdb_rating: 1,
+      imdb_rating_count: 1,
+      poster_url: 1,
+      backdrop_url: 1,
+      genres: 1,
+      languages: 1,
+      original_language: 1
+    }
+  }
+]);
+```
+
+**Expected Results:**
+```javascript
+[
+  {
+    _id: ObjectId("..."),
+    imdb_id: "tt15097216",
+    title: "12th Fail",
+    year: 2023,
+    imdb_rating: 8.7,
+    original_language: "hi",
+    languages: ["Hindi", "English"]
+  },
+  {
+    imdb_id: "tt9263550",
+    title: "Rocketry: The Nambi Effect",
+    year: 2022,
+    imdb_rating: 8.6,
+    original_language: "hi", // Corrected from "ta"
+    languages: ["Hindi", "English", "Tamil", "French"]
+  }
+  // ... 13 more results
+]
+```
+
+---
+
+### 2. Top Rated Hindi Movies (Last 10 Years)
+
+```javascript
+// MongoDB Query
+db.merged_catalog.find({
+  content_type: "movie",
+  original_language: "hi",
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+
+// With Manual Corrections (exclude movies corrected away, include corrected to Hindi)
+db.merged_catalog.find({
+  content_type: "movie",
+  $or: [
+    {
+      original_language: "hi",
+      imdb_id: { $nin: [] } // Exclude if any Hindi movies corrected away
+    },
+    {
+      imdb_id: { $in: ["tt9263550"] } // Include Rocketry (corrected to Hindi)
+    }
+  ],
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+```
+
+**Expected Results:**
+```javascript
+[
+  { title: "12th Fail", imdb_rating: 8.7, original_language: "hi", year: 2023 },
+  { title: "Rocketry: The Nambi Effect", imdb_rating: 8.6, original_language: "hi", year: 2022 },
+  { title: "Dhurandhar", imdb_rating: 8.6, original_language: "hi", year: 2023 },
+  { title: "The Kashmir Files", imdb_rating: 8.5, original_language: "hi", year: 2022 },
+  { title: "Dangal", imdb_rating: 8.3, original_language: "hi", year: 2016 }
+  // ... more results
+]
+```
+
+---
+
+### 3. Top Rated Tamil Movies (Last 10 Years)
+
+```javascript
+// MongoDB Query
+db.merged_catalog.find({
+  content_type: "movie",
+  original_language: "ta",
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 },
+  imdb_id: { $nin: ["tt9263550"] } // Exclude Rocketry (corrected to Hindi)
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+```
+
+**Expected Results:**
+```javascript
+[
+  { title: "Soorarai Pottru", imdb_rating: 8.6, original_language: "ta", year: 2020 },
+  { title: "Jai Bhim", imdb_rating: 8.6, original_language: "ta", year: 2021 },
+  { title: "Kaithi", imdb_rating: 8.4, original_language: "ta", year: 2019 },
+  { title: "Maharaja", imdb_rating: 8.3, original_language: "ta", year: 2024 },
+  { title: "Vikram", imdb_rating: 8.3, original_language: "ta", year: 2022 }
+  // ... more results (Rocketry NOT included)
+]
+```
+
+---
+
+### 4. Top Rated English Movies (Last 10 Years)
+
+```javascript
+// MongoDB Query
+db.merged_catalog.find({
+  content_type: "movie",
+  original_language: "en",
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+```
+
+**Expected Results:**
+```javascript
+[
+  { title: "Oppenheimer", imdb_rating: 8.3, original_language: "en", year: 2023 },
+  { title: "Dune: Part Two", imdb_rating: 8.2, original_language: "en", year: 2024 },
+  { title: "The Batman", imdb_rating: 7.8, original_language: "en", year: 2022 }
+  // ... more results
+]
+```
+
+---
+
+### 5. Top Rated Action Movies
+
+```javascript
+// MongoDB Query
+db.merged_catalog.find({
+  content_type: "movie",
+  "genres.name": { $regex: /action/i },
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+
+// Or using $elemMatch for exact genre matching
+db.merged_catalog.find({
+  content_type: "movie",
+  genres: { $elemMatch: { name: "Action" } },
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2016 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+```
+
+---
+
+### 6. Top Rated Movies by Decade (2010s)
+
+```javascript
+// MongoDB Query - Movies from 2010-2019
+db.merged_catalog.find({
+  content_type: "movie",
+  imdb_rating: { $gte: 8.0 },
+  imdb_rating_count: { $gte: 50000 },
+  year: { $gte: 2010, $lte: 2019 }
+})
+.sort({ imdb_rating: -1 })
+.limit(15)
+.toArray();
+```
+
+---
+
+### 7. Count Movies by Language
+
+```javascript
+// Get count of high-rated movies per language
+db.merged_catalog.aggregate([
+  {
+    $match: {
+      content_type: "movie",
+      imdb_rating: { $gte: 8.0 },
+      imdb_rating_count: { $gte: 50000 },
+      original_language: { $exists: true, $ne: null }
+    }
+  },
+  {
+    $group: {
+      _id: "$original_language",
+      count: { $sum: 1 },
+      avg_rating: { $avg: "$imdb_rating" },
+      titles: { $push: "$title" }
+    }
+  },
+  { $sort: { count: -1 } },
+  { $limit: 20 }
+]);
+```
+
+**Expected Results:**
+```javascript
+[
+  { _id: "en", count: 1250, avg_rating: 8.2 },
+  { _id: "hi", count: 87, avg_rating: 8.3 },
+  { _id: "ta", count: 45, avg_rating: 8.4 },
+  { _id: "te", count: 32, avg_rating: 8.3 },
+  { _id: "ko", count: 28, avg_rating: 8.5 },
+  { _id: "ja", count: 25, avg_rating: 8.4 }
+]
+```
+
+---
+
+### 8. Top Rated Movies with Aggregation Stats
+
+```javascript
+// Get top movies with additional stats
+db.merged_catalog.aggregate([
+  {
+    $match: {
+      content_type: "movie",
+      imdb_rating: { $gte: 8.0 },
+      imdb_rating_count: { $gte: 50000 },
+      year: { $gte: 2016 }
+    }
+  },
+  {
+    $addFields: {
+      rating_score: {
+        $multiply: [
+          "$imdb_rating",
+          { $log10: { $add: ["$imdb_rating_count", 1] } }
+        ]
+      }
+    }
+  },
+  { $sort: { rating_score: -1 } },
+  { $limit: 15 },
+  {
+    $project: {
+      title: 1,
+      year: 1,
+      imdb_rating: 1,
+      imdb_rating_count: 1,
+      rating_score: { $round: ["$rating_score", 2] },
+      original_language: 1,
+      genres: 1
+    }
+  }
+]);
+```
+
+---
+
+## API Query Examples
+
+Base URL: `https://content-api-401132033262.asia-south1.run.app`
+
+### 1. Top Rated Movies (Last 5 Years)
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&year_from=2021&sort=rating&order=desc&limit=15" \
+  | jq '.items[] | {title, year, imdb_rating, original_language}'
+```
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "title": "12th Fail",
+      "year": 2023,
+      "imdb_rating": 8.7,
+      "original_language": "hi"
+    },
+    {
+      "title": "Oppenheimer",
+      "year": 2023,
+      "imdb_rating": 8.3,
+      "original_language": "en"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 15,
+    "total": 245,
+    "pages": 17
+  }
+}
+```
+
+---
+
+### 2. Top Rated Hindi Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&original_language=hi&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '.items[] | "\(.imdb_rating) - \(.title) (\(.year))"'
+```
+
+**Response:**
+```
+"8.7 - 12th Fail (2023)"
+"8.6 - Rocketry: The Nambi Effect (2022)"
+"8.6 - Dhurandhar (2023)"
+"8.5 - The Kashmir Files (2022)"
+"8.3 - Dangal (2016)"
+```
+
+---
+
+### 3. Top Rated Tamil Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&original_language=ta&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '.items[] | "\(.imdb_rating) - \(.title) (\(.year))"'
+```
+
+**Response:**
+```
+"8.6 - Soorarai Pottru (2020)"
+"8.6 - Jai Bhim (2021)"
+"8.4 - Kaithi (2019)"
+"8.3 - Maharaja (2024)"
+"8.3 - Vikram (2022)"
+```
+
+---
+
+### 4. Top Rated Action Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&genre=Action&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '.items[0:5] | .[] | {title, imdb_rating, genres: [.genres[].name]}'
+```
+
+---
+
+### 5. Get Single Movie Details
+
+```bash
+# By IMDb ID
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content/tt9263550" \
+  | jq '{title, imdb_rating, original_language, languages, year, cast: [.cast[0:3][].name]}'
+```
+
+**Response:**
+```json
+{
+  "title": "Rocketry: The Nambi Effect",
+  "imdb_rating": 8.6,
+  "original_language": "hi",
+  "languages": ["Hindi", "English", "Tamil", "French"],
+  "year": 2022,
+  "cast": ["R. Madhavan", "Simran", "Rajit Kapur"]
+}
+```
+
+---
+
+### 6. Search Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/search?q=Rocketry&limit=5" \
+  | jq '.items[] | {title, imdb_id, year, imdb_rating}'
+```
+
+---
+
+## Frontend Implementation
+
+### File: `/web/src/app/page.tsx`
 
 ```typescript
-// 1. Add the query hook
-const { data: sciFiData, isLoading: sciFiLoading } = useQuery({
-  queryKey: ['topRatedSciFi'],
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { ContentRow } from '@/components/sections/content-row';
+import api from '@/services/api';
+
+export default function HomePage() {
+  // Calculate dynamic year ranges
+  const fiveYearsAgo = new Date().getFullYear() - 5;
+  const tenYearsAgo = new Date().getFullYear() - 10;
+
+  // 1. Top Rated Movies (Last 5 Years)
+  const { data: topRatedRecentData, isLoading: topRatedRecentLoading } = useQuery({
+    queryKey: ['topRatedRecent'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      year_from: fiveYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // 2. Top Rated English Movies (Last 10 Years)
+  const { data: topRatedEnglishData, isLoading: topRatedEnglishLoading } = useQuery({
+    queryKey: ['topRatedEnglish'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      original_language: 'en',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // 3. Top Rated Hindi Movies (Last 10 Years)
+  const { data: topRatedHindiData, isLoading: topRatedHindiLoading } = useQuery({
+    queryKey: ['topRatedHindi'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      original_language: 'hi',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // ... More language-specific queries (Tamil, Telugu, etc.)
+
+  return (
+    <div className="min-h-screen pb-20">
+      {/* Hero Section */}
+      {/* ... */}
+
+      {/* Content Rows */}
+      <div className="space-y-8 pl-12 lg:pl-16">
+        {/* Row 1: Top Rated Movies (Last 5 Years) */}
+        <ContentRow
+          title="Top Rated Movies"
+          contents={topRatedRecentData?.items || []}
+          isLoading={topRatedRecentLoading}
+          href="/browse?min_rating=8&sort=rating"
+        />
+
+        {/* Row 2: Top Rated English Movies */}
+        <ContentRow
+          title="Top Rated English Movies"
+          contents={topRatedEnglishData?.items || []}
+          isLoading={topRatedEnglishLoading}
+          href="/browse?original_language=en&min_rating=8&sort=rating"
+        />
+
+        {/* Row 3: Top Rated Hindi Movies */}
+        <ContentRow
+          title="Top Rated Hindi Movies"
+          contents={topRatedHindiData?.items || []}
+          isLoading={topRatedHindiLoading}
+          href="/browse?original_language=hi&min_rating=8&sort=rating"
+        />
+
+        {/* ... More rows */}
+      </div>
+    </div>
+  );
+}
+```
+
+### Adding a New Top Rated Row (Example: Korean Movies)
+
+```typescript
+// Step 1: Add query hook
+const { data: topRatedKoreanData, isLoading: topRatedKoreanLoading } = useQuery({
+  queryKey: ['topRatedKorean'],
   queryFn: () => api.getContent({
     min_rating: 8,
     min_votes: 50000,
     type: 'movie',
-    genre: 'Science Fiction',
-    year_from: 2010,
-    sort: 'rating',
-    order: 'desc',
-    limit: 15
-  }),
-});
-
-// 2. Add the JSX row (inside the main return statement)
-<ContentRow
-  title="Top Rated Sci-Fi Movies"
-  contents={sciFiData?.items || []}
-  isLoading={sciFiLoading}
-  href="/browse?genre=Science+Fiction&min_rating=8&sort=rating"
-/>
-```
-
----
-
-## API Filters Reference
-
-### Available Parameters
-
-| Parameter | Type | Description | Example |
-|-----------|------|-------------|---------|
-| `min_rating` | number | Minimum IMDb or TMDb rating (0-10) | `8` |
-| `min_votes` | number | Minimum vote count | `50000` |
-| `type` | string | Content type: `'movie'` or `'show'` | `'movie'` |
-| `language` | string | Any language in languages array | `'Hindi'` |
-| `original_language` | string | ISO 639-1 language code | `'hi'` |
-| `genre` | string | Genre name (case-insensitive) | `'Action'` |
-| `year` | number | Exact year | `2023` |
-| `year_from` | number | Minimum year (inclusive) | `2016` |
-| `year_to` | number | Maximum year (inclusive) | `2025` |
-| `country` | string | Country name | `'India'` |
-| `sort` | string | Sort field: `'rating'`, `'popularity'`, `'release_date'`, `'title'`, `'year'` | `'rating'` |
-| `order` | string | Sort order: `'asc'` or `'desc'` | `'desc'` |
-| `limit` | number | Number of results (max 100) | `15` |
-| `page` | number | Page number for pagination | `1` |
-
-### Filter Combinations
-
-**High-quality recent movies:**
-```typescript
-{
-  min_rating: 8,
-  min_votes: 50000,
-  type: 'movie',
-  year_from: 2020,
-  sort: 'rating',
-  order: 'desc',
-  limit: 15
-}
-```
-
-**Popular TV shows:**
-```typescript
-{
-  type: 'show',
-  sort: 'popularity',
-  order: 'desc',
-  limit: 15
-}
-```
-
-**Classic movies:**
-```typescript
-{
-  min_rating: 8,
-  min_votes: 100000,
-  type: 'movie',
-  year_to: 2000,
-  sort: 'rating',
-  order: 'desc',
-  limit: 15
-}
-```
-
----
-
-## Language-Specific Rows
-
-### Understanding Language Filtering
-
-**Two Language Fields:**
-
-1. **`languages`** (array) - All available languages including dubs/subtitles
-   - Example: `["Hindi", "English", "Tamil", "French"]`
-   - Use `language` parameter to filter
-
-2. **`original_language`** (string) - The movie's original production language
-   - Example: `"ta"` (Tamil)
-   - Use `original_language` parameter to filter
-   - **Recommended for language-specific rows**
-
-### Why Use `original_language`?
-
-**Before (using `language`):**
-```typescript
-// Problem: "Spider-Man" dubbed in Hindi appears in Hindi row
-language: 'Hindi'  // Matches all movies with Hindi in languages array
-```
-
-**After (using `original_language`):**
-```typescript
-// Solution: Only original Hindi movies appear
-original_language: 'hi'  // Matches only movies originally made in Hindi
-```
-
-### ISO 639-1 Language Codes
-
-| Language | Code |
-|----------|------|
-| English | `en` |
-| Hindi | `hi` |
-| Tamil | `ta` |
-| Telugu | `te` |
-| Malayalam | `ml` |
-| Kannada | `kn` |
-| Bengali | `bn` |
-| Bhojpuri | `bho` |
-| Korean | `ko` |
-| Japanese | `ja` |
-| Mandarin | `zh` |
-| Spanish | `es` |
-| French | `fr` |
-
-**Full list:** https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-
-### Example: Top Rated Tamil Movies
-
-```typescript
-const tenYearsAgo = new Date().getFullYear() - 10;
-
-const { data: topRatedTamilData, isLoading: topRatedTamilLoading } = useQuery({
-  queryKey: ['topRatedTamil'],
-  queryFn: () => api.getContent({
-    min_rating: 8,
-    min_votes: 50000,
-    type: 'movie',
-    original_language: 'ta',  // ISO code for Tamil
+    original_language: 'ko',  // Korean ISO code
     year_from: tenYearsAgo,
     sort: 'rating',
     order: 'desc',
@@ -239,11 +776,12 @@ const { data: topRatedTamilData, isLoading: topRatedTamilLoading } = useQuery({
   }),
 });
 
+// Step 2: Add JSX row
 <ContentRow
-  title="Top Rated Tamil Movies"
-  contents={topRatedTamilData?.items || []}
-  isLoading={topRatedTamilLoading}
-  href="/browse?original_language=ta&min_rating=8&sort=rating"
+  title="Top Rated Korean Movies"
+  contents={topRatedKoreanData?.items || []}
+  isLoading={topRatedKoreanLoading}
+  href="/browse?original_language=ko&min_rating=8&sort=rating"
 />
 ```
 
@@ -251,14 +789,14 @@ const { data: topRatedTamilData, isLoading: topRatedTamilLoading } = useQuery({
 
 ## Manual Language Corrections
 
-### The Problem
+### The Problem: Incorrect Metadata
 
-Sometimes the `original_language` metadata from TMDb/IMDb is incorrect. For example:
-- "Rocketry: The Nambi Effect" was shot in Hindi, Tamil, and English simultaneously
-- Database has `original_language: "ta"` (Tamil)
-- But it should appear in the **Hindi row** as it was primarily a Hindi production
+Some movies have wrong `original_language` values in the database. For example:
+- **"Rocketry: The Nambi Effect"** was shot simultaneously in Hindi, Tamil, and English
+- Database has: `original_language: "ta"` (Tamil)
+- Should be: `original_language: "hi"` (Hindi)
 
-### The Solution: `LANGUAGE_CORRECTIONS` Mapping
+### The Solution: LANGUAGE_CORRECTIONS
 
 Located in `/api/server.js`:
 
@@ -267,31 +805,42 @@ Located in `/api/server.js`:
 // Maps IMDb ID to correct ISO 639-1 language code
 const LANGUAGE_CORRECTIONS = {
   'tt9263550': 'hi', // Rocketry: The Nambi Effect (Hindi, not Tamil)
-  // Add more corrections here as needed
+  // Add more corrections here
 };
 ```
 
 ### How It Works
 
-1. **During API Filtering:**
-   - When filtering by `original_language=hi`, the API includes:
-     - Movies with `original_language: "hi"` in database **AND NOT in corrections**
-     - Movies in `LANGUAGE_CORRECTIONS` mapped to `"hi"`
-   - When filtering by `original_language=ta`, the API:
-     - Includes Tamil movies **EXCEPT** those corrected to other languages
-     - Excludes `tt9263550` (Rocketry) from Tamil results
+1. **During Database Filtering:**
+   - When API receives `original_language=hi`, it includes:
+     - Movies with `original_language: "hi"` AND NOT in correction keys
+     - Movies with `imdb_id` in corrections mapped to `"hi"`
+   - When API receives `original_language=ta`, it:
+     - Includes Tamil movies EXCEPT those corrected to other languages
+     - Excludes `tt9263550` (Rocketry)
 
-2. **In API Responses:**
-   - The `applyLanguageCorrections()` function overrides the `original_language` field
+2. **In API Response:**
+   - `applyLanguageCorrections()` overrides the `original_language` field
    - Rocketry returns with `original_language: "hi"` instead of `"ta"`
 
 ### Adding a New Correction
 
-**Step 1: Find the IMDb ID**
+**Step 1: Find IMDb ID**
 
-Use the search API or check the movie's detail page:
 ```bash
-curl "https://content-api-401132033262.asia-south1.run.app/api/search?q=Movie+Name" | jq '.items[0].imdb_id'
+# Search for the movie
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/search?q=Movie+Name&limit=1" \
+  | jq '.items[0] | {title, imdb_id, original_language, languages}'
+```
+
+**Example Output:**
+```json
+{
+  "title": "KGF: Chapter 2",
+  "imdb_id": "tt10698680",
+  "original_language": "kn",
+  "languages": ["Kannada", "Hindi", "Tamil", "Telugu"]
+}
 ```
 
 **Step 2: Add to LANGUAGE_CORRECTIONS**
@@ -300,21 +849,19 @@ Edit `/api/server.js`:
 
 ```javascript
 const LANGUAGE_CORRECTIONS = {
-  'tt9263550': 'hi',  // Rocketry: The Nambi Effect (Hindi, not Tamil)
-  'tt1234567': 'te',  // Example: Wrong metadata → Telugu
-  'tt7654321': 'en',  // Example: Another correction → English
+  'tt9263550': 'hi',   // Rocketry: The Nambi Effect (Hindi, not Tamil)
+  'tt10698680': 'hi',  // KGF: Chapter 2 (Hindi, not Kannada)
 };
 ```
 
-**Step 3: Deploy the Backend**
+**Step 3: Deploy Backend**
 
 ```bash
 cd /path/to/tldrcontent
 git add api/server.js
-git commit -m "feat: Add language correction for Movie Name (IMDb ID)"
+git commit -m "feat: Add language correction for KGF: Chapter 2"
 git push origin main
 
-# Deploy to Cloud Run
 gcloud run deploy content-api \
   --source . \
   --region=asia-south1 \
@@ -322,195 +869,93 @@ gcloud run deploy content-api \
   --set-secrets=MONGO_URI=content-api-mongo-uri:latest
 ```
 
-**Step 4: Verify the Correction**
+**Step 4: Verify Correction**
 
 ```bash
-# Check the movie's corrected language
-curl "https://content-api-401132033262.asia-south1.run.app/api/content/tt1234567" \
+# Check movie now shows corrected language
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content/tt10698680" \
   | jq '{title, original_language}'
 
-# Verify it appears in the correct language row
-curl "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=te&limit=20" \
-  | jq '.items[] | select(.imdb_id == "tt1234567")'
-```
+# Output: {"title": "KGF: Chapter 2", "original_language": "hi"}
 
-### Complete Example: Adding Correction for a Multilingual Film
+# Verify it appears in Hindi row
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=hi&min_rating=8&min_votes=50000&limit=20" \
+  | jq '.items[] | select(.imdb_id == "tt10698680") | {title, imdb_rating}'
 
-**Scenario:** "KGF: Chapter 2" (tt10698680) is marked as Kannada but should be in Hindi row
-
-```javascript
-// 1. Add to LANGUAGE_CORRECTIONS in /api/server.js
-const LANGUAGE_CORRECTIONS = {
-  'tt9263550': 'hi',   // Rocketry: The Nambi Effect
-  'tt10698680': 'hi',  // KGF: Chapter 2 (Hindi, not Kannada)
-};
-
-// 2. Commit and deploy
-git add api/server.js
-git commit -m "feat: Add language correction for KGF: Chapter 2"
-git push origin main
-gcloud run deploy content-api --source . --region=asia-south1 --allow-unauthenticated --set-secrets=MONGO_URI=content-api-mongo-uri:latest
-
-// 3. Test the results
-curl "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=hi&min_rating=8&limit=20" | jq '.items[] | select(.title | contains("KGF"))'
-```
-
-**Result:**
-- KGF: Chapter 2 now appears in **Hindi top-rated movies**
-- KGF: Chapter 2 does NOT appear in **Kannada top-rated movies**
-- API returns `original_language: "hi"` for this movie
-
----
-
-## Testing API Endpoints
-
-### Test Content Endpoint
-
-```bash
-# Get top-rated Hindi movies
-curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&original_language=hi&year_from=2016&sort=rating&order=desc&limit=5" \
-  | jq '.items[] | {title, imdb_rating, original_language}'
-```
-
-**Expected Output:**
-```json
-{
-  "title": "12th Fail",
-  "imdb_rating": 8.7,
-  "original_language": "hi"
-}
-{
-  "title": "Rocketry: The Nambi Effect",
-  "imdb_rating": 8.6,
-  "original_language": "hi"
-}
-...
-```
-
-### Test Search Endpoint
-
-```bash
-# Search for a movie
-curl -s "https://content-api-401132033262.asia-south1.run.app/api/search?q=Rocketry&limit=1" \
-  | jq '.items[] | {title, imdb_id, original_language, languages}'
-```
-
-### Test Single Content Item
-
-```bash
-# Get specific movie by IMDb ID
-curl -s "https://content-api-401132033262.asia-south1.run.app/api/content/tt9263550" \
-  | jq '{title, imdb_rating, original_language, year, languages}'
-```
-
-### Test Language Correction
-
-```bash
-# Verify movie appears in corrected language row (Hindi)
-echo "=== HINDI TOP MOVIES ==="
-curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=hi&min_rating=8&min_votes=50000&type=movie&limit=10" \
-  | jq '.items[] | "\(.imdb_rating) - \(.title)"'
-
-# Verify movie does NOT appear in original database language row (Tamil)
-echo "=== TAMIL TOP MOVIES ==="
-curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=ta&min_rating=8&min_votes=50000&type=movie&limit=10" \
-  | jq '.items[] | "\(.imdb_rating) - \(.title)"'
+# Verify it does NOT appear in Kannada row
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=kn&min_rating=8&min_votes=50000&limit=20" \
+  | jq '.items[] | select(.imdb_id == "tt10698680")'
+# Output: (empty - movie excluded from Kannada results)
 ```
 
 ---
 
 ## Troubleshooting
 
-### Row Shows Wrong Content
-
-**Problem:** Row displays movies that don't match the filters
-
-**Solution:**
-1. Check the `queryKey` is unique and descriptive
-2. Clear React Query cache: Restart dev server
-3. Verify API response directly with curl
-4. Check filter parameters match the intended criteria
-
-### Language Row Shows Dubbed Movies
-
-**Problem:** English row shows Indian movies dubbed in English
-
-**Solution:** Use `original_language` instead of `language`:
-
-```typescript
-// ❌ Wrong - includes dubbed versions
-language: 'English'
-
-// ✅ Correct - only original English movies
-original_language: 'en'
-```
-
-### Movie Appears in Wrong Language Row
-
-**Problem:** A multilingual movie appears in the wrong language
-
-**Solution:** Add to `LANGUAGE_CORRECTIONS` in `/api/server.js`:
-
-```javascript
-const LANGUAGE_CORRECTIONS = {
-  'tt9263550': 'hi',    // Rocketry → Hindi (was Tamil)
-  'ttXXXXXXX': 'ta',    // Your movie → Correct language
-};
-```
-
-Deploy and test:
-```bash
-gcloud run deploy content-api --source . --region=asia-south1 --allow-unauthenticated --set-secrets=MONGO_URI=content-api-mongo-uri:latest
-```
-
-### No Results for Language Code
-
-**Problem:** Row is empty when using `original_language`
+### 1. Row Shows No Results
 
 **Possible Causes:**
-1. **Wrong ISO code** - Use `'hi'` not `'Hindi'`
-2. **No movies match all filters** - Try removing `min_votes` or increasing year range
-3. **Database has null values** - Some movies don't have `original_language` set
+- No movies match all filter criteria
+- Year range too restrictive
+- Vote count threshold too high
+- Wrong ISO language code
 
 **Debug:**
 ```bash
-# Test without strict filters
-curl "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=hi&limit=5" \
+# Test without vote filter
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?original_language=hi&min_rating=8&limit=5" \
   | jq '.items | length'
 
-# If 0, try with language instead
-curl "https://content-api-401132033262.asia-south1.run.app/api/content?language=Hindi&limit=5" \
-  | jq '.items | length'
+# Test directly in MongoDB
+db.merged_catalog.countDocuments({
+  original_language: "hi",
+  imdb_rating: { $gte: 8.0 },
+  content_type: "movie"
+})
 ```
 
-### API Returns 500 Error
+### 2. Wrong Movies in Language Row
 
-**Problem:** Backend crashes or returns server error
+**Problem:** Dubbed movies appearing in language-specific rows
 
-**Debug Steps:**
-1. Check Cloud Run logs:
-   ```bash
-   gcloud run services logs read content-api --region=asia-south1 --limit=50
-   ```
+**Solution:** Use `original_language` instead of `language`:
+```typescript
+// ❌ Wrong - includes dubbed movies
+language: 'Hindi'
 
-2. Test MongoDB connection:
-   ```bash
-   curl "https://content-api-401132033262.asia-south1.run.app/health"
-   ```
+// ✅ Correct - original Hindi movies only
+original_language: 'hi'
+```
 
-3. Check filter syntax - ensure all values are valid types
+### 3. Movie Appears in Wrong Row
 
-### Slow Row Loading
+**Problem:** Multilingual movie in incorrect language row
 
-**Problem:** Rows take too long to load
+**Solution:** Add to LANGUAGE_CORRECTIONS (see section above)
 
-**Optimizations:**
-1. Reduce `limit` (currently 15 items)
-2. Add database indexes for frequently filtered fields
-3. Use `staleTime` in React Query for longer caching:
+### 4. API Returns 500 Error
+
+**Debug:**
+```bash
+# Check API health
+curl "https://content-api-401132033262.asia-south1.run.app/health"
+
+# Check Cloud Run logs
+gcloud run services logs read content-api --region=asia-south1 --limit=50
+
+# Test MongoDB connection
+mongosh "your-connection-string" --eval "db.merged_catalog.countDocuments({})"
+```
+
+### 5. Slow Query Performance
+
+**Solutions:**
+1. Ensure indexes exist (see Database Schema section)
+2. Reduce `limit` value
+3. Use React Query caching:
    ```typescript
    useQuery({
-     queryKey: ['yourRow'],
+     queryKey: ['topRated'],
      queryFn: () => api.getContent({...}),
      staleTime: 5 * 60 * 1000, // Cache for 5 minutes
    });
@@ -518,106 +963,43 @@ curl "https://content-api-401132033262.asia-south1.run.app/api/content?language=
 
 ---
 
-## Best Practices
+## ISO 639-1 Language Codes Reference
 
-### 1. Query Key Naming
+| Language | ISO Code | Example Movie |
+|----------|----------|---------------|
+| English | `en` | Oppenheimer |
+| Hindi | `hi` | 12th Fail, Rocketry |
+| Tamil | `ta` | Soorarai Pottru |
+| Telugu | `te` | RRR |
+| Malayalam | `ml` | Drishyam |
+| Kannada | `kn` | Kantara |
+| Bengali | `bn` | Pather Panchali |
+| Bhojpuri | `bho` | |
+| Korean | `ko` | Parasite |
+| Japanese | `ja` | Spirited Away |
+| Mandarin | `zh` | Crouching Tiger |
+| Spanish | `es` | Pan's Labyrinth |
+| French | `fr` | Amélie |
+| German | `de` | Das Leben der Anderen |
+| Russian | `ru` | Solaris |
 
-Use descriptive, unique keys:
-```typescript
-// ✅ Good
-queryKey: ['topRatedHindiMovies']
-queryKey: ['trendingAction2024']
-
-// ❌ Bad
-queryKey: ['movies']
-queryKey: ['content1']
-```
-
-### 2. Filter Combinations
-
-Always combine filters for high-quality content:
-```typescript
-// ✅ Good - quality content only
-{
-  min_rating: 8,
-  min_votes: 50000,
-  type: 'movie'
-}
-
-// ❌ Bad - may show low-quality content
-{
-  type: 'movie'
-}
-```
-
-### 3. Year Ranges
-
-Use dynamic year calculations:
-```typescript
-// ✅ Good - automatically updates
-const fiveYearsAgo = new Date().getFullYear() - 5;
-
-// ❌ Bad - becomes outdated
-year_from: 2020
-```
-
-### 4. Consistent Row Heights
-
-Keep all rows at 15 items for visual consistency:
-```typescript
-limit: 15  // Standard across all rows
-```
-
-### 5. Documentation
-
-Comment complex filters:
-```typescript
-// Fetch top-rated movies from last 5 years with significant vote counts
-// This ensures only popular, high-quality recent releases
-const { data } = useQuery({
-  queryKey: ['topRatedRecent'],
-  queryFn: () => api.getContent({
-    min_rating: 8,        // IMDb > 8.0
-    min_votes: 50000,     // 50K+ votes
-    type: 'movie',        // Movies only
-    year_from: fiveYearsAgo,
-    sort: 'rating',
-    order: 'desc',
-    limit: 15
-  }),
-});
-```
+**Full list:** https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 
 ---
 
 ## Quick Reference
 
-### Common Row Types
+### Top Rated Movies Variants
 
-**Top Rated Recent:**
-```typescript
-{min_rating: 8, min_votes: 50000, type: 'movie', year_from: 2020, sort: 'rating', order: 'desc', limit: 15}
-```
-
-**Trending:**
-```typescript
-{sort: 'popularity', order: 'desc', limit: 15}
-```
-
-**New Releases:**
-```typescript
-{sort: 'release_date', order: 'desc', limit: 15}
-```
-
-**By Genre:**
-```typescript
-{genre: 'Action', min_rating: 7, sort: 'rating', order: 'desc', limit: 15}
-```
-
-**By Language:**
-```typescript
-{original_language: 'hi', min_rating: 8, min_votes: 50000, type: 'movie', year_from: 2016, sort: 'rating', order: 'desc', limit: 15}
-```
+| Variant | Filters | Code |
+|---------|---------|------|
+| General (5 yrs) | `min_rating=8, min_votes=50000, year_from=2021` | `original_language` not specified |
+| English | `original_language=en, min_rating=8, min_votes=50000, year_from=2016` | `en` |
+| Hindi | `original_language=hi, min_rating=8, min_votes=50000, year_from=2016` | `hi` |
+| Tamil | `original_language=ta, min_rating=8, min_votes=50000, year_from=2016` | `ta` |
+| Telugu | `original_language=te, min_rating=8, min_votes=50000, year_from=2016` | `te` |
+| Action | `genre=Action, min_rating=8, min_votes=50000, year_from=2016` | Genre filter |
+| 2010s | `min_rating=8, min_votes=50000, year_from=2010, year_to=2019` | Year range |
 
 ### Files to Edit
 
@@ -625,21 +1007,11 @@ const { data } = useQuery({
 |------|------|----------|
 | Add homepage row | `page.tsx` | `/web/src/app/page.tsx` |
 | Add language correction | `server.js` | `/api/server.js` (LANGUAGE_CORRECTIONS) |
-| Update types | `index.ts` | `/web/src/types/index.ts` |
-| Test API | Terminal | Use `curl` commands above |
-
----
-
-## Support
-
-For issues or questions:
-- Check API logs: `gcloud run services logs read content-api --region=asia-south1`
-- Test endpoints with curl examples above
-- Review this documentation for common patterns
-- Check `/web/src/app/page.tsx` for existing row examples
+| Update TypeScript types | `index.ts` | `/web/src/types/index.ts` |
 
 ---
 
 **Last Updated:** January 2026
-**API Version:** 1.0.0
-**Frontend Version:** Next.js 16.1.1
+**Database:** MongoDB `content_db.merged_catalog` (105,569+ items)
+**API URL:** https://content-api-401132033262.asia-south1.run.app
+**Frontend:** https://content.lumiolabs.in
