@@ -113,7 +113,24 @@ function buildFilterQuery(query) {
 
   // Original language filter (searches in original_language field)
   if (query.original_language) {
-    filter.original_language = { $regex: new RegExp(query.original_language, 'i') };
+    // Find IMDb IDs that should be corrected to this language
+    const correctedIds = Object.entries(LANGUAGE_CORRECTIONS)
+      .filter(([id, lang]) => lang === query.original_language)
+      .map(([id]) => id);
+
+    if (correctedIds.length > 0) {
+      // Include both: movies with original_language matching AND movies in correction list
+      // Store this condition to be applied later with proper $and logic if needed
+      filter._original_language_condition = {
+        $or: [
+          { original_language: { $regex: new RegExp(query.original_language, 'i') } },
+          { imdb_id: { $in: correctedIds } }
+        ]
+      };
+    } else {
+      // No corrections for this language, just filter normally
+      filter.original_language = { $regex: new RegExp(query.original_language, 'i') };
+    }
   }
 
   // Year filter
@@ -149,6 +166,25 @@ function buildFilterQuery(query) {
   // Country filter
   if (query.country) {
     filter.countries = { $regex: new RegExp(query.country, 'i') };
+  }
+
+  // Merge original_language_condition with any existing $or using $and
+  if (filter._original_language_condition) {
+    const langCondition = filter._original_language_condition;
+    delete filter._original_language_condition;
+
+    if (filter.$or) {
+      // Both rating filter and language correction exist - use $and to combine them
+      const ratingOr = filter.$or;
+      delete filter.$or;
+      filter.$and = [
+        { $or: ratingOr },
+        langCondition
+      ];
+    } else {
+      // Only language condition - apply it directly
+      Object.assign(filter, langCondition);
+    }
   }
 
   return filter;
