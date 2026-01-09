@@ -18,6 +18,25 @@ if (!MONGO_URI) {
 let db;
 let client;
 
+// Manual corrections for incorrect original_language metadata
+// Maps IMDb ID to correct ISO 639-1 language code
+const LANGUAGE_CORRECTIONS = {
+  'tt9263550': 'hi', // Rocketry: The Nambi Effect (Hindi, not Tamil)
+  // Add more corrections here as needed
+};
+
+// Helper: Apply language corrections to a content item
+function applyLanguageCorrections(item) {
+  if (!item) return item;
+  if (LANGUAGE_CORRECTIONS[item.imdb_id]) {
+    return {
+      ...item,
+      original_language: LANGUAGE_CORRECTIONS[item.imdb_id]
+    };
+  }
+  return item;
+}
+
 // Middleware
 app.use(compression());
 app.use(cors({
@@ -58,13 +77,18 @@ function fixAmazonImageUrl(url) {
   return url.replace(/\._V1_[^.]+\./, '._V1_.');
 }
 
-// Helper: Fix image URLs in a content item
+// Helper: Fix image URLs and apply language corrections to a content item
 function fixContentImages(item) {
   if (!item) return item;
+
+  // Apply language corrections first
+  const correctedItem = applyLanguageCorrections(item);
+
+  // Then fix image URLs
   return {
-    ...item,
-    poster_url: fixAmazonImageUrl(item.poster_url),
-    backdrop_url: fixAmazonImageUrl(item.backdrop_url)
+    ...correctedItem,
+    poster_url: fixAmazonImageUrl(correctedItem.poster_url),
+    backdrop_url: fixAmazonImageUrl(correctedItem.backdrop_url)
   };
 }
 
