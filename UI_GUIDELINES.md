@@ -225,6 +225,64 @@ group-hover:translate-y-1       // Subtle downward slide
 
 ---
 
+## Content Detail Pages
+
+### Layout Structure
+- **Hero backdrop**: 60vh-70vh height with gradient overlays
+- **Poster position**: Floating -mt-40 over backdrop (left side)
+- **Content area**: Flex layout with poster and info side-by-side
+- **Responsive**: Stacks vertically on mobile
+
+### Key Sections
+1. **Hero Backdrop** - Full-width background image with overlays
+2. **Poster + Metadata** - Left poster, right info (title, rating, year, genres)
+3. **Streaming Platforms** - "Available On" badges with platform logos
+4. **Action Buttons** - Watch Trailer, Add to Watchlist, Share
+5. **Overview** - Plot summary
+6. **Trailer Embed** - YouTube iframe (conditional, only if trailer_url exists)
+7. **Additional Info** - Language, status, IMDb link, vote count
+8. **Cast Carousel** - Horizontal scroll with circular avatars
+9. **Similar Content** - ContentRow showing related items
+
+### Streaming Platform Display
+```tsx
+// Badge styling
+className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-card-hover
+           rounded-lg border border-white/10 transition-colors"
+
+// Logo dimensions
+width={24} height={24}
+
+// Shows: platform logo + platform name
+// Links to: platform.url (opens in new tab)
+```
+
+### Trailer Integration
+- **Conditional rendering**: Only shows when `trailer_url` or `trailer_key` exists
+- **YouTube embed**: iframe with aspect-video ratio
+- **Styling**: Rounded corners, black background
+- **Permissions**: autoplay, encrypted-media, picture-in-picture
+
+```tsx
+{(content.trailer_url || content.trailer_key) && (
+  <div className="mb-8">
+    <h2 className="text-lg font-semibold mb-4">Watch Trailer</h2>
+    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+      <iframe src={`https://www.youtube.com/embed/${videoId}`} />
+    </div>
+  </div>
+)}
+```
+
+### Static Generation Strategy
+- **All content pages pre-rendered** at build time via `generateStaticParams()`
+- **API pagination**: Fetches all content in 100-item chunks
+- **Build time**: ~30-60 minutes for 100,000+ pages
+- **Output**: Static HTML for every content item (zero 500 errors)
+- **Deployment**: GitHub Pages with static export
+
+---
+
 ## Component File Reference
 
 ### Key Files
@@ -232,10 +290,12 @@ group-hover:translate-y-1       // Subtle downward slide
 - `/web/src/components/sections/hero-carousel.tsx` - Spotlight banner
 - `/web/src/components/movie/movie-card.tsx` - Movie/show cards
 - `/web/src/components/sections/content-row.tsx` - Horizontal scrolling rows
+- `/web/src/components/content/content-detail.tsx` - Content detail pages
+- `/web/src/app/content/[id]/page.tsx` - Dynamic route handler with static generation
 - `/web/src/app/globals.css` - Global styles and CSS variables
 
 ### Utility Files
-- `/web/src/lib/utils.ts` - Helper functions (cn, formatRating, etc.)
+- `/web/src/lib/utils.ts` - Helper functions (cn, formatRating, extractYouTubeId, getPlatformLogoUrl)
 - `/web/tailwind.config.ts` - Tailwind configuration
 
 ---
@@ -285,6 +345,16 @@ npm run start
 
 ---
 
-**Last Updated**: January 8, 2026
-**Design System Version**: 1.0
-**Framework**: Next.js 14 with Tailwind CSS v4
+**Last Updated**: January 9, 2026
+**Design System Version**: 1.1
+**Framework**: Next.js 16.1.1 with Tailwind CSS v4
+
+## Changelog
+
+### Version 1.1 (January 9, 2026)
+- Added content detail pages with full static generation
+- Implemented trailer integration with YouTube embeds
+- Added streaming platform display with logos and deep links
+- Enhanced type definitions for trailer_url and streaming_platforms
+- Added helper functions: extractYouTubeId(), getPlatformLogoUrl()
+- Fixed Top 10 row rank number cropping issue

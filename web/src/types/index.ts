@@ -43,6 +43,8 @@ export interface Content {
   production_companies?: string[];
   poster_url?: string;
   backdrop_url?: string;
+  trailer_url?: string;
+  trailer_key?: string;
   content_type: 'movie' | 'tv' | 'show' | 'series';
   type?: 'movie' | 'show';
   status?: string;
@@ -51,9 +53,13 @@ export interface Content {
 }
 
 export interface StreamingPlatform {
+  id?: number | string;
   platform: string;
+  name?: string;
+  logo_path?: string;
   url?: string;
   type?: string;
+  price?: string;
 }
 
 export interface PaginatedResponse<T> {

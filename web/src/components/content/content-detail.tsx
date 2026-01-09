@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   ExternalLink,
 } from 'lucide-react';
-import { cn, formatRating, formatDuration, getImageUrl, getBackdropUrl, getRatingColor } from '@/lib/utils';
+import { cn, formatRating, formatDuration, getImageUrl, getBackdropUrl, getRatingColor, extractYouTubeId, getPlatformLogoUrl } from '@/lib/utils';
 import { ContentRow } from '@/components/sections/content-row';
 import api from '@/services/api';
 
@@ -175,6 +175,35 @@ export function ContentDetail({ id }: ContentDetailProps) {
               ))}
             </div>
 
+            {/* Streaming Platforms */}
+            {content.streaming_platforms && content.streaming_platforms.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-3 text-center md:text-left">Available On</h3>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                  {content.streaming_platforms.map((platform, index) => (
+                    <a
+                      key={platform.id || index}
+                      href={platform.url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-card hover:bg-card-hover rounded-lg border border-white/10 transition-colors"
+                    >
+                      {platform.logo_path && (
+                        <Image
+                          src={getPlatformLogoUrl(platform.logo_path)}
+                          alt={platform.name || platform.platform}
+                          width={24}
+                          height={24}
+                          className="rounded"
+                        />
+                      )}
+                      <span className="text-sm font-medium">{platform.name || platform.platform}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-8">
               <button className="flex items-center gap-2 px-6 py-3 bg-accent rounded-lg font-semibold hover:bg-accent-hover transition-colors">
@@ -197,6 +226,22 @@ export function ContentDetail({ id }: ContentDetailProps) {
                 {content.overview || content.plot || 'No overview available.'}
               </p>
             </div>
+
+            {/* Trailer */}
+            {(content.trailer_url || content.trailer_key) && (
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold mb-4">Watch Trailer</h2>
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${content.trailer_key || extractYouTubeId(content.trailer_url)}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={`${content.title} Trailer`}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Additional Info */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

@@ -37,6 +37,18 @@ export function getBackdropUrl(path: string | null | undefined, fallback: string
   return `https://image.tmdb.org/t/p/original${path}`;
 }
 
+export function getPlatformLogoUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `/platforms/${path}`;
+}
+
+export function extractYouTubeId(url: string | null | undefined): string {
+  if (!url) return '';
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  return match?.[1] || '';
+}
+
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + '...';
