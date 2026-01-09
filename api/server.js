@@ -47,6 +47,30 @@ async function connectDB() {
   }
 }
 
+// Helper: Fix Amazon/IMDB image URLs to get full resolution
+// Transforms: ._V1_QL75_UY281_CR18,0,190,281_.jpg -> ._V1_.jpg
+function fixAmazonImageUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (!url.includes('media-amazon.com') && !url.includes('imdb.com')) return url;
+  // Replace size/quality parameters with just ._V1_.
+  return url.replace(/\._V1_[^.]+\./, '._V1_.');
+}
+
+// Helper: Fix image URLs in a content item
+function fixContentImages(item) {
+  if (!item) return item;
+  return {
+    ...item,
+    poster_url: fixAmazonImageUrl(item.poster_url),
+    backdrop_url: fixAmazonImageUrl(item.backdrop_url)
+  };
+}
+
+// Helper: Fix image URLs in an array of content items
+function fixContentImagesArray(items) {
+  return items.map(fixContentImages);
+}
+
 // Helper: Build filter query
 function buildFilterQuery(query) {
   const filter = {};
@@ -163,7 +187,7 @@ app.get('/api/content', async (req, res) => {
     ]);
 
     res.json({
-      items,
+      items: fixContentImagesArray(items),
       pagination: {
         page,
         limit,
@@ -198,7 +222,7 @@ app.get('/api/content/:id', async (req, res) => {
       return res.status(404).json({ error: 'Content not found' });
     }
 
-    res.json(item);
+    res.json(fixContentImages(item));
   } catch (error) {
     console.error('Error fetching content:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -257,7 +281,7 @@ app.get('/api/search', async (req, res) => {
 
     res.json({
       query: q,
-      items,
+      items: fixContentImagesArray(items),
       pagination: {
         page,
         limit,
@@ -337,7 +361,7 @@ app.get('/api/recent', async (req, res) => {
       .limit(limit)
       .toArray();
 
-    res.json(items);
+    res.json(fixContentImagesArray(items));
   } catch (error) {
     console.error('Error fetching recent:', error);
     res.status(500).json({ error: 'Internal server error' });
