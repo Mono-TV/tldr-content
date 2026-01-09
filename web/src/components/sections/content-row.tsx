@@ -91,7 +91,7 @@ export function ContentRow({
           className={cn(
             'flex overflow-x-auto hide-scrollbar',
             'pr-0',
-            showRank ? 'gap-36 pl-8 md:pl-16' : 'gap-8 pl-0'
+            showRank ? 'gap-36 pl-8 md:pl-16 lg:pl-24' : 'gap-8 pl-0'
           )}
         >
           {isLoading
