@@ -17,7 +17,7 @@ export async function generateStaticParams() {
 
     const data = await response.json();
     const totalPages = data.pagination?.pages || 1;
-    let allContent = data.content || [];
+    let allContent = data.items || [];
 
     console.log(`Found ${totalPages} pages of content. Fetching all pages...`);
 
@@ -30,7 +30,7 @@ export async function generateStaticParams() {
 
       if (pageResponse.ok) {
         const pageData = await pageResponse.json();
-        allContent = [...allContent, ...(pageData.content || [])];
+        allContent = [...allContent, ...(pageData.items || [])];
       }
     }
 
