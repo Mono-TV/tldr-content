@@ -22,21 +22,24 @@ Complete guide to creating, managing, and customizing Top Rated Movies rows on t
 The homepage displays curated **Top Rated Movies** rows with different filters (language, genre, year range, etc.). Each row shows 15 high-quality movies based on IMDb ratings and vote counts.
 
 **Current Top Rated Movies Rows:**
-1. Top Rated Movies (Last 5 years)
-2. Top Rated English Movies (Last 10 years)
-3. Top Rated Hindi Movies (Last 10 years)
-4. Top Rated Bengali Movies (Last 10 years)
-5. Top Rated Tamil Movies (Last 10 years)
-6. Top Rated Telugu Movies (Last 10 years)
-7. Top Rated Malayalam Movies (Last 10 years)
-8. Top Rated Kannada Movies (Last 10 years)
-9. Top Rated Bhojpuri Movies (Last 10 years)
+1. Top Rated Movies (Last 5 years) - 50k votes
+2. Top Rated English Movies (Last 10 years) - 50k votes
+3. Top Rated Hindi Movies (Last 10 years) - 50k votes
+4. Top Rated Tamil Movies (Last 10 years) - 15k votes
+5. Top Rated Telugu Movies (Last 10 years) - 5k votes
+6. Top Rated Malayalam Movies (Last 10 years) - 5k votes
+7. Top Rated Kannada Movies (Last 15 years) - 5k votes
+8. Top Rated Bengali Movies (Last 15 years) - 2k votes, 7.5+ rating
 
-**Quality Filters:**
-- Minimum IMDb rating: 8.0
-- Minimum vote count: 50,000
-- Content type: Movies only
-- Sorted by: Rating (descending)
+**Filter Strategy:**
+Different languages use different thresholds based on industry size and global reach:
+- **Major languages** (English, Hindi): 50,000 votes - global audience
+- **Regional powerhouse** (Tamil): 15,000 votes - strong domestic + international reach
+- **Regional major** (Telugu, Malayalam): 5,000 votes - significant audience
+- **Regional smaller** (Kannada): 5,000 votes + extended 15-year range
+- **Niche regional** (Bengali): 2,000 votes + rating 7.5 + extended 15-year range
+
+All rows maintain high rating standards (7.5-8.0+) while ensuring 15+ movies per row.
 
 ---
 
@@ -133,25 +136,28 @@ db.merged_catalog.createIndex({ "genres.name": 1 })
 
 ### 2. Top Rated Movies by Language
 
-**Variants:**
-- Top Rated English Movies (`original_language: 'en'`)
-- Top Rated Hindi Movies (`original_language: 'hi'`)
-- Top Rated Tamil Movies (`original_language: 'ta'`)
-- Top Rated Telugu Movies (`original_language: 'te'`)
-- Top Rated Malayalam Movies (`original_language: 'ml'`)
-- Top Rated Kannada Movies (`original_language: 'kn'`)
-- Top Rated Bengali Movies (`original_language: 'bn'`)
-- Top Rated Bhojpuri Movies (`original_language: 'bho'`)
+**Variants with Language-Specific Thresholds:**
 
-**Filters:**
-- IMDb rating ≥ 8.0
-- Vote count ≥ 50,000
-- Content type: movie
-- Original language: specific ISO code
-- Released in last 10 years
-- Sorted by rating (descending)
+| Language | ISO Code | Rating | Votes | Years | Results |
+|----------|----------|--------|-------|-------|---------|
+| English | `en` | 8.0+ | 50,000 | 10 | ~100+ |
+| Hindi | `hi` | 8.0+ | 50,000 | 10 | ~15 |
+| Tamil | `ta` | 8.0+ | 15,000 | 10 | ~22 |
+| Telugu | `te` | 8.0+ | 5,000 | 10 | ~21 |
+| Malayalam | `ml` | 8.0+ | 5,000 | 10 | ~22 |
+| Kannada | `kn` | 8.0+ | 5,000 | 15 | ~15 |
+| Bengali | `bn` | 7.5+ | 2,000 | 15 | ~28 |
+
+**Why Different Thresholds?**
+- **Global languages** (English, Hindi): Higher thresholds ensure only widely-acclaimed films
+- **Tamil**: Strong international diaspora allows medium-high threshold
+- **Telugu/Malayalam**: Significant regional audience, moderate threshold
+- **Kannada**: Extended year range compensates for smaller volume
+- **Bengali**: Lower rating + votes + extended range to ensure adequate content
 
 **Use Case:** Show original movies in specific languages (not dubbed versions)
+
+**Note:** Bhojpuri removed due to insufficient high-quality content (0 movies available)
 
 ---
 
@@ -359,12 +365,12 @@ db.merged_catalog.find({
 ### 3. Top Rated Tamil Movies (Last 10 Years)
 
 ```javascript
-// MongoDB Query
+// MongoDB Query - 15k votes threshold
 db.merged_catalog.find({
   content_type: "movie",
   original_language: "ta",
   imdb_rating: { $gte: 8.0 },
-  imdb_rating_count: { $gte: 50000 },
+  imdb_rating_count: { $gte: 15000 },  // Lowered from 50k to 15k
   year: { $gte: 2016 },
   imdb_id: { $nin: ["tt9263550"] } // Exclude Rocketry (corrected to Hindi)
 })
@@ -373,15 +379,19 @@ db.merged_catalog.find({
 .toArray();
 ```
 
-**Expected Results:**
+**Expected Results (22 total):**
 ```javascript
 [
+  { title: "Peranbu", imdb_rating: 8.7, original_language: "ta", year: 2019 },
   { title: "Soorarai Pottru", imdb_rating: 8.6, original_language: "ta", year: 2020 },
   { title: "Jai Bhim", imdb_rating: 8.6, original_language: "ta", year: 2021 },
+  { title: "Pariyerum Perumal", imdb_rating: 8.6, original_language: "ta", year: 2018 },
+  { title: "Sarpatta Parambarai", imdb_rating: 8.5, original_language: "ta", year: 2021 },
+  { title: "96", imdb_rating: 8.5, original_language: "ta", year: 2018 },
   { title: "Kaithi", imdb_rating: 8.4, original_language: "ta", year: 2019 },
   { title: "Maharaja", imdb_rating: 8.3, original_language: "ta", year: 2024 },
   { title: "Vikram", imdb_rating: 8.3, original_language: "ta", year: 2022 }
-  // ... more results (Rocketry NOT included)
+  // ... 13 more results (22 total, Rocketry NOT included)
 ]
 ```
 
