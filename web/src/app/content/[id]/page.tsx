@@ -1,14 +1,14 @@
 import { ContentDetail } from '@/components/content/content-detail';
 
-// For static export, we need to provide all params at build time
-// This fetches all content IDs from the API to pre-render all pages
+// For ISR: Pre-render top 100 pages at build time, generate others on-demand
 export async function generateStaticParams() {
   try {
-    console.log('Fetching all content for static generation...');
+    console.log('Fetching top content for ISR pre-rendering...');
 
-    // Fetch first page to get total pages
+    // Fetch only first page (top 100 items) for build-time generation
     const response = await fetch(
-      'https://content-api-401132033262.asia-south1.run.app/api/content?limit=100&page=1'
+      'https://content-api-401132033262.asia-south1.run.app/api/content?limit=100&page=1',
+      { next: { revalidate: 3600 } } // Revalidate every hour
     );
 
     if (!response.ok) {
@@ -16,35 +16,19 @@ export async function generateStaticParams() {
     }
 
     const data = await response.json();
-    const totalPages = data.pagination?.pages || 1;
-    let allContent = data.items || [];
+    const content = data.items || [];
 
-    console.log(`Found ${totalPages} pages of content. Fetching all pages...`);
+    console.log(`Pre-rendering ${content.length} top content pages at build time`);
 
-    // Paginate through all remaining pages
-    for (let page = 2; page <= totalPages; page++) {
-      console.log(`Fetching page ${page}/${totalPages}...`);
-      const pageResponse = await fetch(
-        `https://content-api-401132033262.asia-south1.run.app/api/content?limit=100&page=${page}`
-      );
-
-      if (pageResponse.ok) {
-        const pageData = await pageResponse.json();
-        allContent = [...allContent, ...(pageData.items || [])];
-      }
-    }
-
-    console.log(`Successfully fetched ${allContent.length} content items for static generation`);
-
-    // Map to static params
-    return allContent.map((item: any) => ({
+    // Map to static params (only top 100)
+    return content.map((item: any) => ({
       id: item.imdb_id,
     }));
   } catch (error) {
     console.error('Failed to generate static params:', error);
-    console.log('Falling back to basic IDs to prevent build failure');
+    console.log('Falling back to basic IDs');
 
-    // Fallback to basic IDs to prevent build failure
+    // Fallback to basic IDs
     return [
       { id: 'tt0111161' }, // Shawshank Redemption
       { id: 'tt0068646' }, // The Godfather
@@ -52,6 +36,10 @@ export async function generateStaticParams() {
     ];
   }
 }
+
+// Enable ISR with dynamic rendering for non-pre-rendered pages
+export const dynamicParams = true;
+export const revalidate = 3600; // Revalidate pages every hour
 
 interface ContentPageProps {
   params: Promise<{ id: string }>;

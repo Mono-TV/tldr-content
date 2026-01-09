@@ -52,7 +52,7 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
           aspectRatios[size]
         )}>
           <Image
-            src={getImageUrl(content.poster_url)}
+            src={getImageUrl(content.poster_url, 'sm')}
             alt={content.title}
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"

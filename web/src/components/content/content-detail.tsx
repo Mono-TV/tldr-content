@@ -68,7 +68,7 @@ export function ContentDetail({ id }: ContentDetailProps) {
       {/* Backdrop */}
       <div className="relative h-[60vh] md:h-[70vh]">
         <Image
-          src={getBackdropUrl(content.backdrop_url || content.poster_url)}
+          src={getBackdropUrl(content.backdrop_url || content.poster_url, 'lg')}
           alt={content.title}
           fill
           className="object-cover"
@@ -99,7 +99,7 @@ export function ContentDetail({ id }: ContentDetailProps) {
           >
             <div className="relative w-48 md:w-64 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl mx-auto md:mx-0">
               <Image
-                src={getImageUrl(content.poster_url)}
+                src={getImageUrl(content.poster_url, 'md')}
                 alt={content.title}
                 fill
                 className="object-cover"
@@ -295,7 +295,7 @@ export function ContentDetail({ id }: ContentDetailProps) {
                   <div className="w-20 h-20 mx-auto rounded-full overflow-hidden bg-card mb-2">
                     {member.profile_path ? (
                       <Image
-                        src={getImageUrl(member.profile_path)}
+                        src={getImageUrl(member.profile_path, 'sm')}
                         alt={member.name}
                         width={80}
                         height={80}

@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable static export for GitHub Pages
-  output: 'export',
-
-  // Disable image optimization for static export
+  // Image optimization with remote patterns
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -22,12 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
-  // Base path for GitHub Pages project pages
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-
-  // Trailing slash for static hosting
-  trailingSlash: true,
 };
 
 export default nextConfig;

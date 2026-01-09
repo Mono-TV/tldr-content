@@ -25,16 +25,91 @@ export function formatDuration(minutes: number | null | undefined): string {
   return `${hours}h ${mins}m`;
 }
 
-export function getImageUrl(path: string | null | undefined, fallback: string = '/placeholder-poster.svg'): string {
-  if (!path) return fallback;
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/w500${path}`;
+// Image size configurations
+type ImageSize = 'sm' | 'md' | 'lg' | 'original';
+
+const TMDB_POSTER_SIZES: Record<ImageSize, string> = {
+  sm: 'w342',      // ~342px - for small cards
+  md: 'w500',      // ~500px - for medium cards
+  lg: 'w780',      // ~780px - for large displays
+  original: 'original',
+};
+
+const TMDB_BACKDROP_SIZES: Record<ImageSize, string> = {
+  sm: 'w780',      // ~780px - for smaller backdrops
+  md: 'w1280',     // ~1280px - for medium backdrops
+  lg: 'w1280',     // ~1280px - for large backdrops
+  original: 'original',
+};
+
+// Amazon image size parameters (width in pixels)
+const AMAZON_SIZES: Record<ImageSize, string> = {
+  sm: 'SX400',     // 400px width
+  md: 'SX600',     // 600px width
+  lg: 'SX1200',    // 1200px width
+  original: '',    // No size param = original
+};
+
+// Transform Amazon/IMDB URLs to requested size
+function transformAmazonUrl(url: string, size: ImageSize): string {
+  const sizeParam = AMAZON_SIZES[size];
+  if (!sizeParam) {
+    // Original size - just ensure we have ._V1_.
+    return url.replace(/\._V1_[^.]*\./, '._V1_.');
+  }
+  // Replace any existing size params with new size
+  return url.replace(/\._V1_[^.]*\./, `._V1_${sizeParam}_.`);
 }
 
-export function getBackdropUrl(path: string | null | undefined, fallback: string = '/placeholder-backdrop.svg'): string {
+// Transform TMDB URLs to requested size
+function transformTmdbUrl(url: string, sizes: Record<ImageSize, string>, size: ImageSize): string {
+  const sizeParam = sizes[size];
+  // Replace size in URL like /t/p/original/ or /t/p/w500/
+  return url.replace(/\/t\/p\/[^/]+\//, `/t/p/${sizeParam}/`);
+}
+
+export function getImageUrl(
+  path: string | null | undefined,
+  size: ImageSize = 'md',
+  fallback: string = '/placeholder-poster.svg'
+): string {
   if (!path) return fallback;
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/original${path}`;
+
+  if (path.startsWith('http')) {
+    // Full URL - check source and transform
+    if (path.includes('media-amazon.com') || path.includes('imdb.com')) {
+      return transformAmazonUrl(path, size);
+    }
+    if (path.includes('tmdb.org')) {
+      return transformTmdbUrl(path, TMDB_POSTER_SIZES, size);
+    }
+    return path; // Unknown source, return as-is
+  }
+
+  // Relative path - assume TMDB
+  return `https://image.tmdb.org/t/p/${TMDB_POSTER_SIZES[size]}${path}`;
+}
+
+export function getBackdropUrl(
+  path: string | null | undefined,
+  size: ImageSize = 'lg',
+  fallback: string = '/placeholder-backdrop.svg'
+): string {
+  if (!path) return fallback;
+
+  if (path.startsWith('http')) {
+    // Full URL - check source and transform
+    if (path.includes('media-amazon.com') || path.includes('imdb.com')) {
+      return transformAmazonUrl(path, size);
+    }
+    if (path.includes('tmdb.org')) {
+      return transformTmdbUrl(path, TMDB_BACKDROP_SIZES, size);
+    }
+    return path; // Unknown source, return as-is
+  }
+
+  // Relative path - assume TMDB
+  return `https://image.tmdb.org/t/p/${TMDB_BACKDROP_SIZES[size]}${path}`;
 }
 
 export function getPlatformLogoUrl(path: string | null | undefined): string {

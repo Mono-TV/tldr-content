@@ -53,7 +53,7 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
           className="absolute inset-0"
         >
           <Image
-            src={getBackdropUrl(currentItem.backdrop_url || currentItem.poster_url)}
+            src={getBackdropUrl(currentItem.backdrop_url || currentItem.poster_url, 'lg')}
             alt={currentItem.title}
             fill
             className="object-cover"
