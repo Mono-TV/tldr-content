@@ -113,22 +113,38 @@ function buildFilterQuery(query) {
 
   // Original language filter (searches in original_language field)
   if (query.original_language) {
-    // Find IMDb IDs that should be corrected to this language
-    const correctedIds = Object.entries(LANGUAGE_CORRECTIONS)
+    // Find IMDb IDs that should be corrected TO this language
+    const correctedToThisLang = Object.entries(LANGUAGE_CORRECTIONS)
       .filter(([id, lang]) => lang === query.original_language)
       .map(([id]) => id);
 
-    if (correctedIds.length > 0) {
-      // Include both: movies with original_language matching AND movies in correction list
-      // Store this condition to be applied later with proper $and logic if needed
-      filter._original_language_condition = {
-        $or: [
-          { original_language: { $regex: new RegExp(query.original_language, 'i') } },
-          { imdb_id: { $in: correctedIds } }
-        ]
-      };
+    // Find IMDb IDs that should be corrected FROM this language (exclude them)
+    const correctedFromThisLang = Object.keys(LANGUAGE_CORRECTIONS);
+
+    if (correctedToThisLang.length > 0 || correctedFromThisLang.length > 0) {
+      // Build condition: (original_language matches AND NOT in corrected-away list) OR (in corrected-to list)
+      const conditions = [];
+
+      // Include movies with original_language matching, but exclude those corrected away
+      if (correctedFromThisLang.length > 0) {
+        conditions.push({
+          original_language: { $regex: new RegExp(query.original_language, 'i') },
+          imdb_id: { $nin: correctedFromThisLang }
+        });
+      } else {
+        conditions.push({
+          original_language: { $regex: new RegExp(query.original_language, 'i') }
+        });
+      }
+
+      // Include movies corrected to this language
+      if (correctedToThisLang.length > 0) {
+        conditions.push({ imdb_id: { $in: correctedToThisLang } });
+      }
+
+      filter._original_language_condition = { $or: conditions };
     } else {
-      // No corrections for this language, just filter normally
+      // No corrections at all - just filter normally
       filter.original_language = { $regex: new RegExp(query.original_language, 'i') };
     }
   }
