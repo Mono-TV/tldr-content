@@ -189,9 +189,8 @@ function SearchContent() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['search', filters],
     queryFn: () => {
-      const apiFilters = { ...filters };
-      delete apiFilters.contentType;
-      delete apiFilters.search; // Remove search from filters, will be passed as first param
+      // Remove contentType and search from filters (will be passed separately)
+      const { contentType, search, ...apiFilters } = filters;
       return api.searchWithFilters(debouncedQuery, {
         ...apiFilters,
         limit: ITEMS_PER_PAGE,
