@@ -257,15 +257,24 @@ export async function fetchShowsData(): Promise<ShowsData> {
     const endTime = Date.now();
     console.log(`[ISR] Fetched all shows data in ${endTime - startTime}ms`);
 
-    // Debug: Log item counts
-    console.log(`[ISR] Shows data counts:`, {
-      featured: featured?.items?.length || 0,
-      topRatedRecent: topRatedRecent?.items?.length || 0,
-      topRatedEnglish: topRatedEnglish?.items?.length || 0,
-      topAction: topAction?.items?.length || 0,
-      topComedy: topComedy?.items?.length || 0,
-      topDrama: topDrama?.items?.length || 0,
-      topThriller: topThriller?.items?.length || 0,
+    // Debug: Log ALL item counts for verification
+    console.log(`[ISR] Shows data verification - ALL ROWS:`);
+    console.log(`Featured: ${featured?.items?.length || 0}`);
+    console.log(`TopRatedRecent: ${topRatedRecent?.items?.length || 0}`);
+    console.log(`TopRatedEnglish: ${topRatedEnglish?.items?.length || 0}`);
+    console.log(`TopRatedHindi: ${topRatedHindi?.items?.length || 0}`);
+    console.log(`TopRatedBengali: ${topRatedBengali?.items?.length || 0}`);
+    console.log(`TopRatedTamil: ${topRatedTamil?.items?.length || 0}`);
+    console.log(`TopRatedTelugu: ${topRatedTelugu?.items?.length || 0}`);
+    console.log(`TopRatedMalayalam: ${topRatedMalayalam?.items?.length || 0}`);
+    console.log(`TopRatedKannada: ${topRatedKannada?.items?.length || 0}`);
+
+    // Check if data structure is correct
+    const sampleRow = topRatedRecent;
+    console.log(`[ISR] Sample row structure check:`, {
+      hasItems: !!sampleRow?.items,
+      itemsIsArray: Array.isArray(sampleRow?.items),
+      firstItemKeys: sampleRow?.items?.[0] ? Object.keys(sampleRow.items[0]).slice(0, 5) : 'no items'
     });
 
     return {

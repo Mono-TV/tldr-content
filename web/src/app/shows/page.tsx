@@ -34,6 +34,13 @@ export default async function ShowsPage() {
   // This runs on first request, then cached and revalidated every 5 minutes
   const data = await fetchShowsData();
 
+  // Debug: Verify data before passing to client
+  console.log('[Server Component] About to pass data to client:', {
+    featured: data.featured?.items?.length || 0,
+    topRatedRecent: data.topRatedRecent?.items?.length || 0,
+    totalKeys: Object.keys(data).length
+  });
+
   // Pass pre-fetched data to client component
   return <ShowsPageClient data={data} />;
 }

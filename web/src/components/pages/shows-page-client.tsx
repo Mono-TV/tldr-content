@@ -14,6 +14,15 @@ interface ShowsPageClientProps {
  * All data is pre-rendered at build time via ISR
  */
 export function ShowsPageClient({ data }: ShowsPageClientProps) {
+  // Debug: Log what data the client receives
+  console.log('[Client] Shows page data received:', {
+    featured: data.featured?.items?.length || 0,
+    topRatedRecent: data.topRatedRecent?.items?.length || 0,
+    topRatedEnglish: data.topRatedEnglish?.items?.length || 0,
+    topAction: data.topAction?.items?.length || 0,
+    dataKeys: Object.keys(data).length
+  });
+
   return (
     <div className="min-h-screen pb-20">
       {/* Hero Carousel */}
