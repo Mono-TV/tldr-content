@@ -27,8 +27,9 @@ import { ShowsPageClient } from '@/components/pages/shows-page-client';
 // Subsequent requests will be served from cache (<1 second)
 export const revalidate = 300;
 
-// Remove force-dynamic to allow caching
-// export const dynamic = 'force-dynamic';
+// Keep force-dynamic to skip build-time rendering (prevents timeout during build)
+// Runtime ISR caching still works with force-dynamic
+export const dynamic = 'force-dynamic';
 
 export default async function ShowsPage() {
   // Fetch all shows page data on server

@@ -20,12 +20,8 @@ import { HomePageClient } from '@/components/pages/home-page-client';
  * - No build-time API calls
  */
 
-// Temporarily disable ISR cache to force fresh data (will revert to 300)
-export const revalidate = 0;
-
-// Use dynamic rendering to generate on-demand (not at build time)
-// This prevents API timeouts when building in Docker/Cloud Run
-export const dynamic = 'force-dynamic';
+// Enable ISR with 5-minute cache
+export const revalidate = 300;
 
 export default async function HomePage() {
   // Fetch all homepage data on server
