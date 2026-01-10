@@ -1,109 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { HeroCarousel } from '@/components/sections/hero-carousel';
 import { ContentRow, Top10Row } from '@/components/sections/content-row';
 import type { MoviesData } from '@/lib/fetch-movies-data';
 
 interface MoviesPageClientProps {
-  initialData: Partial<MoviesData>;
+  data: MoviesData;
 }
 
 /**
- * Client-side movies page component with progressive loading
- * - Receives first 10 rows from server (fast initial render)
- * - Lazy-loads remaining 38 rows after mount
+ * Client-side movies page component
+ * - Receives ALL data from server in initial response
+ * - Renders all 48 rows immediately
+ * - No additional API calls needed
  */
-// Helper to create empty data structure
-const createEmptyData = (): MoviesData => ({
-  featured: { items: [], total: 0 },
-  topRatedRecent: { items: [], total: 0 },
-  topRatedEnglish: { items: [], total: 0 },
-  topRatedHindi: { items: [], total: 0 },
-  topRatedBengali: { items: [], total: 0 },
-  topRatedTamil: { items: [], total: 0 },
-  topRatedTelugu: { items: [], total: 0 },
-  topRatedMalayalam: { items: [], total: 0 },
-  topRatedKannada: { items: [], total: 0 },
-  topAction: { items: [], total: 0 },
-  topActionEnglish: { items: [], total: 0 },
-  topActionHindi: { items: [], total: 0 },
-  topActionTamil: { items: [], total: 0 },
-  topActionTelugu: { items: [], total: 0 },
-  topActionMalayalam: { items: [], total: 0 },
-  topActionKannada: { items: [], total: 0 },
-  topActionBengali: { items: [], total: 0 },
-  topComedy: { items: [], total: 0 },
-  topComedyEnglish: { items: [], total: 0 },
-  topComedyHindi: { items: [], total: 0 },
-  topComedyTamil: { items: [], total: 0 },
-  topComedyTelugu: { items: [], total: 0 },
-  topComedyMalayalam: { items: [], total: 0 },
-  topComedyKannada: { items: [], total: 0 },
-  topComedyBengali: { items: [], total: 0 },
-  topDrama: { items: [], total: 0 },
-  topDramaEnglish: { items: [], total: 0 },
-  topDramaHindi: { items: [], total: 0 },
-  topDramaTamil: { items: [], total: 0 },
-  topDramaTelugu: { items: [], total: 0 },
-  topDramaMalayalam: { items: [], total: 0 },
-  topDramaKannada: { items: [], total: 0 },
-  topDramaBengali: { items: [], total: 0 },
-  topThriller: { items: [], total: 0 },
-  topThrillerEnglish: { items: [], total: 0 },
-  topThrillerHindi: { items: [], total: 0 },
-  topThrillerTamil: { items: [], total: 0 },
-  topThrillerTelugu: { items: [], total: 0 },
-  topThrillerMalayalam: { items: [], total: 0 },
-  topThrillerKannada: { items: [], total: 0 },
-  topThrillerBengali: { items: [], total: 0 },
-  hindiStar: { items: [], total: 0 },
-  englishStar: { items: [], total: 0 },
-  tamilStar: { items: [], total: 0 },
-  teluguStar: { items: [], total: 0 },
-  malayalamStar: { items: [], total: 0 },
-  kannadaStar: { items: [], total: 0 },
-  bengaliStar: { items: [], total: 0 },
-  topRated: { items: [], total: 0 },
-});
-
-export function MoviesPageClient({ initialData }: MoviesPageClientProps) {
-  const [remainingData, setRemainingData] = useState<Partial<MoviesData> | null>(null);
-  const [isLoadingRemaining, setIsLoadingRemaining] = useState(true);
-
-  // Merge initial and remaining data with defaults
-  const data = { ...createEmptyData(), ...initialData, ...remainingData };
-
-  // Fetch remaining data after initial render
-  useEffect(() => {
-    async function loadRemainingData() {
-      try {
-        console.log('[Client] Loading remaining movies data...');
-        const response = await fetch('/api/movies/remaining');
-        if (!response.ok) throw new Error('Failed to fetch remaining data');
-
-        const remaining = await response.json();
-        setRemainingData(remaining);
-        console.log('[Client] Remaining movies data loaded');
-      } catch (error) {
-        console.error('[Client] Error loading remaining data:', error);
-      } finally {
-        setIsLoadingRemaining(false);
-      }
-    }
-
-    // Start loading after a brief delay to prioritize initial render
-    const timer = setTimeout(loadRemainingData, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Debug: Log what data the client receives
-  console.log('[Client] Movies page data:', {
-    initial: Object.keys(initialData).length,
-    remaining: remainingData ? Object.keys(remainingData).length : 0,
-    isLoadingRemaining
-  });
-
+export function MoviesPageClient({ data }: MoviesPageClientProps) {
   return (
     <div className="min-h-screen pb-20">
       {/* Hero Carousel */}
@@ -111,63 +22,56 @@ export function MoviesPageClient({ initialData }: MoviesPageClientProps) {
 
       {/* Content Sections */}
       <div className="-mt-20 relative z-10 space-y-8 pl-12 lg:pl-16">
-        {/* Top Rated Movies (IMDb > 7.5, Last 5 Years) */}
+        {/* Top Rated Movies */}
         <ContentRow
           title="Top Rated Movies"
           contents={data.topRatedRecent.items || []}
           href="/browse?type=show&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated English Movies */}
         <ContentRow
           title="Top Rated English Movies"
           contents={data.topRatedEnglish.items || []}
           href="/browse?type=show&language=English&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated Hindi Movies */}
         <ContentRow
           title="Top Rated Hindi Movies"
           contents={data.topRatedHindi.items || []}
           href="/browse?type=show&language=Hindi&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated Bengali Movies */}
         <ContentRow
           title="Top Rated Bengali Movies"
           contents={data.topRatedBengali.items || []}
           href="/browse?type=show&language=Bengali&min_rating=7&sort=rating"
         />
 
-        {/* Top Rated Tamil Movies */}
         <ContentRow
           title="Top Rated Tamil Movies"
           contents={data.topRatedTamil.items || []}
           href="/browse?type=show&language=Tamil&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated Telugu Movies */}
         <ContentRow
           title="Top Rated Telugu Movies"
           contents={data.topRatedTelugu.items || []}
           href="/browse?type=show&language=Telugu&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated Malayalam Movies */}
         <ContentRow
           title="Top Rated Malayalam Movies"
           contents={data.topRatedMalayalam.items || []}
           href="/browse?type=show&language=Malayalam&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Rated Kannada Movies */}
         <ContentRow
           title="Top Rated Kannada Movies"
           contents={data.topRatedKannada.items || []}
           href="/browse?type=show&language=Kannada&min_rating=7.5&sort=rating"
         />
 
-        {/* Top Action Movies Rows */}
+        {/* Top Action Movies */}
         <ContentRow
           title="Top Action Movies"
           contents={data.topAction.items || []}
