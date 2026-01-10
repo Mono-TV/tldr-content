@@ -35,6 +35,8 @@ export default function HomePage() {
   // Helper for language-specific top rated movies
   const tenYearsAgo = new Date().getFullYear() - 10;
   const fifteenYearsAgo = new Date().getFullYear() - 15;
+  const twentyYearsAgo = new Date().getFullYear() - 20;
+  const twentyFiveYearsAgo = new Date().getFullYear() - 25;
 
   // Fetch top rated English movies
   const { data: topRatedEnglishData, isLoading: topRatedEnglishLoading } = useQuery({
@@ -163,11 +165,11 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top English action movies
+  // Fetch top English action movies (lowered rating to 7.5 for more results)
   const { data: topActionEnglishData, isLoading: topActionEnglishLoading } = useQuery({
     queryKey: ['topActionEnglish'],
     queryFn: () => api.getContent({
-      min_rating: 8,
+      min_rating: 7.5,
       min_votes: 50000,
       type: 'movie',
       genre: 'Action',
@@ -179,16 +181,16 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top Hindi action movies
+  // Fetch top Hindi action movies (7.5+, 10k votes, 15 years for more results)
   const { data: topActionHindiData, isLoading: topActionHindiLoading } = useQuery({
     queryKey: ['topActionHindi'],
     queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 50000,
+      min_rating: 7.5,
+      min_votes: 10000,
       type: 'movie',
       genre: 'Action',
       original_language: 'hi',
-      year_from: tenYearsAgo,
+      year_from: fifteenYearsAgo,
       sort: 'rating',
       order: 'desc',
       limit: 15
@@ -211,64 +213,64 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top Telugu action movies (lower threshold - 5k votes)
+  // Fetch top Telugu action movies (7.5+, 2k votes, 15 years for more results)
   const { data: topActionTeluguData, isLoading: topActionTeluguLoading } = useQuery({
     queryKey: ['topActionTelugu'],
-    queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 5000,
-      type: 'movie',
-      genre: 'Action',
-      original_language: 'te',
-      year_from: tenYearsAgo,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
-  });
-
-  // Fetch top Malayalam action movies (lower threshold - 5k votes)
-  const { data: topActionMalayalamData, isLoading: topActionMalayalamLoading } = useQuery({
-    queryKey: ['topActionMalayalam'],
-    queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 5000,
-      type: 'movie',
-      genre: 'Action',
-      original_language: 'ml',
-      year_from: tenYearsAgo,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
-  });
-
-  // Fetch top Kannada action movies (extended year range - 15 years, 5k votes)
-  const { data: topActionKannadaData, isLoading: topActionKannadaLoading } = useQuery({
-    queryKey: ['topActionKannada'],
-    queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 5000,
-      type: 'movie',
-      genre: 'Action',
-      original_language: 'kn',
-      year_from: fifteenYearsAgo,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
-  });
-
-  // Fetch top Bengali action movies (lower threshold - 2k votes, 7.5+ rating, 15 years)
-  const { data: topActionBengaliData, isLoading: topActionBengaliLoading } = useQuery({
-    queryKey: ['topActionBengali'],
     queryFn: () => api.getContent({
       min_rating: 7.5,
       min_votes: 2000,
       type: 'movie',
       genre: 'Action',
-      original_language: 'bn',
+      original_language: 'te',
       year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Malayalam action movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topActionMalayalamData, isLoading: topActionMalayalamLoading } = useQuery({
+    queryKey: ['topActionMalayalam'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Action',
+      original_language: 'ml',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Kannada action movies (7.0+, 1k votes, 20 years for more results)
+  const { data: topActionKannadaData, isLoading: topActionKannadaLoading } = useQuery({
+    queryKey: ['topActionKannada'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 1000,
+      type: 'movie',
+      genre: 'Action',
+      original_language: 'kn',
+      year_from: twentyYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Bengali action movies (6.5+, 500 votes, 25 years for more results)
+  const { data: topActionBengaliData, isLoading: topActionBengaliLoading } = useQuery({
+    queryKey: ['topActionBengali'],
+    queryFn: () => api.getContent({
+      min_rating: 6.5,
+      min_votes: 500,
+      type: 'movie',
+      genre: 'Action',
+      original_language: 'bn',
+      year_from: twentyFiveYearsAgo,
       sort: 'rating',
       order: 'desc',
       limit: 15
@@ -445,14 +447,14 @@ export default function HomePage() {
           title="Top English Action Movies"
           contents={topActionEnglishData?.items || []}
           isLoading={topActionEnglishLoading}
-          href="/browse?language=English&genre=Action&min_rating=8&sort=rating"
+          href="/browse?language=English&genre=Action&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
           title="Top Hindi Action Movies"
           contents={topActionHindiData?.items || []}
           isLoading={topActionHindiLoading}
-          href="/browse?language=Hindi&genre=Action&min_rating=8&sort=rating"
+          href="/browse?language=Hindi&genre=Action&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
@@ -466,28 +468,28 @@ export default function HomePage() {
           title="Top Telugu Action Movies"
           contents={topActionTeluguData?.items || []}
           isLoading={topActionTeluguLoading}
-          href="/browse?language=Telugu&genre=Action&min_rating=8&sort=rating"
+          href="/browse?language=Telugu&genre=Action&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
           title="Top Malayalam Action Movies"
           contents={topActionMalayalamData?.items || []}
           isLoading={topActionMalayalamLoading}
-          href="/browse?language=Malayalam&genre=Action&min_rating=8&sort=rating"
+          href="/browse?language=Malayalam&genre=Action&min_rating=7&sort=rating"
         />
 
         <ContentRow
           title="Top Kannada Action Movies"
           contents={topActionKannadaData?.items || []}
           isLoading={topActionKannadaLoading}
-          href="/browse?language=Kannada&genre=Action&min_rating=8&sort=rating"
+          href="/browse?language=Kannada&genre=Action&min_rating=7&sort=rating"
         />
 
         <ContentRow
           title="Top Bengali Action Movies"
           contents={topActionBengaliData?.items || []}
           isLoading={topActionBengaliLoading}
-          href="/browse?language=Bengali&genre=Action&min_rating=7.5&sort=rating"
+          href="/browse?language=Bengali&genre=Action&min_rating=6.5&sort=rating"
         />
 
         {/* Latest Star Movies Rows */}
