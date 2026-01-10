@@ -209,11 +209,8 @@ function SearchContent() {
 
   const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
 
-  // Remove contentType and type from display filters
-  const displayFilters = { ...filters };
-  delete displayFilters.contentType;
-  delete displayFilters.type;
-  delete displayFilters.search;
+  // Remove contentType, type, and search from display filters
+  const { contentType: _, type: __, search: ___, ...displayFilters } = filters;
 
   const hasActiveFilters = Object.keys(displayFilters).some(
     key => key !== 'page' && displayFilters[key as keyof ContentFilters] !== undefined
