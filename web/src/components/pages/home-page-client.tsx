@@ -1,6 +1,6 @@
 'use client';
 
-import { Hero } from '@/components/hero/hero';
+import { HeroCarousel } from '@/components/sections/hero-carousel';
 import { ContentRow } from '@/components/sections/content-row';
 import type { HomepageData } from '@/lib/fetch-homepage-data';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <Hero content={data.featured?.items?.[0]} />
+      <HeroCarousel items={data.featured?.items || []} />
 
       {/* Content Rows */}
       <div className="pb-20 space-y-12">
