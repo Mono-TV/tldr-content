@@ -483,3 +483,6 @@ export function SearchContent() {
           )}
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
