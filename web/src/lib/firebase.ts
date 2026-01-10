@@ -1,5 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { validateFirebaseConfig, getAllowedConfig } from './validate-config';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,6 +13,27 @@ const firebaseConfig = {
 
 // Check if Firebase config is available (not during static build)
 const isFirebaseConfigured = !!firebaseConfig.apiKey;
+
+// Validate Firebase configuration at runtime
+if (isFirebaseConfigured) {
+  const validation = validateFirebaseConfig();
+
+  if (!validation.valid) {
+    const allowedConfig = getAllowedConfig();
+    console.error('❌ Firebase configuration validation failed!');
+    console.error('Expected project:', allowedConfig.firebase.projectId);
+    console.error('Current project:', firebaseConfig.projectId);
+    console.error('Errors:', validation.errors);
+
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        `Invalid Firebase configuration. This app must use project: ${allowedConfig.firebase.projectId}`
+      );
+    }
+  } else {
+    console.log('✅ Firebase configuration validated:', firebaseConfig.projectId);
+  }
+}
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;

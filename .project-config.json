@@ -1,0 +1,34 @@
+{
+  "projectName": "TLDR Content",
+  "description": "Content discovery platform for movies and TV shows",
+  "projectBoundaries": {
+    "gcp": {
+      "projectId": "tldr-music",
+      "projectNumber": "401132033262",
+      "region": "us-central1",
+      "services": {
+        "cloudRun": {
+          "serviceName": "tldrcontent",
+          "url": "https://tldrcontent-401132033262.us-central1.run.app"
+        }
+      }
+    },
+    "firebase": {
+      "projectId": "content-lumiolabs-internal",
+      "projectNumber": "865621748276",
+      "authDomain": "content-lumiolabs-internal.firebaseapp.com"
+    },
+    "domains": {
+      "production": "https://content.lumiolabs.in",
+      "cloudRun": "https://tldrcontent-401132033262.us-central1.run.app"
+    }
+  },
+  "validation": {
+    "enforceProjectBoundaries": true,
+    "allowedProjects": {
+      "gcp": ["tldr-music"],
+      "firebase": ["content-lumiolabs-internal"]
+    }
+  },
+  "lastUpdated": "2026-01-10T12:00:00Z"
+}

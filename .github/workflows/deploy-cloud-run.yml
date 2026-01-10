@@ -12,6 +12,10 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: us-central1
   SERVICE_NAME: tldrcontent
+  # Project boundaries - DO NOT MODIFY
+  ALLOWED_GCP_PROJECT_ID: tldr-music
+  ALLOWED_GCP_PROJECT_NUMBER: "401132033262"
+  ALLOWED_FIREBASE_PROJECT_ID: content-lumiolabs-internal
 
 jobs:
   deploy:
@@ -28,6 +32,47 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Validate GCP Project
+        run: |
+          echo "🔒 Validating GCP project configuration..."
+
+          # Get current project from credentials
+          CURRENT_PROJECT=$(gcloud config get-value project)
+          CURRENT_PROJECT_NUMBER=$(gcloud projects describe $CURRENT_PROJECT --format='value(projectNumber)')
+
+          echo "Current GCP Project ID: $CURRENT_PROJECT"
+          echo "Current Project Number: $CURRENT_PROJECT_NUMBER"
+          echo "Expected Project ID: $ALLOWED_GCP_PROJECT_ID"
+          echo "Expected Project Number: $ALLOWED_GCP_PROJECT_NUMBER"
+
+          # Validate project ID
+          if [ "$CURRENT_PROJECT" != "$ALLOWED_GCP_PROJECT_ID" ]; then
+            echo "❌ ERROR: Wrong GCP project detected!"
+            echo "This repository must ONLY deploy to: $ALLOWED_GCP_PROJECT_ID"
+            echo "Attempted deployment to: $CURRENT_PROJECT"
+            exit 1
+          fi
+
+          # Validate project number
+          if [ "$CURRENT_PROJECT_NUMBER" != "$ALLOWED_GCP_PROJECT_NUMBER" ]; then
+            echo "❌ ERROR: Wrong GCP project number detected!"
+            echo "Expected: $ALLOWED_GCP_PROJECT_NUMBER"
+            echo "Got: $CURRENT_PROJECT_NUMBER"
+            exit 1
+          fi
+
+          # Validate Firebase project in secrets
+          if [ "${{ secrets.FIREBASE_PROJECT_ID }}" != "$ALLOWED_FIREBASE_PROJECT_ID" ]; then
+            echo "❌ ERROR: Wrong Firebase project in secrets!"
+            echo "Expected: $ALLOWED_FIREBASE_PROJECT_ID"
+            echo "Got: ${{ secrets.FIREBASE_PROJECT_ID }}"
+            exit 1
+          fi
+
+          echo "✅ Project validation passed!"
+          echo "✅ GCP Project: $CURRENT_PROJECT ($CURRENT_PROJECT_NUMBER)"
+          echo "✅ Firebase Project: ${{ secrets.FIREBASE_PROJECT_ID }}"
 
       - name: Configure Docker for GCR
         run: gcloud auth configure-docker
