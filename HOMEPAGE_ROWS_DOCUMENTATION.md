@@ -34,17 +34,27 @@ The homepage displays curated **Top Rated Movies** rows with different language 
 7. Top Rated Malayalam Movies (Last 10 years) - 5k votes
 8. Top Rated Kannada Movies (Last 15 years) - 5k votes
 
+### Top Action Movies Rows (8 rows)
+9. Top Action Movies (Last 10 years) - 50k votes
+10. Top English Action Movies (Last 10 years) - 50k votes
+11. Top Hindi Action Movies (Last 10 years) - 50k votes
+12. Top Tamil Action Movies (Last 10 years) - 15k votes
+13. Top Telugu Action Movies (Last 10 years) - 5k votes
+14. Top Malayalam Action Movies (Last 10 years) - 5k votes
+15. Top Kannada Action Movies (Last 15 years) - 5k votes
+16. Top Bengali Action Movies (Last 15 years) - 2k votes, 7.5+ rating
+
 ### Latest Star Movies Rows (7 rows)
-9. Latest Hindi Star Movies - Featuring Rajkummar Rao, Varun Dhawan, Vicky Kaushal & more
-10. Latest English Star Movies - Featuring Dwayne Johnson, Chris Hemsworth, Tom Cruise & more
-11. Latest Tamil Star Movies - Featuring Dhanush, Ajith Kumar, Sivakarthikeyan & more
-12. Latest Telugu Star Movies - Featuring Ravi Teja, Mahesh Babu, Vijay Deverakonda & more
-13. Latest Malayalam Star Movies - Featuring Mohanlal, Mammootty, Fahadh Faasil & more
-14. Latest Kannada Star Movies - Featuring Sudeep, Shiva Rajkumar, Rishab Shetty & more
-15. Latest Bengali Star Movies - Featuring Jisshu Sengupta, Prosenjit Chatterjee & more
+17. Latest Hindi Star Movies - Featuring Rajkummar Rao, Varun Dhawan, Vicky Kaushal & more
+18. Latest English Star Movies - Featuring Dwayne Johnson, Chris Hemsworth, Tom Cruise & more
+19. Latest Tamil Star Movies - Featuring Dhanush, Ajith Kumar, Sivakarthikeyan & more
+20. Latest Telugu Star Movies - Featuring Ravi Teja, Mahesh Babu, Vijay Deverakonda & more
+21. Latest Malayalam Star Movies - Featuring Mohanlal, Mammootty, Fahadh Faasil & more
+22. Latest Kannada Star Movies - Featuring Sudeep, Shiva Rajkumar, Rishab Shetty & more
+23. Latest Bengali Star Movies - Featuring Jisshu Sengupta, Prosenjit Chatterjee & more
 
 ### Special Rows
-16. **Top 10 This Week** - Top 10 highest-rated content
+24. **Top 10 This Week** - Top 10 highest-rated content
 
 **Filter Strategy:**
 Different languages use different thresholds based on industry size and global reach:
@@ -245,7 +255,111 @@ db.merged_catalog.createIndex({ "genres.name": 1 })
 
 ---
 
-### 6. Latest Star Movies (Multi-Actor Rows)
+### 6. Top Action Movies by Language
+
+**Overview:**
+Top Action Movies rows showcase the best action films across different languages, using the same rating and vote thresholds as the Top Rated Movies rows. Each row filters by the "Action" genre while maintaining language-specific quality standards.
+
+**Row Variants (8 rows):**
+
+| Language | ISO Code | Rating | Votes | Years | Implementation |
+|----------|----------|--------|-------|-------|----------------|
+| General (All) | - | 8.0+ | 50,000 | 10 | Cross-language action movies |
+| English | `en` | 8.0+ | 50,000 | 10 | Hollywood action blockbusters |
+| Hindi | `hi` | 8.0+ | 50,000 | 10 | Bollywood action films |
+| Tamil | `ta` | 8.0+ | 15,000 | 10 | Kollywood action movies |
+| Telugu | `te` | 8.0+ | 5,000 | 10 | Tollywood action films |
+| Malayalam | `ml` | 8.0+ | 5,000 | 10 | Malayalam action cinema |
+| Kannada | `kn` | 8.0+ | 5,000 | 15 | Kannada action movies (extended range) |
+| Bengali | `bn` | 7.5+ | 2,000 | 15 | Bengali action films (lower threshold) |
+
+**Filters:**
+- Genre: Action (case-insensitive match on `genres.name`)
+- IMDb rating: ≥ 8.0 (or 7.5 for Bengali)
+- Vote count: Language-specific threshold (same as Top Rated rows)
+- Content type: movie
+- Year from: Last 10 years (or 15 for Kannada/Bengali)
+- Sorted by: IMDb rating (descending) → Vote count (descending) → Release date (descending)
+- Limit: 15 movies per row
+
+**Threshold Rationale:**
+Uses identical thresholds to Top Rated Movies rows to maintain consistent quality standards:
+- **Major languages** (English, Hindi): 50,000 votes - global audience reach
+- **Tamil**: 15,000 votes - strong domestic + international appeal
+- **Telugu/Malayalam**: 5,000 votes - significant regional audience
+- **Kannada**: 5,000 votes + 15-year range - compensate for smaller volume
+- **Bengali**: 2,000 votes + 7.5 rating + 15 years - ensure adequate content
+
+**Sample Results:**
+
+**General Action (61 total):**
+- Dhurandhar (8.6, Hindi)
+- Kantara - A Legend: Chapter 1 (8.5, Kannada)
+- Demon Slayer: Kimetsu no Yaiba Infinity Castle (8.3, Japanese)
+
+**Hindi Action (5 total):**
+- Dhurandhar (8.6)
+- Shershaah (8.4)
+- Uri: The Surgical Strike (8.3)
+- Bajrangi Bhaijaan (8.1)
+- Gangs of Wasseypur - Part 1 (8.1)
+
+**Tamil Action (21 total):**
+- Amaran (8.4)
+- Maharaja (8.3)
+- Vikram (8.3)
+
+**Telugu Action (8 total):**
+- Major (8.4)
+- Rangasthalam (8.2)
+- Bāhubali 2: The Conclusion (8.2)
+
+**Implementation:**
+
+```typescript
+// Frontend: /web/src/app/page.tsx
+
+// Fetch top Hindi action movies
+const { data: topActionHindiData, isLoading: topActionHindiLoading } = useQuery({
+  queryKey: ['topActionHindi'],
+  queryFn: () => api.getContent({
+    min_rating: 8,
+    min_votes: 50000,
+    type: 'movie',
+    genre: 'Action',
+    original_language: 'hi',
+    year_from: tenYearsAgo,
+    sort: 'rating',
+    order: 'desc',
+    limit: 15
+  }),
+});
+
+// JSX Row
+<ContentRow
+  title="Top Hindi Action Movies"
+  contents={topActionHindiData?.items || []}
+  isLoading={topActionHindiLoading}
+  href="/browse?language=Hindi&genre=Action&min_rating=8&sort=rating"
+/>
+```
+
+**Use Case:**
+- Highlight best action films in each language
+- Leverage popularity of action genre across all markets
+- Maintain quality standards with language-appropriate thresholds
+- Easy discovery of high-rated action content by language preference
+
+**Browse Links:**
+Each row links to filtered browse page with genre + language filters:
+- `/browse?genre=Action&min_rating=8&sort=rating` (General)
+- `/browse?language=English&genre=Action&min_rating=8&sort=rating` (English)
+- `/browse?language=Hindi&genre=Action&min_rating=8&sort=rating` (Hindi)
+- ... etc for each language
+
+---
+
+### 7. Latest Star Movies (Multi-Actor Rows)
 
 **Overview:**
 Latest Star Movies rows showcase recent films featuring multiple popular and active actors from each language. Unlike Top Rated rows which filter by rating thresholds, these rows use multi-actor search to aggregate movies from 3-4 stars per language, providing better content variety and balance.
@@ -776,11 +890,86 @@ curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_ra
 
 ---
 
-### 4. Top Rated Action Movies
+### 4. Top Action Movies (General)
 
 ```bash
 curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&genre=Action&year_from=2016&sort=rating&order=desc&limit=15" \
-  | jq '.items[0:5] | .[] | {title, imdb_rating, genres: [.genres[].name]}'
+  | jq '.items[0:5] | .[] | {title, imdb_rating, original_language, genres: [.genres[].name]}'
+```
+
+**Response:**
+```json
+{
+  "title": "Dhurandhar",
+  "imdb_rating": 8.6,
+  "original_language": "hi",
+  "genres": ["Action", "Biography", "Drama"]
+}
+```
+
+---
+
+### 4a. Top Hindi Action Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=50000&type=movie&genre=Action&original_language=hi&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '{total: .pagination.total, movies: [.items[] | "\(.imdb_rating) - \(.title) (\(.year))"]}'
+```
+
+**Response:**
+```json
+{
+  "total": 5,
+  "movies": [
+    "8.6 - Dhurandhar (2023)",
+    "8.4 - Shershaah (2021)",
+    "8.3 - Uri: The Surgical Strike (2019)",
+    "8.1 - Bajrangi Bhaijaan (2015)",
+    "8.1 - Gangs of Wasseypur - Part 1 (2012)"
+  ]
+}
+```
+
+---
+
+### 4b. Top Tamil Action Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=15000&type=movie&genre=Action&original_language=ta&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '{total: .pagination.total, sample_movies: [.items[0:3][] | "\(.imdb_rating) - \(.title) (\(.year))"]}'
+```
+
+**Response:**
+```json
+{
+  "total": 21,
+  "sample_movies": [
+    "8.4 - Amaran (2024)",
+    "8.3 - Maharaja (2024)",
+    "8.3 - Vikram (2022)"
+  ]
+}
+```
+
+---
+
+### 4c. Top Telugu Action Movies
+
+```bash
+curl -s "https://content-api-401132033262.asia-south1.run.app/api/content?min_rating=8&min_votes=5000&type=movie&genre=Action&original_language=te&year_from=2016&sort=rating&order=desc&limit=15" \
+  | jq '{total: .pagination.total, sample_movies: [.items[0:3][] | "\(.imdb_rating) - \(.title) (\(.year))"]}'
+```
+
+**Response:**
+```json
+{
+  "total": 8,
+  "sample_movies": [
+    "8.4 - Major (2022)",
+    "8.2 - Rangasthalam (2018)",
+    "8.2 - Bāhubali 2: The Conclusion (2017)"
+  ]
+}
 ```
 
 ---
@@ -1154,10 +1343,25 @@ mongosh "your-connection-string" --eval "db.merged_catalog.countDocuments({})"
 | General (5 yrs) | `min_rating=8, min_votes=50000, year_from=2021` | `original_language` not specified |
 | English | `original_language=en, min_rating=8, min_votes=50000, year_from=2016` | `en` |
 | Hindi | `original_language=hi, min_rating=8, min_votes=50000, year_from=2016` | `hi` |
-| Tamil | `original_language=ta, min_rating=8, min_votes=50000, year_from=2016` | `ta` |
-| Telugu | `original_language=te, min_rating=8, min_votes=50000, year_from=2016` | `te` |
-| Action | `genre=Action, min_rating=8, min_votes=50000, year_from=2016` | Genre filter |
+| Tamil | `original_language=ta, min_rating=8, min_votes=15000, year_from=2016` | `ta` |
+| Telugu | `original_language=te, min_rating=8, min_votes=5000, year_from=2016` | `te` |
+| Malayalam | `original_language=ml, min_rating=8, min_votes=5000, year_from=2016` | `ml` |
+| Kannada | `original_language=kn, min_rating=8, min_votes=5000, year_from=2011` | `kn` (15 yrs) |
+| Bengali | `original_language=bn, min_rating=7.5, min_votes=2000, year_from=2011` | `bn` (15 yrs) |
 | 2010s | `min_rating=8, min_votes=50000, year_from=2010, year_to=2019` | Year range |
+
+### Top Action Movies Variants
+
+| Variant | Filters | Code |
+|---------|---------|------|
+| General | `genre=Action, min_rating=8, min_votes=50000, year_from=2016` | Genre filter |
+| English | `genre=Action, original_language=en, min_rating=8, min_votes=50000, year_from=2016` | `en` + Action |
+| Hindi | `genre=Action, original_language=hi, min_rating=8, min_votes=50000, year_from=2016` | `hi` + Action |
+| Tamil | `genre=Action, original_language=ta, min_rating=8, min_votes=15000, year_from=2016` | `ta` + Action |
+| Telugu | `genre=Action, original_language=te, min_rating=8, min_votes=5000, year_from=2016` | `te` + Action |
+| Malayalam | `genre=Action, original_language=ml, min_rating=8, min_votes=5000, year_from=2016` | `ml` + Action |
+| Kannada | `genre=Action, original_language=kn, min_rating=8, min_votes=5000, year_from=2011` | `kn` + Action (15 yrs) |
+| Bengali | `genre=Action, original_language=bn, min_rating=7.5, min_votes=2000, year_from=2011` | `bn` + Action (15 yrs) |
 
 ### Files to Edit
 
