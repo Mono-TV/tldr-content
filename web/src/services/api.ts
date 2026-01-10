@@ -63,6 +63,17 @@ export const api = {
     };
   },
 
+  // Search content with filters
+  searchWithFilters: async (query: string, filters: ContentFilters = {}): Promise<SearchResponse> => {
+    const params = { q: query, ...filters };
+    const queryString = buildQueryString(params as Record<string, string | number | undefined>);
+    const response = await fetchAPI<{ items: Content[]; pagination: { total: number; page: number; limit: number; pages: number }; query: string }>(`/api/search${queryString}`);
+    return {
+      ...transformPaginatedResponse(response),
+      query: response.query,
+    };
+  },
+
   // Get all genres
   getGenres: async (): Promise<string[]> => {
     return fetchAPI<string[]>('/api/genres');

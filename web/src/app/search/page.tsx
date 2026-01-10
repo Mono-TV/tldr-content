@@ -191,7 +191,8 @@ function SearchContent() {
     queryFn: () => {
       const apiFilters = { ...filters };
       delete apiFilters.contentType;
-      return api.getContent({
+      delete apiFilters.search; // Remove search from filters, will be passed as first param
+      return api.searchWithFilters(debouncedQuery, {
         ...apiFilters,
         limit: ITEMS_PER_PAGE,
         page: currentPage,
