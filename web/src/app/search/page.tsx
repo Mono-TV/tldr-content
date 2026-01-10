@@ -12,6 +12,7 @@ import { cn, debounce } from '@/lib/utils';
 import api from '@/services/api';
 import type { ContentFilters } from '@/types';
 
+// Force rebuild - 2026-01-10
 const RECENT_SEARCHES_KEY = 'tldr-recent-searches';
 const MAX_RECENT_SEARCHES = 8;
 const ITEMS_PER_PAGE = 24;
