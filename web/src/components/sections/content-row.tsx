@@ -30,7 +30,7 @@ export function ContentRow({
   return (
     <section className="relative py-6">
       {/* Header */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+      <div className="px-4 sm:px-6 lg:px-8 mb-4">
         <div>
           <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
           {subtitle && (
