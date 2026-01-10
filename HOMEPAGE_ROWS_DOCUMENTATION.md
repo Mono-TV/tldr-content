@@ -472,9 +472,9 @@ Top Comedy Movies rows showcase the best comedy films across different languages
 
 | Language | ISO Code | Rating | Votes | Years | Results | Implementation |
 |----------|----------|--------|-------|-------|---------|----------------|
-| General (All) | - | 8.0+ | 50,000 | 10 | 50 | Cross-language comedy movies |
-| English | `en` | 8.0+ | 50,000 | 10 | 50+ | Hollywood comedy films |
-| Hindi | `hi` | 8.0+ | 50,000 | 10 | 17 | Bollywood comedy cinema |
+| General (All) | - | 7.5+ | 50,000 | 10 | 66 | Cross-language comedy movies |
+| English | `en` | 7.5+ | 50,000 | 10 | 56 | Hollywood comedy films |
+| Hindi | `hi` | 7.5+ | 10,000 | 10 | 25 | Bollywood comedy cinema |
 | Tamil | `ta` | 7.0+ | 2,000 | 15 | 47 | Kollywood comedy movies |
 | Telugu | `te` | 7.0+ | 2,000 | 15 | 66 | Tollywood comedy films |
 | Malayalam | `ml` | 7.0+ | 2,000 | 15 | 49 | Malayalam comedy cinema |
@@ -483,7 +483,7 @@ Top Comedy Movies rows showcase the best comedy films across different languages
 
 **Filters:**
 - Genre: Comedy (case-insensitive match on `genres.name`)
-- IMDb rating: Language-specific (8.0/7.0/6.5 based on content availability)
+- IMDb rating: Language-specific (7.5/7.0/6.5 based on content availability)
 - Vote count: Language-specific threshold (adjusted for genre-specific availability)
 - Content type: movie
 - Year from: Language-specific (10/15/20/25 years based on content volume)
@@ -492,9 +492,9 @@ Top Comedy Movies rows showcase the best comedy films across different languages
 
 **Threshold Rationale:**
 Adjusted for comedy genre availability while ensuring 15+ results per language:
-- **General**: 8.0 rating, 50k votes - highest quality cross-language comedy (50 results)
-- **English**: 8.0 rating, 50k votes - maintain high standards for Hollywood (50+ results)
-- **Hindi**: 8.0 rating, 50k votes - quality Bollywood comedy (17 results)
+- **General**: 7.5 rating, 50k votes - quality cross-language comedy (66 results)
+- **English**: 7.5 rating, 50k votes - quality Hollywood comedy (56 results)
+- **Hindi**: 7.5 rating, 10k votes - quality Bollywood comedy (25 results)
 - **Tamil**: 7.0 rating, 2k votes, 15 years - broader Kollywood comedy selection (47 results)
 - **Telugu**: 7.0 rating, 2k votes, 15 years - wide Tollywood comedy catalog (66 results)
 - **Malayalam**: 7.0 rating, 2k votes, 15 years - comprehensive Malayalam comedy (49 results)
@@ -502,9 +502,9 @@ Adjusted for comedy genre availability while ensuring 15+ results per language:
 - **Bengali**: 6.5 rating, 500 votes, 25 years - broadest criteria for limited content (19 results)
 
 **Browse Links:**
-- `/browse?genre=Comedy&min_rating=8&sort=rating` (General)
-- `/browse?language=English&genre=Comedy&min_rating=8&sort=rating` (English)
-- `/browse?language=Hindi&genre=Comedy&min_rating=8&sort=rating` (Hindi)
+- `/browse?genre=Comedy&min_rating=7.5&sort=rating` (General)
+- `/browse?language=English&genre=Comedy&min_rating=7.5&sort=rating` (English)
+- `/browse?language=Hindi&genre=Comedy&min_rating=7.5&sort=rating` (Hindi)
 - `/browse?language=Tamil&genre=Comedy&min_rating=7&sort=rating` (Tamil)
 - `/browse?language=Telugu&genre=Comedy&min_rating=7&sort=rating` (Telugu)
 - `/browse?language=Malayalam&genre=Comedy&min_rating=7&sort=rating` (Malayalam)
@@ -522,9 +522,9 @@ Top Drama Movies rows showcase the best dramatic films across different language
 
 | Language | ISO Code | Rating | Votes | Years | Results | Implementation |
 |----------|----------|--------|-------|-------|---------|----------------|
-| General (All) | - | 8.0+ | 50,000 | 10 | 194 | Cross-language drama movies |
-| English | `en` | 8.0+ | 50,000 | 10 | 194+ | Hollywood drama films |
-| Hindi | `hi` | 8.0+ | 50,000 | 10 | 34 | Bollywood drama cinema |
+| General (All) | - | 8.0+ | 50,000 | 10 | 56 | Cross-language drama movies |
+| English | `en` | 8.0+ | 50,000 | 10 | 28 | Hollywood drama films |
+| Hindi | `hi` | 7.5+ | 50,000 | 10 | 16 | Bollywood drama cinema |
 | Tamil | `ta` | 7.0+ | 2,000 | 15 | 123 | Kollywood drama movies |
 | Telugu | `te` | 7.0+ | 2,000 | 15 | 102 | Tollywood drama films |
 | Malayalam | `ml` | 7.0+ | 2,000 | 15 | 105 | Malayalam drama cinema |
@@ -533,7 +533,7 @@ Top Drama Movies rows showcase the best dramatic films across different language
 
 **Filters:**
 - Genre: Drama (case-insensitive match on `genres.name`)
-- IMDb rating: Language-specific (8.0/7.0/6.5 based on content availability)
+- IMDb rating: Language-specific (8.0/7.5/7.0/6.5 based on content availability)
 - Vote count: Language-specific threshold (adjusted for genre-specific availability)
 - Content type: movie
 - Year from: Language-specific (10/15/20/25 years based on content volume)
@@ -542,9 +542,9 @@ Top Drama Movies rows showcase the best dramatic films across different language
 
 **Threshold Rationale:**
 Drama has excellent availability across all languages due to genre popularity:
-- **General**: 8.0 rating, 50k votes - highest quality cross-language drama (194 results)
-- **English**: 8.0 rating, 50k votes - maintain high standards for Hollywood (194+ results)
-- **Hindi**: 8.0 rating, 50k votes - quality Bollywood drama (34 results)
+- **General**: 8.0 rating, 50k votes - highest quality cross-language drama (56 results)
+- **English**: 8.0 rating, 50k votes - maintain high standards for Hollywood (28 results)
+- **Hindi**: 7.5 rating, 50k votes - quality Bollywood drama (16 results)
 - **Tamil**: 7.0 rating, 2k votes, 15 years - extensive Kollywood drama selection (123 results)
 - **Telugu**: 7.0 rating, 2k votes, 15 years - comprehensive Tollywood drama (102 results)
 - **Malayalam**: 7.0 rating, 2k votes, 15 years - rich Malayalam drama catalog (105 results)
@@ -554,7 +554,7 @@ Drama has excellent availability across all languages due to genre popularity:
 **Browse Links:**
 - `/browse?genre=Drama&min_rating=8&sort=rating` (General)
 - `/browse?language=English&genre=Drama&min_rating=8&sort=rating` (English)
-- `/browse?language=Hindi&genre=Drama&min_rating=8&sort=rating` (Hindi)
+- `/browse?language=Hindi&genre=Drama&min_rating=7.5&sort=rating` (Hindi)
 - `/browse?language=Tamil&genre=Drama&min_rating=7&sort=rating` (Tamil)
 - `/browse?language=Telugu&genre=Drama&min_rating=7&sort=rating` (Telugu)
 - `/browse?language=Malayalam&genre=Drama&min_rating=7&sort=rating` (Malayalam)
@@ -572,8 +572,8 @@ Top Thriller Movies rows showcase the best thriller films across different langu
 
 | Language | ISO Code | Rating | Votes | Years | Results | Implementation |
 |----------|----------|--------|-------|-------|---------|----------------|
-| General (All) | - | 8.0+ | 50,000 | 10 | 63 | Cross-language thriller movies |
-| English | `en` | 8.0+ | 50,000 | 10 | 63+ | Hollywood thriller films |
+| General (All) | - | 8.0+ | 50,000 | 10 | 18 | Cross-language thriller movies |
+| English | `en` | 7.5+ | 50,000 | 10 | 27 | Hollywood thriller films |
 | Hindi | `hi` | 7.5+ | 10,000 | 15 | 25 | Bollywood thriller cinema |
 | Tamil | `ta` | 7.0+ | 2,000 | 15 | 90 | Kollywood thriller movies |
 | Telugu | `te` | 7.0+ | 2,000 | 15 | 61 | Tollywood thriller films |
@@ -592,8 +592,8 @@ Top Thriller Movies rows showcase the best thriller films across different langu
 
 **Threshold Rationale:**
 Adjusted for thriller genre availability while ensuring 15+ results per language:
-- **General**: 8.0 rating, 50k votes - highest quality cross-language thriller (63 results)
-- **English**: 8.0 rating, 50k votes - maintain high standards for Hollywood (63+ results)
+- **General**: 8.0 rating, 50k votes - highest quality cross-language thriller (18 results)
+- **English**: 7.5 rating, 50k votes - quality Hollywood thriller (27 results)
 - **Hindi**: 7.5 rating, 10k votes, 15 years - quality Bollywood thriller (25 results)
 - **Tamil**: 7.0 rating, 2k votes, 15 years - extensive Kollywood thriller selection (90 results)
 - **Telugu**: 7.0 rating, 2k votes, 15 years - comprehensive Tollywood thriller (61 results)
@@ -603,7 +603,7 @@ Adjusted for thriller genre availability while ensuring 15+ results per language
 
 **Browse Links:**
 - `/browse?genre=Thriller&min_rating=8&sort=rating` (General)
-- `/browse?language=English&genre=Thriller&min_rating=8&sort=rating` (English)
+- `/browse?language=English&genre=Thriller&min_rating=7.5&sort=rating` (English)
 - `/browse?language=Hindi&genre=Thriller&min_rating=7.5&sort=rating` (Hindi)
 - `/browse?language=Tamil&genre=Thriller&min_rating=7&sort=rating` (Tamil)
 - `/browse?language=Telugu&genre=Thriller&min_rating=7&sort=rating` (Telugu)
