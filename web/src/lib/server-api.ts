@@ -31,8 +31,9 @@ interface ContentResponse {
 
 /**
  * Fetch content from API with filters
+ * Includes retry logic with exponential backoff for rate limiting
  */
-export async function fetchContent(filters: ContentFilters): Promise<ContentResponse> {
+export async function fetchContent(filters: ContentFilters, retryCount = 0, maxRetries = 3): Promise<ContentResponse> {
   const params = new URLSearchParams();
 
   Object.entries(filters).forEach(([key, value]) => {
@@ -47,6 +48,14 @@ export async function fetchContent(filters: ContentFilters): Promise<ContentResp
     const response = await fetch(url, {
       next: { revalidate: 300 }, // Revalidate every 5 minutes
     });
+
+    // Handle rate limiting with exponential backoff
+    if (response.status === 429 && retryCount < maxRetries) {
+      const backoffMs = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+      console.log(`[ISR] Rate limited, retrying in ${backoffMs}ms (attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
+      return fetchContent(filters, retryCount + 1, maxRetries);
+    }
 
     if (!response.ok) {
       console.error(`API error: ${response.status} for ${url}`);
@@ -122,15 +131,15 @@ export async function searchWithFilters(
 }
 
 /**
- * Fetch and merge movies from multiple stars (for Latest Star Movies rows)
+ * Fetch and merge content from multiple stars (for Latest Star Movies/Shows rows)
  */
-export async function fetchMultipleStarMovies(stars: string[]): Promise<ContentResponse> {
+export async function fetchMultipleStarMovies(stars: string[], contentType: 'movie' | 'show' = 'movie'): Promise<ContentResponse> {
   const fiveYearsAgo = new Date().getFullYear() - 5;
 
   const results = await Promise.all(
     stars.map(star =>
       searchWithFilters(star, {
-        type: 'movie',
+        type: contentType,
         year_from: fiveYearsAgo,
         sort: 'rating',
         order: 'desc',
@@ -140,13 +149,13 @@ export async function fetchMultipleStarMovies(stars: string[]): Promise<ContentR
   );
 
   // Merge and deduplicate by imdb_id
-  const allMovies = results.flatMap(r => r.items || []);
-  const uniqueMovies = Array.from(
-    new Map(allMovies.map(movie => [movie.imdb_id, movie])).values()
+  const allContent = results.flatMap(r => r.items || []);
+  const uniqueContent = Array.from(
+    new Map(allContent.map(item => [item.imdb_id, item])).values()
   );
 
   // Sort by rating, votes, and date
-  const sortedMovies = uniqueMovies.sort((a, b) => {
+  const sortedContent = uniqueContent.sort((a, b) => {
     const ratingA = a.imdb_rating ?? 0;
     const ratingB = b.imdb_rating ?? 0;
     const votesA = a.imdb_rating_count ?? 0;
@@ -161,7 +170,7 @@ export async function fetchMultipleStarMovies(stars: string[]): Promise<ContentR
   });
 
   return {
-    items: sortedMovies.slice(0, 15),
-    total: sortedMovies.length,
+    items: sortedContent.slice(0, 15),
+    total: sortedContent.length,
   };
 }
