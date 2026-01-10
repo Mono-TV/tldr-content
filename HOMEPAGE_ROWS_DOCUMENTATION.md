@@ -35,13 +35,13 @@ The homepage displays curated **Top Rated Movies** rows with different language 
 8. Top Rated Kannada Movies (Last 15 years) - 5k votes
 
 ### Latest Star Movies Rows (7 rows)
-9. Latest Hindi Star Movies - Featuring Rajkummar Rao (20 recent movies)
-10. Latest English Star Movies - Featuring Dwayne Johnson (12 recent movies)
-11. Latest Tamil Star Movies - Featuring Dhanush (33 recent movies)
-12. Latest Telugu Star Movies - Featuring Ravi Teja (32 recent movies)
-13. Latest Malayalam Star Movies - Featuring Mohanlal (28 recent movies)
-14. Latest Kannada Star Movies - Featuring Sudeep (24 recent movies)
-15. Latest Bengali Star Movies - Featuring Jisshu Sengupta (31 recent movies)
+9. Latest Hindi Star Movies - Featuring Rajkummar Rao, Varun Dhawan, Vicky Kaushal & more
+10. Latest English Star Movies - Featuring Dwayne Johnson, Chris Hemsworth, Tom Cruise & more
+11. Latest Tamil Star Movies - Featuring Dhanush, Ajith Kumar, Sivakarthikeyan & more
+12. Latest Telugu Star Movies - Featuring Ravi Teja, Mahesh Babu, Vijay Deverakonda & more
+13. Latest Malayalam Star Movies - Featuring Mohanlal, Mammootty, Fahadh Faasil & more
+14. Latest Kannada Star Movies - Featuring Sudeep, Shiva Rajkumar, Rishab Shetty & more
+15. Latest Bengali Star Movies - Featuring Jisshu Sengupta, Prosenjit Chatterjee & more
 
 ### Special Rows
 16. **Top 10 This Week** - Top 10 highest-rated content
@@ -245,81 +245,117 @@ db.merged_catalog.createIndex({ "genres.name": 1 })
 
 ---
 
-### 6. Latest Star Movies (Actor-Based Rows)
+### 6. Latest Star Movies (Multi-Actor Rows)
 
 **Overview:**
-Latest Star Movies rows showcase recent films featuring popular and active actors from each language. Unlike Top Rated rows which filter by rating thresholds, these rows use actor-based search to find movies where specific stars appear in the cast.
+Latest Star Movies rows showcase recent films featuring multiple popular and active actors from each language. Unlike Top Rated rows which filter by rating thresholds, these rows use multi-actor search to aggregate movies from 3-4 stars per language, providing better content variety and balance.
 
 **Row Variants (7 languages):**
 
-| Language | Featured Star | Recent Movies (2020-2026) | Rationale |
-|----------|--------------|---------------------------|-----------|
-| Hindi | Rajkummar Rao | 20 | Very active with diverse roles |
-| English | Dwayne Johnson | 12 | Consistent blockbuster output |
-| Tamil | Dhanush | 33 | Highly prolific, quality work |
-| Telugu | Ravi Teja | 32 | Mass appeal, high activity |
-| Malayalam | Mohanlal | 28 | Industry legend, still active |
-| Kannada | Sudeep | 24 | Major star with steady releases |
-| Bengali | Jisshu Sengupta | 31 | Versatile, pan-regional appeal |
+| Language | Featured Stars | Implementation |
+|----------|----------------|----------------|
+| Hindi | Rajkummar Rao, Varun Dhawan, Vicky Kaushal, Kartik Aaryan | 4 stars, 8 movies each |
+| English | Dwayne Johnson, Chris Hemsworth, Tom Cruise, Brad Pitt | 4 stars, 8 movies each |
+| Tamil | Dhanush, Ajith Kumar, Sivakarthikeyan, Rajinikanth | 4 stars, 8 movies each |
+| Telugu | Ravi Teja, Mahesh Babu, Vijay Deverakonda, Ram Charan | 4 stars, 8 movies each |
+| Malayalam | Mohanlal, Mammootty, Fahadh Faasil, Tovino Thomas | 4 stars, 8 movies each |
+| Kannada | Sudeep, Shiva Rajkumar, Rishab Shetty, Upendra | 4 stars, 8 movies each |
+| Bengali | Jisshu Sengupta, Prosenjit Chatterjee, Abir Chatterjee | 3 stars, 8 movies each |
 
 **Star Selection Criteria:**
-1. **Activity Level:** 10+ movies from 2020-2026
-2. **Balance:** Mix of established stars and rising talent
-3. **Quality:** Avoid stars with inflated counts (common names, database errors)
-4. **Representation:** One star per language to maintain diverse content
+1. **Diversity:** 3-4 stars per language for balanced representation
+2. **Activity Level:** Active in last 5 years (2020-2026)
+3. **Mix:** Established legends + rising stars + mid-career performers
+4. **Quality:** Stars with consistent critical and commercial success
+5. **Avoid Duplicates:** Movies featuring multiple selected stars are shown once
 
-**Filters:**
+**Filters (per star):**
 - Search query: Actor name (e.g., "Rajkummar Rao")
 - Content type: movie
 - Year from: Last 5 years (dynamic)
 - Sorted by: IMDb rating (descending)
-- Limit: 15 movies
+- Limit: 8 movies per star
 
-**Implementation:**
-Uses `/api/search` endpoint with filters instead of direct MongoDB query:
-```javascript
-api.searchWithFilters('Rajkummar Rao', {
-  type: 'movie',
-  year_from: currentYear - 5,
-  sort: 'rating',
-  order: 'desc',
-  limit: 15
-})
+**Multi-Actor Implementation:**
+
+The implementation fetches movies from multiple stars in parallel, merges results, deduplicates, and sorts to show the top 15 movies:
+
+```typescript
+// Helper function to fetch and merge movies from multiple stars
+const fetchMultipleStarMovies = async (stars: string[]) => {
+  // Step 1: Fetch movies from each star in parallel
+  const results = await Promise.all(
+    stars.map(star =>
+      api.searchWithFilters(star, {
+        type: 'movie',
+        year_from: fiveYearsAgoYear,
+        sort: 'rating',
+        order: 'desc',
+        limit: 8
+      })
+    )
+  );
+
+  // Step 2: Merge all results into single array
+  const allMovies = results.flatMap(r => r.items || []);
+
+  // Step 3: Deduplicate by imdb_id (handles movies with multiple selected stars)
+  const uniqueMovies = Array.from(
+    new Map(allMovies.map(movie => [movie.imdb_id, movie])).values()
+  );
+
+  // Step 4: Sort by rating (primary), votes (tie-breaker), date (final tie-breaker)
+  const sortedMovies = uniqueMovies.sort((a, b) => {
+    const ratingA = a.imdb_rating ?? 0;
+    const ratingB = b.imdb_rating ?? 0;
+    const votesA = a.imdb_rating_count ?? 0;
+    const votesB = b.imdb_rating_count ?? 0;
+
+    if (ratingB !== ratingA) return ratingB - ratingA;
+    if (votesB !== votesA) return votesB - votesA;
+
+    const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
+    const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  // Step 5: Return top 15 movies
+  return { items: sortedMovies.slice(0, 15), total: sortedMovies.length };
+};
+
+// Usage in React Query
+const { data: hindiStarData, isLoading: hindiStarLoading } = useQuery({
+  queryKey: ['hindiStarMovies'],
+  queryFn: () => fetchMultipleStarMovies([
+    'Rajkummar Rao',
+    'Varun Dhawan',
+    'Vicky Kaushal',
+    'Kartik Aaryan'
+  ]),
+});
 ```
 
 **Subtitle Feature:**
-Each row includes a subtitle showing the featured star name (e.g., "Featuring Rajkummar Rao") to provide context and allow easy star rotation without changing row titles.
+Each row displays a subtitle showing the featured stars (e.g., "Featuring Rajkummar Rao, Varun Dhawan, Vicky Kaushal & more") to provide context about the content curation.
+
+**Sorting Strategy:**
+Movies are sorted using a three-level hierarchy:
+1. **Primary:** IMDb rating (highest first)
+2. **Secondary:** Vote count (more votes = more reliable)
+3. **Tertiary:** Release date (newer first)
 
 **Use Case:**
-- Keep content fresh with recently-released movies
-- Leverage star power for audience engagement
-- Balance quality (rating-based sorting) with recency (5-year filter)
-- Easy updates by changing featured star names
+- Provide diverse content from multiple popular stars
+- Balance between star power and content quality
+- Automatic deduplication for multi-starrer films
+- Fresh content with 5-year recency filter
+- Better representation across different acting styles and genres
 
-**Alternative Star Options (for rotation):**
-
-**Hindi:**
-- Salman Khan (19), Varun Dhawan (15), Ranveer Singh (15), Vicky Kaushal (14), Kartik Aaryan (13), Shah Rukh Khan (11)
-
-**Tamil:**
-- Ajith Kumar (11), Sivakarthikeyan (9), Rajinikanth (8), Kamal Haasan (8)
-
-**Telugu:**
-- Chiranjeevi (13), Mahesh Babu (9), Vijay Deverakonda (9), Ram Charan (7), Allu Arjun (3)
-
-**Malayalam:**
-- Mammootty (26), Prithviraj Sukumaran (24), Tovino Thomas (24), Fahadh Faasil (18), Dulquer Salmaan (15)
-
-**Kannada:**
-- Upendra (42), Shiva Rajkumar (18), Rishab Shetty (10), Puneeth Rajkumar (5), Rakshit Shetty (3)
-
-**Bengali:**
-- Abir Chatterjee (23), Ankush Hazra (15), Prosenjit Chatterjee (12)
-
-**English:**
-- Chris Hemsworth (10), Tom Cruise (7), Brad Pitt (6), Leonardo DiCaprio (4), Ryan Gosling (4)
-
-**Note:** Some actors (Vijay, Dev, Nani, Yash) show inflated counts due to common names matching multiple people. These are excluded from primary selection.
+**Benefits Over Single-Actor Approach:**
+- **More Variety:** 3-4 different star personas per language
+- **Better Coverage:** Captures both solo and ensemble films
+- **Quality Balance:** Top-rated movies from diverse filmographies
+- **No Gaps:** If one star has few recent releases, others compensate
 
 ---
 
