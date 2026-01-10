@@ -194,55 +194,55 @@ export async function fetchShowsData(): Promise<ShowsData> {
       () => fetchContent({ min_rating: 8, type: 'show', sort: 'popularity', order: 'desc', limit: 5 }),
       () => fetchContent({ min_rating: 8, min_votes: 50000, type: 'show', sort: 'rating', order: 'desc', limit: 10 }),
 
-      // Top Rated Shows rows
+      // Top Rated Shows rows (optimized for 15 items each)
       () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', year_from: fiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 1000, type: 'show', original_language: 'bn', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 5000, type: 'show', original_language: 'ta', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 2000, type: 'show', original_language: 'te', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 2000, type: 'show', original_language: 'ml', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 2000, type: 'show', original_language: 'kn', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'bn', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'show', original_language: 'ta', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 1000, type: 'show', original_language: 'te', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', original_language: 'ml', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'kn', sort: 'rating', order: 'desc', limit: 15 }),
 
-      // Top Action Shows rows
+      // Top Action Shows rows (optimized for regional languages)
       () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Action', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Action', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 5000, type: 'show', genre: 'Action', original_language: 'hi', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'show', genre: 'Action', original_language: 'ta', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 1000, type: 'show', genre: 'Action', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Action', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', genre: 'Action', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Action', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 3000, type: 'show', genre: 'Action', original_language: 'hi', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Action', original_language: 'ta', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 300, type: 'show', genre: 'Action', original_language: 'te', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 200, type: 'show', genre: 'Action', original_language: 'ml', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Action', original_language: 'kn', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Action', original_language: 'bn', sort: 'rating', order: 'desc', limit: 15 }),
 
-      // Top Comedy Shows rows
+      // Top Comedy Shows rows (optimized for regional languages)
       () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Comedy', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Comedy', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 5000, type: 'show', genre: 'Comedy', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Comedy', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Comedy', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Comedy', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', genre: 'Comedy', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Comedy', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 3000, type: 'show', genre: 'Comedy', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 400, type: 'show', genre: 'Comedy', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 300, type: 'show', genre: 'Comedy', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 200, type: 'show', genre: 'Comedy', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Comedy', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Comedy', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
 
-      // Top Drama Shows rows
+      // Top Drama Shows rows (optimized for regional languages)
       () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Drama', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Drama', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 10000, type: 'show', genre: 'Drama', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Drama', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Drama', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Drama', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', genre: 'Drama', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Drama', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 5000, type: 'show', genre: 'Drama', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Drama', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 400, type: 'show', genre: 'Drama', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 300, type: 'show', genre: 'Drama', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Drama', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Drama', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
 
-      // Top Thriller Shows rows
-      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Thriller', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      // Top Thriller Shows rows (optimized for regional languages)
+      () => fetchContent({ min_rating: 6.5, min_votes: 10000, type: 'show', genre: 'Thriller', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Thriller', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 5000, type: 'show', genre: 'Thriller', original_language: 'hi', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Thriller', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Thriller', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', genre: 'Thriller', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', genre: 'Thriller', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Thriller', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 4000, type: 'show', genre: 'Thriller', original_language: 'hi', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 600, type: 'show', genre: 'Thriller', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Thriller', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 300, type: 'show', genre: 'Thriller', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Thriller', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Thriller', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
 
       // Latest Star Shows rows (using same actors as movies for now - can be adjusted)
       () => fetchMultipleStarMovies(['Rajkummar Rao', 'Varun Dhawan', 'Vicky Kaushal', 'Kartik Aaryan'], 'show'),
