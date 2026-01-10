@@ -22,8 +22,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
         {data.trending?.items && data.trending.items.length > 0 && (
           <ContentRow
             title="Trending Now"
-            content={data.trending.items}
-            viewAllHref="/search?sort=popularity&order=desc"
+            contents={data.trending.items}
+            href="/search?sort=popularity&order=desc"
           />
         )}
 
@@ -31,8 +31,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
         {data.topRated?.items && data.topRated.items.length > 0 && (
           <ContentRow
             title="Top Rated"
-            content={data.topRated.items}
-            viewAllHref="/search?sort=rating&order=desc&min_rating=8"
+            contents={data.topRated.items}
+            href="/search?sort=rating&order=desc&min_rating=8"
           />
         )}
 
@@ -57,8 +57,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
           {data.trendingMovies?.items && data.trendingMovies.items.length > 0 && (
             <ContentRow
               title="Trending Movies"
-              content={data.trendingMovies.items}
-              viewAllHref="/movies"
+              contents={data.trendingMovies.items}
+              href="/movies"
             />
           )}
 
@@ -66,8 +66,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
           {data.topMovies?.items && data.topMovies.items.length > 0 && (
             <ContentRow
               title="Top Rated Movies"
-              content={data.topMovies.items}
-              viewAllHref="/movies"
+              contents={data.topMovies.items}
+              href="/movies"
             />
           )}
         </div>
@@ -93,8 +93,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
           {data.trendingShows?.items && data.trendingShows.items.length > 0 && (
             <ContentRow
               title="Trending TV Shows"
-              content={data.trendingShows.items}
-              viewAllHref="/shows"
+              contents={data.trendingShows.items}
+              href="/shows"
             />
           )}
 
@@ -102,8 +102,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
           {data.topShows?.items && data.topShows.items.length > 0 && (
             <ContentRow
               title="Top Rated TV Shows"
-              content={data.topShows.items}
-              viewAllHref="/shows"
+              contents={data.topShows.items}
+              href="/shows"
             />
           )}
         </div>
