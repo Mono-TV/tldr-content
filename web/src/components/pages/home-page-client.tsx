@@ -15,7 +15,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
       <HeroCarousel items={data.featured?.items || []} />
 
       {/* Content Rows */}
-      <div className="pb-20 space-y-12">
+      <div className="-mt-20 relative z-10 pb-20 space-y-8 pl-12 lg:pl-16">
         {/* Trending Now - Mix of Movies & Shows */}
         {data.trending?.items && data.trending.items.length > 0 && (
           <ContentRow

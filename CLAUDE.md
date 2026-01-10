@@ -471,6 +471,55 @@ curl "https://content-api-401132033262.asia-south1.run.app/api/content?<filters>
 
 ---
 
+## Design System Hooks
+
+### Content Layout Pattern (CRITICAL)
+
+**All pages with hero carousel + content rows MUST follow this consistent layout pattern:**
+
+```tsx
+<div className="min-h-screen">
+  {/* Hero Section */}
+  <HeroCarousel items={data.featured?.items || []} />
+
+  {/* Content Rows Container */}
+  <div className="-mt-20 relative z-10 pb-20 space-y-8 pl-12 lg:pl-16">
+    <ContentRow ... />
+    <ContentRow ... />
+    {/* More content rows */}
+  </div>
+</div>
+```
+
+**Required Classes Breakdown:**
+- `-mt-20` - Negative margin to overlap content rows with hero carousel (creates seamless transition)
+- `relative z-10` - Ensure content rows appear above hero background
+- `pb-20` - Bottom padding (80px)
+- `space-y-8` - Vertical spacing between rows (32px)
+- **`pl-12 lg:pl-16`** - **Consistent left padding** (48px mobile, 64px desktop) - **CRITICAL FOR DESIGN CONSISTENCY**
+
+**Pages Using This Pattern:**
+- ✅ Homepage (`home-page-client.tsx`)
+- ✅ Movies Page (`movies-page-client.tsx`)
+- ✅ Shows Page (`shows-page-client.tsx`)
+
+**When Adding New Pages:**
+ALWAYS use the exact same content container classes for consistency. This ensures uniform left alignment across the entire application.
+
+**Anti-Pattern (DO NOT DO):**
+```tsx
+// ❌ Missing left padding
+<div className="pb-20 space-y-12">
+
+// ❌ Different padding values
+<div className="pl-8 lg:pl-10">
+
+// ✅ Correct
+<div className="-mt-20 relative z-10 pb-20 space-y-8 pl-12 lg:pl-16">
+```
+
+---
+
 ## Quick Reference
 
 ### Important Files

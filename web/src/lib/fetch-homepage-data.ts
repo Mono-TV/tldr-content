@@ -41,7 +41,7 @@ export async function fetchHomepageData(): Promise<HomepageData> {
       topShows,
     ] = await Promise.all([
       // Hero - highly rated popular content (mix)
-      fetchContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 5 }),
+      fetchContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 12 }),
 
       // Trending - recent popular content (mix)
       fetchContent({ sort: 'popularity', order: 'desc', limit: 15, year_from: new Date().getFullYear() - 2 }),

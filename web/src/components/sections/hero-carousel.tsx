@@ -1,200 +1,168 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
-import { cn, getBackdropUrl, formatRating, truncateText } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { Play, Star } from 'lucide-react';
+import { cn, getImageUrl, formatRating } from '@/lib/utils';
 import type { Content } from '@/types';
+import { FastAverageColor } from 'fast-average-color';
 
 interface HeroCarouselProps {
   items: Content[];
-  autoPlayInterval?: number;
 }
 
-export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
-  }, [items.length]);
-
-  const goToPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
-  }, [items.length]);
-
-  useEffect(() => {
-    if (isHovered || items.length <= 1) return;
-
-    const interval = setInterval(goToNext, autoPlayInterval);
-    return () => clearInterval(interval);
-  }, [isHovered, items.length, autoPlayInterval, goToNext]);
+export function HeroCarousel({ items }: HeroCarouselProps) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [dominantColor, setDominantColor] = useState('0, 0, 0'); // RGB format
 
   if (items.length === 0) return null;
 
-  const currentItem = items[currentIndex];
+  const selectedItem = items[selectedIndex];
+
+  // Extract dominant color from selected poster
+  useEffect(() => {
+    const extractColor = async () => {
+      const fac = new FastAverageColor();
+      const img = new window.Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = getImageUrl(selectedItem.poster_url, 'sm');
+
+      img.onload = () => {
+        try {
+          const color = fac.getColor(img);
+          // Convert to RGB string for use in gradients
+          setDominantColor(`${color.value[0]}, ${color.value[1]}, ${color.value[2]}`);
+        } catch (e) {
+          console.error('Error extracting color:', e);
+          setDominantColor('0, 0, 0'); // Fallback to black
+        }
+      };
+
+      img.onerror = () => {
+        setDominantColor('0, 0, 0'); // Fallback to black on error
+      };
+    };
+
+    extractColor();
+  }, [selectedIndex, selectedItem.poster_url]);
 
   return (
     <section
-      className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="relative h-[60vh] w-full overflow-hidden transition-colors duration-700"
+      style={{
+        background: `radial-gradient(ellipse at left, rgba(${dominantColor}, 0.3) 0%, rgba(${dominantColor}, 0.15) 40%, rgba(0, 0, 0, 0.95) 100%), linear-gradient(to right, rgb(10, 10, 10) 0%, rgb(15, 15, 20) 100%)`
+      }}
     >
-      {/* Background Images */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentItem._id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-          className="absolute inset-0"
-        >
-          <Image
-            src={getBackdropUrl(currentItem.backdrop_url || currentItem.poster_url, 'lg')}
-            alt={currentItem.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          {/* Enhanced Gradient Overlays for better text contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Content */}
-      <div className="relative h-full flex items-center px-12 lg:px-16">
-        <AnimatePresence mode="wait">
+      <div className="h-full flex">
+        {/* Left Panel - 30% - Content Info (Fixed) */}
+        <div className="w-[30%] min-w-[380px] flex-shrink-0 py-8 pl-12 pr-8 lg:pl-16 lg:pr-12 flex flex-col justify-center">
           <motion.div
-            key={currentItem._id}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-2xl"
+            key={selectedItem._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="space-y-6"
           >
-            {/* Title with enhanced text shadow */}
-            <h1
-              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
-              style={{
-                textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)',
-              }}
-            >
-              {currentItem.title}
+            {/* Title */}
+            <h1 className="text-4xl lg:text-5xl font-bold leading-tight text-white drop-shadow-lg">
+              {selectedItem.title}
             </h1>
 
-            {/* Enhanced Meta Info */}
-            <div className="flex items-center gap-5 mb-6 text-base md:text-lg">
-              {currentItem.imdb_rating && (
-                <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                  <Star className="w-5 h-5 text-gold fill-gold" />
-                  <span className="font-bold text-white">{formatRating(currentItem.imdb_rating)}</span>
+            {/* Meta Info */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {selectedItem.imdb_rating && (
+                <div className="flex items-center gap-2 bg-yellow-500/20 px-3 py-1.5 rounded-lg backdrop-blur-sm border border-yellow-500/30">
+                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <span className="font-bold text-yellow-300 text-sm">
+                    {formatRating(selectedItem.imdb_rating)}
+                  </span>
                 </div>
               )}
-              {currentItem.year && (
-                <span className="font-semibold text-white/90">{currentItem.year}</span>
+              {selectedItem.year && (
+                <span className="text-white/70 text-sm font-medium px-3 py-1.5 bg-white/5 rounded-lg">
+                  {selectedItem.year}
+                </span>
               )}
-              {currentItem.runtime && (
-                <span className="font-medium text-white/70">{currentItem.runtime} min</span>
-              )}
-              {currentItem.genres?.[0] && (
-                <span className="px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-lg text-sm font-medium border border-white/20">
-                  {currentItem.genres[0].name}
+              {selectedItem.genres?.[0] && (
+                <span className="px-3 py-1.5 bg-accent/20 backdrop-blur-sm rounded-lg text-xs font-semibold border border-accent/40 text-accent">
+                  {selectedItem.genres[0].name}
                 </span>
               )}
             </div>
 
-            {/* Description with better readability */}
-            <p
-              className="text-white/80 text-base md:text-lg mb-8 line-clamp-3 leading-relaxed max-w-xl"
-              style={{
-                textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-              }}
-            >
-              {truncateText(currentItem.overview || currentItem.plot || '', 250)}
+            {/* Description - 2 lines */}
+            <p className="text-white/60 text-base leading-relaxed line-clamp-2">
+              {selectedItem.overview || selectedItem.plot || 'No description available.'}
             </p>
 
-            {/* Large Prominent CTA Buttons - Apple TV+ style */}
-            <div className="flex items-center gap-4 flex-wrap">
-              <Link
-                href={`/content/${currentItem.imdb_id}`}
-                className={cn(
-                  'flex items-center gap-3 px-10 py-4 rounded-full font-bold text-lg',
-                  'bg-white text-black hover:bg-white/90 transition-all duration-300',
-                  'shadow-2xl hover:shadow-white/20 hover:scale-105'
-                )}
-              >
-                <Play className="w-6 h-6 fill-black" />
-                Watch Now
-              </Link>
-              <button
-                className={cn(
-                  'flex items-center justify-center w-14 h-14 rounded-full',
-                  'bg-black/40 backdrop-blur-md border border-white/30 text-white',
-                  'hover:bg-white/30 hover:border-white/50 transition-all duration-300',
-                  'hover:scale-110'
-                )}
-                aria-label="Add to watchlist"
-              >
-                <Heart className="w-6 h-6" />
-              </button>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Navigation Arrows */}
-      {items.length > 1 && (
-        <>
-          <button
-            onClick={goToPrev}
-            className={cn(
-              'absolute left-4 top-1/2 -translate-y-1/2 z-10',
-              'p-2 rounded-full bg-background/50 backdrop-blur-sm',
-              'opacity-0 hover:opacity-100 transition-opacity',
-              isHovered && 'opacity-70'
-            )}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button
-            onClick={goToNext}
-            className={cn(
-              'absolute right-4 top-1/2 -translate-y-1/2 z-10',
-              'p-2 rounded-full bg-background/50 backdrop-blur-sm',
-              'opacity-0 hover:opacity-100 transition-opacity',
-              isHovered && 'opacity-70'
-            )}
-            aria-label="Next slide"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </>
-      )}
-
-      {/* Dots Indicator */}
-      {items.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          {items.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
+            {/* Play Button */}
+            <Link
+              href={`/content/${selectedItem.imdb_id}`}
               className={cn(
-                'h-1.5 rounded-full transition-all duration-300',
-                index === currentIndex
-                  ? 'w-8 bg-accent'
-                  : 'w-1.5 bg-muted-foreground/50 hover:bg-muted-foreground'
+                'flex items-center justify-center gap-3 px-8 py-4 rounded-full font-bold text-base',
+                'bg-accent text-white hover:bg-accent/90 transition-all duration-300',
+                'shadow-lg hover:shadow-accent/30 hover:scale-105 w-fit mt-2'
               )}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
+            >
+              <Play className="w-5 h-5 fill-white" />
+              Watch Now
+            </Link>
+          </motion.div>
         </div>
-      )}
+
+        {/* Right Panel - 70% - Poster Carousel */}
+        <div className="flex-1 relative overflow-hidden">
+          {/* Only fade on right edge to indicate more content */}
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
+
+          {/* Scroll Container */}
+          <div className="h-full flex items-center gap-10 px-16 overflow-x-scroll hide-scrollbar scroll-smooth">
+            {items.map((item, index) => (
+              <motion.div
+                key={item._id}
+                onMouseEnter={() => setSelectedIndex(index)}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                className={cn(
+                  'relative flex-shrink-0 cursor-pointer transition-all duration-500 ease-out',
+                  'h-[350px] w-[233px] rounded-2xl overflow-hidden group',
+                  selectedIndex === index
+                    ? 'ring-4 ring-accent scale-110 shadow-2xl shadow-accent/40 z-20'
+                    : 'hover:scale-105 hover:ring-2 hover:ring-white/40 hover:shadow-xl'
+                )}
+              >
+                <Image
+                  src={getImageUrl(item.poster_url, 'md')}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="233px"
+                />
+                {/* Overlay on non-selected items */}
+                <div
+                  className={cn(
+                    'absolute inset-0 transition-opacity duration-500',
+                    selectedIndex !== index
+                      ? 'bg-black/50 group-hover:bg-black/30'
+                      : 'bg-transparent'
+                  )}
+                />
+                {/* Title overlay on hover (non-selected items) */}
+                {selectedIndex !== index && (
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-white font-semibold text-sm line-clamp-2">
+                      {item.title}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -202,18 +170,31 @@ export function HeroCarousel({ items, autoPlayInterval = 6000 }: HeroCarouselPro
 // Skeleton loader
 export function HeroCarouselSkeleton() {
   return (
-    <section className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
-      <div className="absolute inset-0 skeleton" />
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-      <div className="relative h-full flex items-center">
-        <div className="max-w-2xl space-y-4">
-          <div className="h-12 w-3/4 rounded skeleton" />
-          <div className="h-6 w-1/2 rounded skeleton" />
-          <div className="h-20 w-full rounded skeleton" />
-          <div className="flex gap-4">
-            <div className="h-12 w-32 rounded-lg skeleton" />
-            <div className="h-12 w-32 rounded-lg skeleton" />
+    <section className="relative h-[60vh] w-full bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
+      <div className="h-full flex">
+        {/* Left Panel Skeleton */}
+        <div className="w-[30%] min-w-[380px] flex-shrink-0 py-8 pl-12 pr-8 lg:pl-16 lg:pr-12 flex flex-col justify-center">
+          <div className="space-y-6">
+            <div className="h-14 w-3/4 rounded-lg skeleton" />
+            <div className="flex gap-3">
+              <div className="h-8 w-20 rounded-lg skeleton" />
+              <div className="h-8 w-16 rounded-lg skeleton" />
+              <div className="h-8 w-24 rounded-lg skeleton" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-full rounded skeleton" />
+              <div className="h-4 w-4/5 rounded skeleton" />
+            </div>
+            <div className="h-12 w-40 rounded-full skeleton" />
           </div>
+        </div>
+
+        {/* Right Panel Skeleton */}
+        <div className="flex-1 flex items-center gap-10 px-16 overflow-hidden">
+          <div className="h-[350px] w-[233px] rounded-2xl skeleton flex-shrink-0" />
+          <div className="h-[350px] w-[233px] rounded-2xl skeleton flex-shrink-0" />
+          <div className="h-[350px] w-[233px] rounded-2xl skeleton flex-shrink-0" />
+          <div className="h-[350px] w-[233px] rounded-2xl skeleton flex-shrink-0" />
         </div>
       </div>
     </section>
