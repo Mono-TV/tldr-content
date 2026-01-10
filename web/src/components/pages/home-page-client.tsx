@@ -22,7 +22,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Trending Now"
             contents={data.trending.items}
             href="/search?sort=popularity&order=desc"
-          />
+                      />
         )}
 
         {/* Top Rated - Mix */}
@@ -31,7 +31,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Top Rated"
             contents={data.topRated.items}
             href="/search?sort=rating&order=desc&min_rating=8"
-          />
+                      />
         )}
 
         {/* Trending Movies */}
@@ -40,7 +40,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Trending Movies"
             contents={data.trendingMovies.items}
             href="/movies"
-          />
+                      />
         )}
 
         {/* Top Rated Movies */}
@@ -49,7 +49,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Top Rated Movies"
             contents={data.topMovies.items}
             href="/movies"
-          />
+                      />
         )}
 
         {/* Trending Shows */}
@@ -58,7 +58,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Trending TV Shows"
             contents={data.trendingShows.items}
             href="/shows"
-          />
+                      />
         )}
 
         {/* Top Rated Shows */}
@@ -67,7 +67,7 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Top Rated TV Shows"
             contents={data.topShows.items}
             href="/shows"
-          />
+                      />
         )}
       </div>
     </div>

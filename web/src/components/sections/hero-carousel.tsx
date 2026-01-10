@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Play, Star } from 'lucide-react';
 import { cn, getImageUrl, formatRating } from '@/lib/utils';
 import type { Content } from '@/types';
 import { FastAverageColor } from 'fast-average-color';
+import { useDPadNavigation } from '@/hooks/use-dpad-navigation';
 
 interface HeroCarouselProps {
   items: Content[];
@@ -16,10 +18,44 @@ interface HeroCarouselProps {
 export function HeroCarousel({ items }: HeroCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [dominantColor, setDominantColor] = useState('0, 0, 0'); // RGB format
+  const [isDPadMode, setIsDPadMode] = useState(false);
+  const posterRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const router = useRouter();
 
   if (items.length === 0) return null;
 
   const selectedItem = items[selectedIndex];
+
+  // D-Pad Navigation for spotlight
+  useDPadNavigation({
+    onNavigate: (direction) => {
+      setIsDPadMode(true);
+
+      if (direction === 'left') {
+        setSelectedIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1));
+      } else if (direction === 'right') {
+        setSelectedIndex((prev) => (prev + 1) % items.length);
+      }
+      // Up/Down navigation will be handled by global navigation system
+    },
+    onSelect: () => {
+      if (isDPadMode) {
+        router.push(`/content/${selectedItem.imdb_id}`);
+      }
+    },
+    enabled: true,
+  });
+
+  // Scroll selected poster into view when using D-Pad
+  useEffect(() => {
+    if (isDPadMode && posterRefs.current[selectedIndex]) {
+      posterRefs.current[selectedIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [selectedIndex, isDPadMode]);
 
   // Extract dominant color from selected poster
   useEffect(() => {
@@ -55,6 +91,14 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
         background: `radial-gradient(ellipse at left, rgba(${dominantColor}, 0.3) 0%, rgba(${dominantColor}, 0.15) 40%, rgba(0, 0, 0, 0.95) 100%), linear-gradient(to right, rgb(10, 10, 10) 0%, rgb(15, 15, 20) 100%)`
       }}
     >
+      {/* D-Pad Mode Indicator */}
+      {isDPadMode && (
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-accent/20 backdrop-blur-md border border-accent/40 rounded-full text-xs font-semibold text-accent animate-pulse">
+          <span className="w-2 h-2 bg-accent rounded-full"></span>
+          D-Pad Mode Active
+        </div>
+      )}
+
       <div className="h-full flex">
         {/* Left Panel - 30% - Content Info (Fixed) */}
         <div className="w-[30%] min-w-[380px] flex-shrink-0 py-8 pl-12 pr-8 lg:pl-16 lg:pr-12 flex flex-col justify-center">
@@ -122,16 +166,30 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
             {items.map((item, index) => (
               <motion.div
                 key={item._id}
-                onMouseEnter={() => setSelectedIndex(index)}
+                ref={(el) => {
+                  posterRefs.current[index] = el;
+                }}
+                onMouseEnter={() => {
+                  setSelectedIndex(index);
+                  setIsDPadMode(false); // Disable D-Pad mode when using mouse
+                }}
+                onClick={() => {
+                  if (!isDPadMode) {
+                    router.push(`/content/${item.imdb_id}`);
+                  }
+                }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
+                data-focusable="true"
+                data-poster-index={index}
                 className={cn(
                   'relative flex-shrink-0 cursor-pointer transition-all duration-500 ease-out',
                   'h-[350px] w-[233px] rounded-2xl overflow-hidden group',
                   selectedIndex === index
                     ? 'ring-4 ring-accent scale-110 shadow-2xl shadow-accent/40 z-20'
-                    : 'hover:scale-105 hover:ring-2 hover:ring-white/40 hover:shadow-xl'
+                    : 'hover:scale-105 hover:ring-2 hover:ring-white/40 hover:shadow-xl',
+                  isDPadMode && selectedIndex === index && 'dpad-focused'
                 )}
               >
                 <Image

@@ -520,6 +520,75 @@ ALWAYS use the exact same content container classes for consistency. This ensure
 
 ---
 
+## D-Pad Navigation (TV Remote Control)
+
+The website supports TV-like navigation using arrow keys, similar to Smart TV apps and streaming platforms.
+
+### Navigation Controls
+
+**Arrow Keys:**
+- ⬅️ **Left Arrow**: Navigate to previous poster in spotlight
+- ➡️ **Right Arrow**: Navigate to next poster in spotlight
+- ⬆️ **Up Arrow**: (Reserved for future row navigation)
+- ⬇️ **Down Arrow**: (Reserved for future row navigation)
+
+**Action Keys:**
+- **Enter**: Select/click the focused item (opens content detail page)
+- **Escape/Backspace**: Go back (reserved for future use)
+
+### Features
+
+✅ **Visual Focus Indicator:**
+- Red pulsing outline around focused element
+- Smooth scale animation (1.05x)
+- Auto-scroll focused item into view
+
+✅ **Mode Detection:**
+- Automatically activates when arrow keys are pressed
+- Shows "D-Pad Mode Active" indicator in top-right
+- Switches back to mouse mode when hovering
+
+✅ **Spotlight Navigation:**
+- Left/Right arrows navigate between posters
+- Selected poster updates metadata panel instantly
+- Background color transitions with selection
+- Smooth scrolling to keep focused poster visible
+
+### Implementation
+
+**Hook:** `/web/src/hooks/use-dpad-navigation.ts`
+- `useDPadNavigation` - Main navigation hook
+- `FocusManager` - Focus state management class
+
+**Components:**
+- `hero-carousel.tsx` - Spotlight navigation enabled
+- Future: Content rows, navbar, search
+
+**Styling:** `globals.css`
+- `.dpad-focused` - Focus ring with pulse animation
+- `[data-focusable="true"]` - Focusable elements marker
+
+### Testing D-Pad Navigation
+
+```bash
+# Start dev server
+cd web && npm run dev
+
+# Open http://localhost:3000
+# Press Left/Right arrow keys to navigate spotlight posters
+# Press Enter to select focused poster
+```
+
+**Expected Behavior:**
+1. Press Right Arrow → Spotlight moves to next poster
+2. Metadata updates (title, rating, description)
+3. Background color transitions to new poster's dominant color
+4. "D-Pad Mode Active" indicator appears
+5. Focused poster scrolls into center view
+6. Hover with mouse → D-Pad mode deactivates
+
+---
+
 ## Quick Reference
 
 ### Important Files

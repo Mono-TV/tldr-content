@@ -33,7 +33,11 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index ? index * 0.05 : 0 }}
-      className={cn('relative group flex-shrink-0', sizeClasses[size], className)}
+      className={cn(
+        'relative group flex-shrink-0',
+        sizeClasses[size],
+        className
+      )}
     >
       {/* Rank Number */}
       {showRank && index !== undefined && (
