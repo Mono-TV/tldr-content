@@ -12,8 +12,8 @@ import { fetchContent, fetchMultipleStarMovies } from './server-api';
  */
 async function batchPromises<T>(
   promiseFactories: (() => Promise<T>)[],
-  batchSize: number = 10,
-  delayMs: number = 100
+  batchSize: number = 20,
+  delayMs: number = 50
 ): Promise<T[]> {
   const results: T[] = [];
 

@@ -22,12 +22,13 @@ import { ShowsPageClient } from '@/components/pages/shows-page-client';
  * - All subsequent visitors: <1 second (ISR cache)
  */
 
-// Temporarily disable ISR cache to force fresh data (will revert to 300)
-export const revalidate = 0;
+// Enable ISR with 5-minute cache to prevent timeout on every request
+// First request will take 2+ minutes to fetch all 48 rows
+// Subsequent requests will be served from cache (<1 second)
+export const revalidate = 300;
 
-// Use dynamic rendering to generate on-demand (not at build time)
-// This prevents API rate limiting when building both homepage and shows page
-export const dynamic = 'force-dynamic';
+// Remove force-dynamic to allow caching
+// export const dynamic = 'force-dynamic';
 
 export default async function ShowsPage() {
   // Fetch all shows page data on server
