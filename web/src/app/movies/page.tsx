@@ -1,8 +1,9 @@
 import { fetchMoviesData } from '@/lib/fetch-movies-data';
 import { MoviesPageClient } from '@/components/pages/movies-page-client';
+import { getInitialMoviesData } from '@/lib/progressive-loading';
 
 /**
- * Movies Page - Server Component with ISR
+ * Movies Page - Server Component with Progressive Loading
  *
  * Displays all 48 rows of movie content organized by:
  * - Top Rated Movies (8 rows - by language)
@@ -13,10 +14,10 @@ import { MoviesPageClient } from '@/components/pages/movies-page-client';
  * - Latest Star Movies (7 rows - by language)
  * - Top 10 Movies (1 row)
  *
- * All data is fetched server-side with ISR caching:
- * - First visitor: ~90-120 seconds (generates cache)
- * - Subsequent visitors: <1 second (served from cache)
- * - Cache refreshes every 5 minutes
+ * Progressive Loading Strategy:
+ * - Server renders first 10 rows (~10-15 seconds)
+ * - Client lazy-loads remaining 38 rows after initial render
+ * - ISR cache refreshes every 5 minutes
  */
 
 // Enable ISR with 5-minute cache
@@ -27,9 +28,12 @@ export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
 export default async function MoviesPage() {
-  // Fetch all movies page data on server
-  const data = await fetchMoviesData();
+  // Fetch all movies data on server
+  const allData = await fetchMoviesData();
 
-  // Pass pre-fetched data to client component
-  return <MoviesPageClient data={data} />;
+  // Extract only first 10 rows for initial render
+  const initialData = getInitialMoviesData(allData);
+
+  // Pass initial data to client (client will lazy-load the rest)
+  return <MoviesPageClient initialData={initialData} />;
 }

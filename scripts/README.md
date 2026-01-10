@@ -102,3 +102,76 @@ echo "NEXT_PUBLIC_FIREBASE_PROJECT_ID=content-lumiolabs-internal" > .env.local
 ```
 
 See [PROJECT-BOUNDARIES.md](../PROJECT-BOUNDARIES.md) for detailed documentation.
+
+---
+
+## generate-hotstar-token.js
+
+Generates authentication tokens for Hotstar (JioHotstar) API using Akamai token generation.
+
+### Quick Start
+
+**1. Install Dependencies:**
+```bash
+npm install akamai-token
+```
+
+**2. Generate Token:**
+```bash
+node scripts/generate-hotstar-token.js
+```
+
+**3. Copy Token to `.env.local`:**
+
+The script outputs the token in the correct format to add to your environment file.
+
+### Example Output
+
+```
+=== Hotstar API Token Generated ===
+
+Token: st=1736054800~exp=1736056800~acl=/*~hmac=abc123def456
+
+Add this to your .env.local file:
+HOTSTAR_TOKEN=st=1736054800~exp=1736056800~acl=/*~hmac=abc123def456
+
+Token valid for: 2000 seconds (33 minutes)
+
+=== Test with cURL ===
+curl --location 'https://pp-catalog-api.hotstar.com/movie/search?...' \
+  --header 'hdnea: st=1736054800~exp=1736056800~acl=/*~hmac=abc123def456'
+```
+
+### Token Expiry
+
+⚠️ Tokens expire after **2000 seconds (33 minutes)**. You'll need to:
+- Regenerate tokens before they expire
+- Implement auto-refresh for production use
+- Use longer windows for development (if Hotstar policy allows)
+
+### Configuration
+
+The script reads `HOTSTAR_AKAMAI_SECRET` from environment variables.
+
+**Custom secret:**
+```bash
+HOTSTAR_AKAMAI_SECRET=your_secret node scripts/generate-hotstar-token.js
+```
+
+### Alternative Methods
+
+If Node.js token generation doesn't work:
+
+**Java:**
+```bash
+java AkamaiToken -k <secret> -a /* -s now -w 2000
+```
+
+**Python:**
+```bash
+python akamai_token_v2.py -k <secret> -a /* -s now -w 2000
+```
+
+### Documentation
+
+See [HOTSTAR_API.md](../HOTSTAR_API.md) for complete Hotstar API documentation.

@@ -1,0 +1,33 @@
+# Dockerfile for Hotstar Ingestion Scripts
+# Runs in Google Cloud Run Jobs
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements-hotstar.txt .
+RUN pip install --no-cache-dir -r requirements-hotstar.txt
+
+# Copy scripts
+COPY scripts/generate-token.py scripts/
+COPY scripts/ingest-hotstar-movies.py scripts/
+COPY scripts/sync-hotstar-daily.py scripts/
+
+# Copy migrations (for initial setup)
+COPY migrations/ migrations/
+
+# Make scripts executable
+RUN chmod +x scripts/*.py
+
+# Set environment variables (will be overridden by Cloud Run)
+ENV PYTHONUNBUFFERED=1
+
+# Default command (can be overridden)
+CMD ["python3", "scripts/sync-hotstar-daily.py"]

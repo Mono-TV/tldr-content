@@ -1,26 +1,54 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { HeroCarousel } from '@/components/sections/hero-carousel';
 import { ContentRow, Top10Row } from '@/components/sections/content-row';
 import type { ShowsData } from '@/lib/fetch-shows-data';
 
 interface ShowsPageClientProps {
-  data: ShowsData;
+  initialData: Partial<ShowsData>;
 }
 
 /**
- * Client-side shows page component
- * Receives pre-fetched data from server component
- * All data is pre-rendered at build time via ISR
+ * Client-side shows page component with progressive loading
+ * - Receives first 10 rows from server (fast initial render)
+ * - Lazy-loads remaining 38 rows after mount
  */
-export function ShowsPageClient({ data }: ShowsPageClientProps) {
-  // Debug: Log what data the client receives
-  console.log('[Client] Shows page data received:', {
-    featured: data.featured?.items?.length || 0,
-    topRatedRecent: data.topRatedRecent?.items?.length || 0,
-    topRatedEnglish: data.topRatedEnglish?.items?.length || 0,
-    topAction: data.topAction?.items?.length || 0,
-    dataKeys: Object.keys(data).length
+export function ShowsPageClient({ initialData }: ShowsPageClientProps) {
+  const [remainingData, setRemainingData] = useState<Partial<ShowsData> | null>(null);
+  const [isLoadingRemaining, setIsLoadingRemaining] = useState(true);
+
+  // Merge initial and remaining data
+  const data = { ...initialData, ...remainingData };
+
+  // Fetch remaining data after initial render
+  useEffect(() => {
+    async function loadRemainingData() {
+      try {
+        console.log('[Client] Loading remaining shows data...');
+        const response = await fetch('/api/shows/remaining');
+        if (!response.ok) throw new Error('Failed to fetch remaining data');
+
+        const remaining = await response.json();
+        setRemainingData(remaining);
+        console.log('[Client] Remaining shows data loaded');
+      } catch (error) {
+        console.error('[Client] Error loading remaining data:', error);
+      } finally {
+        setIsLoadingRemaining(false);
+      }
+    }
+
+    // Start loading after a brief delay to prioritize initial render
+    const timer = setTimeout(loadRemainingData, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Debug: Log what data the client has
+  console.log('[Client] Shows page data:', {
+    initial: Object.keys(initialData).length,
+    remaining: remainingData ? Object.keys(remainingData).length : 0,
+    isLoadingRemaining
   });
 
   return (
