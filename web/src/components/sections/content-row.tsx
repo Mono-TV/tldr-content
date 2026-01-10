@@ -2,7 +2,6 @@
 
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
 import { cn } from '@/lib/utils';
 import type { Content } from '@/types';
@@ -28,16 +27,6 @@ export function ContentRow({
 }: ContentRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-
-    const scrollAmount = scrollRef.current.clientWidth * 0.8;
-    scrollRef.current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    });
-  };
-
   return (
     <section className="relative py-6">
       {/* Header */}
@@ -51,37 +40,7 @@ export function ContentRow({
       </div>
 
       {/* Carousel Container */}
-      <div className="relative group/carousel">
-        {/* Left Arrow */}
-        <button
-          onClick={() => scroll('left')}
-          className={cn(
-            'absolute left-0 top-1/2 -translate-y-1/2 z-20',
-            'w-12 h-24 flex items-center justify-center',
-            'bg-gradient-to-r from-background to-transparent',
-            'opacity-0 group-hover/carousel:opacity-100 transition-opacity',
-            'hover:from-background/90'
-          )}
-          aria-label="Scroll left"
-        >
-          <ChevronLeft className="w-8 h-8" />
-        </button>
-
-        {/* Right Arrow */}
-        <button
-          onClick={() => scroll('right')}
-          className={cn(
-            'absolute right-0 top-1/2 -translate-y-1/2 z-20',
-            'w-12 h-24 flex items-center justify-center',
-            'bg-gradient-to-l from-background to-transparent',
-            'opacity-0 group-hover/carousel:opacity-100 transition-opacity',
-            'hover:from-background/90'
-          )}
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="w-8 h-8" />
-        </button>
-
+      <div className="relative">
         {/* Scrollable Content */}
         <div
           ref={scrollRef}
