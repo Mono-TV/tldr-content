@@ -47,7 +47,6 @@ export async function fetchContent(filters: ContentFilters, retryCount = 0, maxR
   try {
     const response = await fetch(url, {
       next: { revalidate: 300 }, // Revalidate every 5 minutes
-      cache: 'no-store', // Disable Next.js cache during build to prevent issues
     });
 
     // Handle rate limiting with exponential backoff

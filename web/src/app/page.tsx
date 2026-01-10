@@ -2,24 +2,30 @@ import { fetchHomepageData } from '@/lib/fetch-homepage-data';
 import { HomePageClient } from '@/components/pages/home-page-client';
 
 /**
- * Homepage - Server Component with ISR
+ * Homepage - Server Component with On-Demand ISR
  *
- * This page is pre-rendered at build time and revalidated every 5 minutes.
- * All 48 rows of content are fetched server-side in parallel, eliminating
- * client-side API calls and providing instant page loads.
+ * This page uses on-demand ISR to avoid API rate limiting during builds.
+ * The first visitor triggers data fetching, subsequent visitors get cached data.
+ *
+ * Build Strategy:
+ * - Uses 'force-dynamic' to skip build-time pre-rendering
+ * - Avoids API rate limiting and timeouts when building
+ * - First visitor: ~2-3 second load (data fetching)
+ * - All subsequent visitors: <1 second (ISR cache)
+ * - Auto-updates every 5 minutes
  *
  * Performance Benefits:
  * - Zero client-side API requests
- * - Instant page load (<1 second)
- * - Perfect SEO (pre-rendered HTML)
- * - Auto-updates every 5 minutes
+ * - Perfect SEO (pre-rendered HTML after first visit)
+ * - No build-time API calls
  */
 
 // Enable ISR - revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
 
-// Enable dynamic rendering for this page (required for ISR)
-export const dynamic = 'force-static';
+// Use dynamic rendering to generate on-demand (not at build time)
+// This prevents API timeouts when building in Docker/Cloud Run
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   // Fetch all homepage data on server
