@@ -19,17 +19,18 @@ Complete guide to creating, managing, and customizing Top Rated Movies rows on t
 
 ## Overview
 
-The homepage displays curated **Top Rated Movies** rows with different filters (language, genre, year range, etc.). Each row shows 15 high-quality movies based on IMDb ratings and vote counts.
+The homepage displays curated **Top Rated Movies** rows with different language filters, plus a **Top 10 This Week** row. Each Top Rated row shows 15 high-quality movies based on IMDb ratings and vote counts.
 
-**Current Top Rated Movies Rows:**
+**Current Homepage Rows:**
 1. Top Rated Movies (Last 5 years) - 50k votes
 2. Top Rated English Movies (Last 10 years) - 50k votes
 3. Top Rated Hindi Movies (Last 10 years) - 50k votes
-4. Top Rated Tamil Movies (Last 10 years) - 15k votes
-5. Top Rated Telugu Movies (Last 10 years) - 5k votes
-6. Top Rated Malayalam Movies (Last 10 years) - 5k votes
-7. Top Rated Kannada Movies (Last 15 years) - 5k votes
-8. Top Rated Bengali Movies (Last 15 years) - 2k votes, 7.5+ rating
+4. Top Rated Bengali Movies (Last 15 years) - 2k votes, 7.5+ rating
+5. Top Rated Tamil Movies (Last 10 years) - 15k votes
+6. Top Rated Telugu Movies (Last 10 years) - 5k votes
+7. Top Rated Malayalam Movies (Last 10 years) - 5k votes
+8. Top Rated Kannada Movies (Last 15 years) - 5k votes
+9. **Top 10 This Week** - Top 10 highest-rated content
 
 **Filter Strategy:**
 Different languages use different thresholds based on industry size and global reach:
