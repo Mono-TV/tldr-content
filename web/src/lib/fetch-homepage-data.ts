@@ -5,6 +5,33 @@
 
 import { fetchContent, fetchMultipleStarMovies } from './server-api';
 
+/**
+ * Batch promises to avoid overwhelming the API
+ * Processes promises in groups with delays between batches
+ */
+async function batchPromises<T>(
+  promises: Promise<T>[],
+  batchSize: number = 10,
+  delayMs: number = 100
+): Promise<T[]> {
+  const results: T[] = [];
+
+  for (let i = 0; i < promises.length; i += batchSize) {
+    const batch = promises.slice(i, i + batchSize);
+    console.log(`[ISR] Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(promises.length / batchSize)} (${batch.length} requests)...`);
+
+    const batchResults = await Promise.all(batch);
+    results.push(...batchResults);
+
+    // Add delay between batches (except for last batch)
+    if (i + batchSize < promises.length) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return results;
+}
+
 // Year helpers
 const currentYear = new Date().getFullYear();
 const fiveYearsAgo = currentYear - 5;
@@ -152,7 +179,7 @@ export async function fetchHomepageData(): Promise<HomepageData> {
       malayalamStar,
       kannadaStar,
       bengaliStar,
-    ] = await Promise.all([
+    ] = await batchPromises([
       // Hero & Top 10
       fetchContent({ min_rating: 8, sort: 'popularity', order: 'desc', limit: 5 }),
       fetchContent({ min_rating: 8, min_votes: 100000, type: 'movie', sort: 'rating', order: 'desc', limit: 10 }),

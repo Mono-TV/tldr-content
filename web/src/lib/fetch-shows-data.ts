@@ -6,21 +6,26 @@
 import { fetchContent, fetchMultipleStarMovies } from './server-api';
 
 /**
- * Helper function to batch promises to avoid overwhelming the API
- * Uses optimized batching for faster builds while respecting rate limits
+ * Batch promises to avoid overwhelming the API
+ * Processes promises in groups with delays between batches
  */
-async function batchPromises<T>(promises: Promise<T>[], batchSize: number = 8): Promise<T[]> {
+async function batchPromises<T>(
+  promises: Promise<T>[],
+  batchSize: number = 10,
+  delayMs: number = 100
+): Promise<T[]> {
   const results: T[] = [];
-  console.log(`[ISR] Processing ${promises.length} requests in batches of ${batchSize}...`);
 
   for (let i = 0; i < promises.length; i += batchSize) {
     const batch = promises.slice(i, i + batchSize);
+    console.log(`[ISR] Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(promises.length / batchSize)} (${batch.length} requests)...`);
+
     const batchResults = await Promise.all(batch);
     results.push(...batchResults);
 
-    // Small delay between batches to prevent API rate limiting (200ms)
+    // Add delay between batches (except for last batch)
     if (i + batchSize < promises.length) {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
   }
 
