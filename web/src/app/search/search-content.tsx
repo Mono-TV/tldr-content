@@ -12,7 +12,7 @@ import { cn, debounce } from '@/lib/utils';
 import api from '@/services/api';
 import type { ContentFilters } from '@/types';
 
-// Force rebuild - 2026-01-10
+// Fixed: Removed problematic useEffect that caused auto-deletion - 2026-01-10
 const RECENT_SEARCHES_KEY = 'tldr-recent-searches';
 const MAX_RECENT_SEARCHES = 8;
 const ITEMS_PER_PAGE = 24;
@@ -73,15 +73,6 @@ export function SearchContent() {
       setRecentSearches(JSON.parse(stored));
     }
   }, []);
-
-  // Sync query state with URL
-  useEffect(() => {
-    const urlQuery = searchParams.get('q') || '';
-    if (urlQuery !== query) {
-      setQuery(urlQuery);
-      setDebouncedQuery(urlQuery);
-    }
-  }, [searchParams]);
 
   // Save search to recent
   const saveToRecent = useCallback((searchTerm: string) => {
