@@ -42,20 +42,10 @@ export function ContentRow({
     <section className="relative py-6">
       {/* Header */}
       <div className="mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
-            {subtitle && (
-              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-            )}
-          </div>
-          {href && (
-            <a
-              href={href}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              View All
-            </a>
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
       </div>
