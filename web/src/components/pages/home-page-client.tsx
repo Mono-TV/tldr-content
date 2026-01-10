@@ -39,17 +39,9 @@ export function HomePageClient({ data }: HomePageClientProps) {
         {/* Movies Section */}
         <div className="relative">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Film className="w-6 h-6 text-accent" />
-                <h2 className="text-2xl md:text-3xl font-bold">Movies</h2>
-              </div>
-              <Link
-                href="/movies"
-                className="text-sm text-muted-foreground hover:text-white transition-colors"
-              >
-                View All →
-              </Link>
+            <div className="flex items-center gap-3 mb-4">
+              <Film className="w-6 h-6 text-accent" />
+              <h2 className="text-2xl md:text-3xl font-bold">Movies</h2>
             </div>
           </div>
 
@@ -75,17 +67,9 @@ export function HomePageClient({ data }: HomePageClientProps) {
         {/* Shows Section */}
         <div className="relative">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Tv className="w-6 h-6 text-accent" />
-                <h2 className="text-2xl md:text-3xl font-bold">TV Shows</h2>
-              </div>
-              <Link
-                href="/shows"
-                className="text-sm text-muted-foreground hover:text-white transition-colors"
-              >
-                View All →
-              </Link>
+            <div className="flex items-center gap-3 mb-4">
+              <Tv className="w-6 h-6 text-accent" />
+              <h2 className="text-2xl md:text-3xl font-bold">TV Shows</h2>
             </div>
           </div>
 
