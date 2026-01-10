@@ -19,6 +19,9 @@ const ITEMS_PER_PAGE = 24;
 
 type ContentType = 'all' | 'movie' | 'show';
 
+// Force dynamic rendering for client-side search params
+export const dynamic = 'force-dynamic';
+
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
