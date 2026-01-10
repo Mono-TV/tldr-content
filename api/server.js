@@ -358,7 +358,34 @@ app.get('/api/search', async (req, res) => {
 
     // Apply additional filters
     const additionalFilters = buildFilterQuery(req.query);
-    const filter = { ...searchFilter, ...additionalFilters };
+
+    // Properly merge filters to avoid $or conflicts
+    let filter = {};
+
+    // Check if there are any $or or $and conflicts
+    if (additionalFilters.$or || additionalFilters.$and) {
+      // Use $and to combine search filter with additional filters
+      const andConditions = [searchFilter];
+
+      if (additionalFilters.$or) {
+        andConditions.push({ $or: additionalFilters.$or });
+      }
+      if (additionalFilters.$and) {
+        andConditions.push({ $and: additionalFilters.$and });
+      }
+
+      filter.$and = andConditions;
+
+      // Add all non-$or/$and properties from additionalFilters
+      Object.keys(additionalFilters).forEach(key => {
+        if (key !== '$or' && key !== '$and') {
+          filter[key] = additionalFilters[key];
+        }
+      });
+    } else {
+      // No conflicts - simple merge
+      filter = { ...searchFilter, ...additionalFilters };
+    }
 
     const [items, total] = await Promise.all([
       db.collection('merged_catalog')
