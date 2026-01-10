@@ -14,12 +14,65 @@ interface MoviesPageClientProps {
  * - Receives first 10 rows from server (fast initial render)
  * - Lazy-loads remaining 38 rows after mount
  */
+// Helper to create empty data structure
+const createEmptyData = (): MoviesData => ({
+  featured: { items: [], total: 0 },
+  topRatedRecent: { items: [], total: 0 },
+  topRatedEnglish: { items: [], total: 0 },
+  topRatedHindi: { items: [], total: 0 },
+  topRatedBengali: { items: [], total: 0 },
+  topRatedTamil: { items: [], total: 0 },
+  topRatedTelugu: { items: [], total: 0 },
+  topRatedMalayalam: { items: [], total: 0 },
+  topRatedKannada: { items: [], total: 0 },
+  topAction: { items: [], total: 0 },
+  topActionEnglish: { items: [], total: 0 },
+  topActionHindi: { items: [], total: 0 },
+  topActionTamil: { items: [], total: 0 },
+  topActionTelugu: { items: [], total: 0 },
+  topActionMalayalam: { items: [], total: 0 },
+  topActionKannada: { items: [], total: 0 },
+  topActionBengali: { items: [], total: 0 },
+  topComedy: { items: [], total: 0 },
+  topComedyEnglish: { items: [], total: 0 },
+  topComedyHindi: { items: [], total: 0 },
+  topComedyTamil: { items: [], total: 0 },
+  topComedyTelugu: { items: [], total: 0 },
+  topComedyMalayalam: { items: [], total: 0 },
+  topComedyKannada: { items: [], total: 0 },
+  topComedyBengali: { items: [], total: 0 },
+  topDrama: { items: [], total: 0 },
+  topDramaEnglish: { items: [], total: 0 },
+  topDramaHindi: { items: [], total: 0 },
+  topDramaTamil: { items: [], total: 0 },
+  topDramaTelugu: { items: [], total: 0 },
+  topDramaMalayalam: { items: [], total: 0 },
+  topDramaKannada: { items: [], total: 0 },
+  topDramaBengali: { items: [], total: 0 },
+  topThriller: { items: [], total: 0 },
+  topThrillerEnglish: { items: [], total: 0 },
+  topThrillerHindi: { items: [], total: 0 },
+  topThrillerTamil: { items: [], total: 0 },
+  topThrillerTelugu: { items: [], total: 0 },
+  topThrillerMalayalam: { items: [], total: 0 },
+  topThrillerKannada: { items: [], total: 0 },
+  topThrillerBengali: { items: [], total: 0 },
+  hindiStar: { items: [], total: 0 },
+  englishStar: { items: [], total: 0 },
+  tamilStar: { items: [], total: 0 },
+  teluguStar: { items: [], total: 0 },
+  malayalamStar: { items: [], total: 0 },
+  kannadaStar: { items: [], total: 0 },
+  bengaliStar: { items: [], total: 0 },
+  topRated: { items: [], total: 0 },
+});
+
 export function MoviesPageClient({ initialData }: MoviesPageClientProps) {
   const [remainingData, setRemainingData] = useState<Partial<MoviesData> | null>(null);
   const [isLoadingRemaining, setIsLoadingRemaining] = useState(true);
 
-  // Merge initial and remaining data
-  const data = { ...initialData, ...remainingData };
+  // Merge initial and remaining data with defaults
+  const data = { ...createEmptyData(), ...initialData, ...remainingData };
 
   // Fetch remaining data after initial render
   useEffect(() => {
