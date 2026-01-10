@@ -278,11 +278,11 @@ export default function HomePage() {
   });
 
   // Top Comedy Movies rows - genre-specific filtering
-  // Fetch top comedy movies (general, last 10 years)
+  // Fetch top comedy movies (general, last 10 years) - adjusted to 7.5+ for more results
   const { data: topComedyData, isLoading: topComedyLoading } = useQuery({
     queryKey: ['topComedy'],
     queryFn: () => api.getContent({
-      min_rating: 8,
+      min_rating: 7.5,
       min_votes: 50000,
       type: 'movie',
       genre: 'Comedy',
@@ -293,11 +293,11 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top English comedy movies
+  // Fetch top English comedy movies (adjusted to 7.5+ for more results)
   const { data: topComedyEnglishData, isLoading: topComedyEnglishLoading } = useQuery({
     queryKey: ['topComedyEnglish'],
     queryFn: () => api.getContent({
-      min_rating: 8,
+      min_rating: 7.5,
       min_votes: 50000,
       type: 'movie',
       genre: 'Comedy',
@@ -309,12 +309,12 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top Hindi comedy movies
+  // Fetch top Hindi comedy movies (adjusted to 7.5+, 10k votes for more results)
   const { data: topComedyHindiData, isLoading: topComedyHindiLoading } = useQuery({
     queryKey: ['topComedyHindi'],
     queryFn: () => api.getContent({
-      min_rating: 8,
-      min_votes: 50000,
+      min_rating: 7.5,
+      min_votes: 10000,
       type: 'movie',
       genre: 'Comedy',
       original_language: 'hi',
@@ -437,11 +437,11 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top Hindi drama movies
+  // Fetch top Hindi drama movies (adjusted to 7.5+ for more results)
   const { data: topDramaHindiData, isLoading: topDramaHindiLoading } = useQuery({
     queryKey: ['topDramaHindi'],
     queryFn: () => api.getContent({
-      min_rating: 8,
+      min_rating: 7.5,
       min_votes: 50000,
       type: 'movie',
       genre: 'Drama',
@@ -549,11 +549,11 @@ export default function HomePage() {
     }),
   });
 
-  // Fetch top English thriller movies
+  // Fetch top English thriller movies (adjusted to 7.5+ for more results)
   const { data: topThrillerEnglishData, isLoading: topThrillerEnglishLoading } = useQuery({
     queryKey: ['topThrillerEnglish'],
     queryFn: () => api.getContent({
-      min_rating: 8,
+      min_rating: 7.5,
       min_votes: 50000,
       type: 'movie',
       genre: 'Thriller',
@@ -881,21 +881,21 @@ export default function HomePage() {
           title="Top Comedy Movies"
           contents={topComedyData?.items || []}
           isLoading={topComedyLoading}
-          href="/browse?genre=Comedy&min_rating=8&sort=rating"
+          href="/browse?genre=Comedy&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
           title="Top English Comedy Movies"
           contents={topComedyEnglishData?.items || []}
           isLoading={topComedyEnglishLoading}
-          href="/browse?language=English&genre=Comedy&min_rating=8&sort=rating"
+          href="/browse?language=English&genre=Comedy&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
           title="Top Hindi Comedy Movies"
           contents={topComedyHindiData?.items || []}
           isLoading={topComedyHindiLoading}
-          href="/browse?language=Hindi&genre=Comedy&min_rating=8&sort=rating"
+          href="/browse?language=Hindi&genre=Comedy&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
@@ -952,7 +952,7 @@ export default function HomePage() {
           title="Top Hindi Drama Movies"
           contents={topDramaHindiData?.items || []}
           isLoading={topDramaHindiLoading}
-          href="/browse?language=Hindi&genre=Drama&min_rating=8&sort=rating"
+          href="/browse?language=Hindi&genre=Drama&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
@@ -1002,7 +1002,7 @@ export default function HomePage() {
           title="Top English Thriller Movies"
           contents={topThrillerEnglishData?.items || []}
           isLoading={topThrillerEnglishLoading}
-          href="/browse?language=English&genre=Thriller&min_rating=8&sort=rating"
+          href="/browse?language=English&genre=Thriller&min_rating=7.5&sort=rating"
         />
 
         <ContentRow
