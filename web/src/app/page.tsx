@@ -277,6 +277,390 @@ export default function HomePage() {
     }),
   });
 
+  // Top Comedy Movies rows - genre-specific filtering
+  // Fetch top comedy movies (general, last 10 years)
+  const { data: topComedyData, isLoading: topComedyLoading } = useQuery({
+    queryKey: ['topComedy'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Comedy',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top English comedy movies
+  const { data: topComedyEnglishData, isLoading: topComedyEnglishLoading } = useQuery({
+    queryKey: ['topComedyEnglish'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'en',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Hindi comedy movies
+  const { data: topComedyHindiData, isLoading: topComedyHindiLoading } = useQuery({
+    queryKey: ['topComedyHindi'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'hi',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Tamil comedy movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topComedyTamilData, isLoading: topComedyTamilLoading } = useQuery({
+    queryKey: ['topComedyTamil'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'ta',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Telugu comedy movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topComedyTeluguData, isLoading: topComedyTeluguLoading } = useQuery({
+    queryKey: ['topComedyTelugu'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'te',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Malayalam comedy movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topComedyMalayalamData, isLoading: topComedyMalayalamLoading } = useQuery({
+    queryKey: ['topComedyMalayalam'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'ml',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Kannada comedy movies (7.0+, 1k votes, 20 years for more results)
+  const { data: topComedyKannadaData, isLoading: topComedyKannadaLoading } = useQuery({
+    queryKey: ['topComedyKannada'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 1000,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'kn',
+      year_from: twentyYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Bengali comedy movies (6.5+, 500 votes, 25 years for more results)
+  const { data: topComedyBengaliData, isLoading: topComedyBengaliLoading } = useQuery({
+    queryKey: ['topComedyBengali'],
+    queryFn: () => api.getContent({
+      min_rating: 6.5,
+      min_votes: 500,
+      type: 'movie',
+      genre: 'Comedy',
+      original_language: 'bn',
+      year_from: twentyFiveYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Top Drama Movies rows - genre-specific filtering
+  // Fetch top drama movies (general, last 10 years)
+  const { data: topDramaData, isLoading: topDramaLoading } = useQuery({
+    queryKey: ['topDrama'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Drama',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top English drama movies
+  const { data: topDramaEnglishData, isLoading: topDramaEnglishLoading } = useQuery({
+    queryKey: ['topDramaEnglish'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'en',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Hindi drama movies
+  const { data: topDramaHindiData, isLoading: topDramaHindiLoading } = useQuery({
+    queryKey: ['topDramaHindi'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'hi',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Tamil drama movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topDramaTamilData, isLoading: topDramaTamilLoading } = useQuery({
+    queryKey: ['topDramaTamil'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'ta',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Telugu drama movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topDramaTeluguData, isLoading: topDramaTeluguLoading } = useQuery({
+    queryKey: ['topDramaTelugu'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'te',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Malayalam drama movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topDramaMalayalamData, isLoading: topDramaMalayalamLoading } = useQuery({
+    queryKey: ['topDramaMalayalam'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'ml',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Kannada drama movies (7.0+, 1k votes, 20 years for more results)
+  const { data: topDramaKannadaData, isLoading: topDramaKannadaLoading } = useQuery({
+    queryKey: ['topDramaKannada'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 1000,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'kn',
+      year_from: twentyYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Bengali drama movies (6.5+, 500 votes, 25 years for more results)
+  const { data: topDramaBengaliData, isLoading: topDramaBengaliLoading } = useQuery({
+    queryKey: ['topDramaBengali'],
+    queryFn: () => api.getContent({
+      min_rating: 6.5,
+      min_votes: 500,
+      type: 'movie',
+      genre: 'Drama',
+      original_language: 'bn',
+      year_from: twentyFiveYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Top Thriller Movies rows - genre-specific filtering
+  // Fetch top thriller movies (general, last 10 years)
+  const { data: topThrillerData, isLoading: topThrillerLoading } = useQuery({
+    queryKey: ['topThriller'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Thriller',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top English thriller movies
+  const { data: topThrillerEnglishData, isLoading: topThrillerEnglishLoading } = useQuery({
+    queryKey: ['topThrillerEnglish'],
+    queryFn: () => api.getContent({
+      min_rating: 8,
+      min_votes: 50000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'en',
+      year_from: tenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Hindi thriller movies (7.5+, 10k votes, 15 years for more results)
+  const { data: topThrillerHindiData, isLoading: topThrillerHindiLoading } = useQuery({
+    queryKey: ['topThrillerHindi'],
+    queryFn: () => api.getContent({
+      min_rating: 7.5,
+      min_votes: 10000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'hi',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Tamil thriller movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topThrillerTamilData, isLoading: topThrillerTamilLoading } = useQuery({
+    queryKey: ['topThrillerTamil'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'ta',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Telugu thriller movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topThrillerTeluguData, isLoading: topThrillerTeluguLoading } = useQuery({
+    queryKey: ['topThrillerTelugu'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'te',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Malayalam thriller movies (7.0+, 2k votes, 15 years for more results)
+  const { data: topThrillerMalayalamData, isLoading: topThrillerMalayalamLoading } = useQuery({
+    queryKey: ['topThrillerMalayalam'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 2000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'ml',
+      year_from: fifteenYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Kannada thriller movies (7.0+, 1k votes, 20 years for more results)
+  const { data: topThrillerKannadaData, isLoading: topThrillerKannadaLoading } = useQuery({
+    queryKey: ['topThrillerKannada'],
+    queryFn: () => api.getContent({
+      min_rating: 7.0,
+      min_votes: 1000,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'kn',
+      year_from: twentyYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Fetch top Bengali thriller movies (6.5+, 500 votes, 25 years for more results)
+  const { data: topThrillerBengaliData, isLoading: topThrillerBengaliLoading } = useQuery({
+    queryKey: ['topThrillerBengali'],
+    queryFn: () => api.getContent({
+      min_rating: 6.5,
+      min_votes: 500,
+      type: 'movie',
+      genre: 'Thriller',
+      original_language: 'bn',
+      year_from: twentyFiveYearsAgo,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
   // Latest Star Movies rows - featuring multiple active stars from last 5 years
   const fiveYearsAgoYear = new Date().getFullYear() - 5;
 
@@ -490,6 +874,177 @@ export default function HomePage() {
           contents={topActionBengaliData?.items || []}
           isLoading={topActionBengaliLoading}
           href="/browse?language=Bengali&genre=Action&min_rating=6.5&sort=rating"
+        />
+
+        {/* Top Comedy Movies Rows */}
+        <ContentRow
+          title="Top Comedy Movies"
+          contents={topComedyData?.items || []}
+          isLoading={topComedyLoading}
+          href="/browse?genre=Comedy&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top English Comedy Movies"
+          contents={topComedyEnglishData?.items || []}
+          isLoading={topComedyEnglishLoading}
+          href="/browse?language=English&genre=Comedy&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Hindi Comedy Movies"
+          contents={topComedyHindiData?.items || []}
+          isLoading={topComedyHindiLoading}
+          href="/browse?language=Hindi&genre=Comedy&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Tamil Comedy Movies"
+          contents={topComedyTamilData?.items || []}
+          isLoading={topComedyTamilLoading}
+          href="/browse?language=Tamil&genre=Comedy&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Telugu Comedy Movies"
+          contents={topComedyTeluguData?.items || []}
+          isLoading={topComedyTeluguLoading}
+          href="/browse?language=Telugu&genre=Comedy&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Malayalam Comedy Movies"
+          contents={topComedyMalayalamData?.items || []}
+          isLoading={topComedyMalayalamLoading}
+          href="/browse?language=Malayalam&genre=Comedy&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Kannada Comedy Movies"
+          contents={topComedyKannadaData?.items || []}
+          isLoading={topComedyKannadaLoading}
+          href="/browse?language=Kannada&genre=Comedy&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Bengali Comedy Movies"
+          contents={topComedyBengaliData?.items || []}
+          isLoading={topComedyBengaliLoading}
+          href="/browse?language=Bengali&genre=Comedy&min_rating=6.5&sort=rating"
+        />
+
+        {/* Top Drama Movies Rows */}
+        <ContentRow
+          title="Top Drama Movies"
+          contents={topDramaData?.items || []}
+          isLoading={topDramaLoading}
+          href="/browse?genre=Drama&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top English Drama Movies"
+          contents={topDramaEnglishData?.items || []}
+          isLoading={topDramaEnglishLoading}
+          href="/browse?language=English&genre=Drama&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Hindi Drama Movies"
+          contents={topDramaHindiData?.items || []}
+          isLoading={topDramaHindiLoading}
+          href="/browse?language=Hindi&genre=Drama&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Tamil Drama Movies"
+          contents={topDramaTamilData?.items || []}
+          isLoading={topDramaTamilLoading}
+          href="/browse?language=Tamil&genre=Drama&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Telugu Drama Movies"
+          contents={topDramaTeluguData?.items || []}
+          isLoading={topDramaTeluguLoading}
+          href="/browse?language=Telugu&genre=Drama&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Malayalam Drama Movies"
+          contents={topDramaMalayalamData?.items || []}
+          isLoading={topDramaMalayalamLoading}
+          href="/browse?language=Malayalam&genre=Drama&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Kannada Drama Movies"
+          contents={topDramaKannadaData?.items || []}
+          isLoading={topDramaKannadaLoading}
+          href="/browse?language=Kannada&genre=Drama&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Bengali Drama Movies"
+          contents={topDramaBengaliData?.items || []}
+          isLoading={topDramaBengaliLoading}
+          href="/browse?language=Bengali&genre=Drama&min_rating=6.5&sort=rating"
+        />
+
+        {/* Top Thriller Movies Rows */}
+        <ContentRow
+          title="Top Thriller Movies"
+          contents={topThrillerData?.items || []}
+          isLoading={topThrillerLoading}
+          href="/browse?genre=Thriller&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top English Thriller Movies"
+          contents={topThrillerEnglishData?.items || []}
+          isLoading={topThrillerEnglishLoading}
+          href="/browse?language=English&genre=Thriller&min_rating=8&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Hindi Thriller Movies"
+          contents={topThrillerHindiData?.items || []}
+          isLoading={topThrillerHindiLoading}
+          href="/browse?language=Hindi&genre=Thriller&min_rating=7.5&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Tamil Thriller Movies"
+          contents={topThrillerTamilData?.items || []}
+          isLoading={topThrillerTamilLoading}
+          href="/browse?language=Tamil&genre=Thriller&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Telugu Thriller Movies"
+          contents={topThrillerTeluguData?.items || []}
+          isLoading={topThrillerTeluguLoading}
+          href="/browse?language=Telugu&genre=Thriller&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Malayalam Thriller Movies"
+          contents={topThrillerMalayalamData?.items || []}
+          isLoading={topThrillerMalayalamLoading}
+          href="/browse?language=Malayalam&genre=Thriller&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Kannada Thriller Movies"
+          contents={topThrillerKannadaData?.items || []}
+          isLoading={topThrillerKannadaLoading}
+          href="/browse?language=Kannada&genre=Thriller&min_rating=7&sort=rating"
+        />
+
+        <ContentRow
+          title="Top Bengali Thriller Movies"
+          contents={topThrillerBengaliData?.items || []}
+          isLoading={topThrillerBengaliLoading}
+          href="/browse?language=Bengali&genre=Thriller&min_rating=6.5&sort=rating"
         />
 
         {/* Latest Star Movies Rows */}
