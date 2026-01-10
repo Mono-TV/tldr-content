@@ -147,91 +147,79 @@ export default function HomePage() {
     queryFn: () => api.getTopRated(10),
   });
 
-  // Latest Star Movies rows - featuring active stars from last 5 years
+  // Latest Star Movies rows - featuring multiple active stars from last 5 years
   const fiveYearsAgoYear = new Date().getFullYear() - 5;
 
-  // Latest Hindi Star Movies (Rajkummar Rao - 20 recent movies)
+  // Helper function to fetch and merge movies from multiple stars
+  const fetchMultipleStarMovies = async (stars: string[]) => {
+    const results = await Promise.all(
+      stars.map(star =>
+        api.searchWithFilters(star, {
+          type: 'movie',
+          year_from: fiveYearsAgoYear,
+          sort: 'rating',
+          order: 'desc',
+          limit: 8
+        })
+      )
+    );
+
+    // Merge and deduplicate by imdb_id
+    const allMovies = results.flatMap(r => r.items || []);
+    const uniqueMovies = Array.from(
+      new Map(allMovies.map(movie => [movie.imdb_id, movie])).values()
+    );
+
+    // Sort by rating and take top 15
+    const sortedMovies = uniqueMovies.sort((a, b) => {
+      if (b.imdb_rating !== a.imdb_rating) return b.imdb_rating - a.imdb_rating;
+      if (b.imdb_rating_count !== a.imdb_rating_count) return b.imdb_rating_count - a.imdb_rating_count;
+      return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+    });
+
+    return { items: sortedMovies.slice(0, 15), total: sortedMovies.length };
+  };
+
+  // Latest Hindi Star Movies (multiple stars)
   const { data: hindiStarData, isLoading: hindiStarLoading } = useQuery({
     queryKey: ['hindiStarMovies'],
-    queryFn: () => api.searchWithFilters('Rajkummar Rao', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Rajkummar Rao', 'Varun Dhawan', 'Vicky Kaushal', 'Kartik Aaryan']),
   });
 
-  // Latest Tamil Star Movies (Dhanush - 33 recent movies)
+  // Latest Tamil Star Movies (multiple stars)
   const { data: tamilStarData, isLoading: tamilStarLoading } = useQuery({
     queryKey: ['tamilStarMovies'],
-    queryFn: () => api.searchWithFilters('Dhanush', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Dhanush', 'Ajith Kumar', 'Sivakarthikeyan', 'Rajinikanth']),
   });
 
-  // Latest Telugu Star Movies (Ravi Teja - 32 recent movies)
+  // Latest Telugu Star Movies (multiple stars)
   const { data: teluguStarData, isLoading: teluguStarLoading } = useQuery({
     queryKey: ['teluguStarMovies'],
-    queryFn: () => api.searchWithFilters('Ravi Teja', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Ravi Teja', 'Mahesh Babu', 'Vijay Deverakonda', 'Ram Charan']),
   });
 
-  // Latest Malayalam Star Movies (Mohanlal - 28 recent movies)
+  // Latest Malayalam Star Movies (multiple stars)
   const { data: malayalamStarData, isLoading: malayalamStarLoading } = useQuery({
     queryKey: ['malayalamStarMovies'],
-    queryFn: () => api.searchWithFilters('Mohanlal', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Mohanlal', 'Mammootty', 'Fahadh Faasil', 'Tovino Thomas']),
   });
 
-  // Latest Kannada Star Movies (Sudeep - 24 recent movies)
+  // Latest Kannada Star Movies (multiple stars)
   const { data: kannadaStarData, isLoading: kannadaStarLoading } = useQuery({
     queryKey: ['kannadaStarMovies'],
-    queryFn: () => api.searchWithFilters('Sudeep', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Sudeep', 'Shiva Rajkumar', 'Rishab Shetty', 'Upendra']),
   });
 
-  // Latest Bengali Star Movies (Jisshu Sengupta - 31 recent movies)
+  // Latest Bengali Star Movies (multiple stars)
   const { data: bengaliStarData, isLoading: bengaliStarLoading } = useQuery({
     queryKey: ['bengaliStarMovies'],
-    queryFn: () => api.searchWithFilters('Jisshu Sengupta', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Jisshu Sengupta', 'Prosenjit Chatterjee', 'Abir Chatterjee']),
   });
 
-  // Latest English Star Movies (Dwayne Johnson - 12 recent movies)
+  // Latest English Star Movies (multiple stars)
   const { data: englishStarData, isLoading: englishStarLoading } = useQuery({
     queryKey: ['englishStarMovies'],
-    queryFn: () => api.searchWithFilters('Dwayne Johnson', {
-      type: 'movie',
-      year_from: fiveYearsAgoYear,
-      sort: 'rating',
-      order: 'desc',
-      limit: 15
-    }),
+    queryFn: () => fetchMultipleStarMovies(['Dwayne Johnson', 'Chris Hemsworth', 'Tom Cruise', 'Brad Pitt']),
   });
 
   return (
@@ -312,58 +300,58 @@ export default function HomePage() {
         {/* Latest Star Movies Rows */}
         <ContentRow
           title="Latest Hindi Star Movies"
-          subtitle="Featuring Rajkummar Rao"
+          subtitle="Featuring Rajkummar Rao, Varun Dhawan, Vicky Kaushal & more"
           contents={hindiStarData?.items || []}
           isLoading={hindiStarLoading}
-          href="/search?q=Rajkummar+Rao"
+          href="/browse?language=Hindi&min_rating=7"
         />
 
         <ContentRow
           title="Latest English Star Movies"
-          subtitle="Featuring Dwayne Johnson"
+          subtitle="Featuring Dwayne Johnson, Chris Hemsworth, Tom Cruise & more"
           contents={englishStarData?.items || []}
           isLoading={englishStarLoading}
-          href="/search?q=Dwayne+Johnson"
+          href="/browse?language=English&min_rating=7"
         />
 
         <ContentRow
           title="Latest Tamil Star Movies"
-          subtitle="Featuring Dhanush"
+          subtitle="Featuring Dhanush, Ajith Kumar, Sivakarthikeyan & more"
           contents={tamilStarData?.items || []}
           isLoading={tamilStarLoading}
-          href="/search?q=Dhanush"
+          href="/browse?language=Tamil&min_rating=7"
         />
 
         <ContentRow
           title="Latest Telugu Star Movies"
-          subtitle="Featuring Ravi Teja"
+          subtitle="Featuring Ravi Teja, Mahesh Babu, Vijay Deverakonda & more"
           contents={teluguStarData?.items || []}
           isLoading={teluguStarLoading}
-          href="/search?q=Ravi+Teja"
+          href="/browse?language=Telugu&min_rating=7"
         />
 
         <ContentRow
           title="Latest Malayalam Star Movies"
-          subtitle="Featuring Mohanlal"
+          subtitle="Featuring Mohanlal, Mammootty, Fahadh Faasil & more"
           contents={malayalamStarData?.items || []}
           isLoading={malayalamStarLoading}
-          href="/search?q=Mohanlal"
+          href="/browse?language=Malayalam&min_rating=7"
         />
 
         <ContentRow
           title="Latest Kannada Star Movies"
-          subtitle="Featuring Sudeep"
+          subtitle="Featuring Sudeep, Shiva Rajkumar, Rishab Shetty & more"
           contents={kannadaStarData?.items || []}
           isLoading={kannadaStarLoading}
-          href="/search?q=Sudeep"
+          href="/browse?language=Kannada&min_rating=7"
         />
 
         <ContentRow
           title="Latest Bengali Star Movies"
-          subtitle="Featuring Jisshu Sengupta"
+          subtitle="Featuring Jisshu Sengupta, Prosenjit Chatterjee & more"
           contents={bengaliStarData?.items || []}
           isLoading={bengaliStarLoading}
-          href="/search?q=Jisshu+Sengupta"
+          href="/browse?language=Bengali&min_rating=7"
         />
 
         {/* Top 10 */}
