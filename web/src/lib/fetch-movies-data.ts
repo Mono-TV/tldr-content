@@ -245,13 +245,13 @@ export async function fetchMoviesData(): Promise<MoviesData> {
       () => fetchContent({ min_rating: 6.0, min_votes: 800, type: 'movie', genre: 'Thriller', original_language: 'bn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
 
       // Latest Star Movies
-      () => fetchMultipleStarMovies([3, 4, 5], 'hi', 15), // Hindi
-      () => fetchMultipleStarMovies([4, 5], 'en', 15), // English
-      () => fetchMultipleStarMovies([4, 5], 'ta', 15), // Tamil
-      () => fetchMultipleStarMovies([4, 5], 'te', 15), // Telugu
-      () => fetchMultipleStarMovies([4], 'ml', 15), // Malayalam
-      () => fetchMultipleStarMovies([4], 'kn', 15), // Kannada
-      () => fetchMultipleStarMovies([3], 'bn', 15), // Bengali
+      () => fetchMultipleStarMovies(['Rajkummar Rao', 'Varun Dhawan', 'Vicky Kaushal', 'Kartik Aaryan'], 'movie'), // Hindi
+      () => fetchMultipleStarMovies(['Dwayne Johnson', 'Chris Hemsworth', 'Tom Cruise', 'Brad Pitt'], 'movie'), // English
+      () => fetchMultipleStarMovies(['Dhanush', 'Ajith Kumar', 'Sivakarthikeyan', 'Rajinikanth'], 'movie'), // Tamil
+      () => fetchMultipleStarMovies(['Ravi Teja', 'Mahesh Babu', 'Vijay Deverakonda', 'Ram Charan'], 'movie'), // Telugu
+      () => fetchMultipleStarMovies(['Mohanlal', 'Mammootty', 'Fahadh Faasil', 'Tovino Thomas'], 'movie'), // Malayalam
+      () => fetchMultipleStarMovies(['Sudeep', 'Shiva Rajkumar', 'Rishab Shetty', 'Upendra'], 'movie'), // Kannada
+      () => fetchMultipleStarMovies(['Jisshu Sengupta', 'Prosenjit Chatterjee', 'Abir Chatterjee'], 'movie'), // Bengali
     ]);
 
     const endTime = Date.now();
