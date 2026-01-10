@@ -147,6 +147,93 @@ export default function HomePage() {
     queryFn: () => api.getTopRated(10),
   });
 
+  // Latest Star Movies rows - featuring active stars from last 5 years
+  const fiveYearsAgoYear = new Date().getFullYear() - 5;
+
+  // Latest Hindi Star Movies (Rajkummar Rao - 20 recent movies)
+  const { data: hindiStarData, isLoading: hindiStarLoading } = useQuery({
+    queryKey: ['hindiStarMovies'],
+    queryFn: () => api.searchWithFilters('Rajkummar Rao', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest Tamil Star Movies (Dhanush - 33 recent movies)
+  const { data: tamilStarData, isLoading: tamilStarLoading } = useQuery({
+    queryKey: ['tamilStarMovies'],
+    queryFn: () => api.searchWithFilters('Dhanush', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest Telugu Star Movies (Ravi Teja - 32 recent movies)
+  const { data: teluguStarData, isLoading: teluguStarLoading } = useQuery({
+    queryKey: ['teluguStarMovies'],
+    queryFn: () => api.searchWithFilters('Ravi Teja', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest Malayalam Star Movies (Mohanlal - 28 recent movies)
+  const { data: malayalamStarData, isLoading: malayalamStarLoading } = useQuery({
+    queryKey: ['malayalamStarMovies'],
+    queryFn: () => api.searchWithFilters('Mohanlal', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest Kannada Star Movies (Sudeep - 24 recent movies)
+  const { data: kannadaStarData, isLoading: kannadaStarLoading } = useQuery({
+    queryKey: ['kannadaStarMovies'],
+    queryFn: () => api.searchWithFilters('Sudeep', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest Bengali Star Movies (Jisshu Sengupta - 31 recent movies)
+  const { data: bengaliStarData, isLoading: bengaliStarLoading } = useQuery({
+    queryKey: ['bengaliStarMovies'],
+    queryFn: () => api.searchWithFilters('Jisshu Sengupta', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
+  // Latest English Star Movies (Dwayne Johnson - 12 recent movies)
+  const { data: englishStarData, isLoading: englishStarLoading } = useQuery({
+    queryKey: ['englishStarMovies'],
+    queryFn: () => api.searchWithFilters('Dwayne Johnson', {
+      type: 'movie',
+      year_from: fiveYearsAgoYear,
+      sort: 'rating',
+      order: 'desc',
+      limit: 15
+    }),
+  });
+
   return (
     <div className="min-h-screen pb-20">
       {/* Hero Carousel */}
@@ -220,6 +307,63 @@ export default function HomePage() {
           contents={topRatedKannadaData?.items || []}
           isLoading={topRatedKannadaLoading}
           href="/browse?language=Kannada&min_rating=8&sort=rating"
+        />
+
+        {/* Latest Star Movies Rows */}
+        <ContentRow
+          title="Latest Hindi Star Movies"
+          subtitle="Featuring Rajkummar Rao"
+          contents={hindiStarData?.items || []}
+          isLoading={hindiStarLoading}
+          href="/search?q=Rajkummar+Rao"
+        />
+
+        <ContentRow
+          title="Latest English Star Movies"
+          subtitle="Featuring Dwayne Johnson"
+          contents={englishStarData?.items || []}
+          isLoading={englishStarLoading}
+          href="/search?q=Dwayne+Johnson"
+        />
+
+        <ContentRow
+          title="Latest Tamil Star Movies"
+          subtitle="Featuring Dhanush"
+          contents={tamilStarData?.items || []}
+          isLoading={tamilStarLoading}
+          href="/search?q=Dhanush"
+        />
+
+        <ContentRow
+          title="Latest Telugu Star Movies"
+          subtitle="Featuring Ravi Teja"
+          contents={teluguStarData?.items || []}
+          isLoading={teluguStarLoading}
+          href="/search?q=Ravi+Teja"
+        />
+
+        <ContentRow
+          title="Latest Malayalam Star Movies"
+          subtitle="Featuring Mohanlal"
+          contents={malayalamStarData?.items || []}
+          isLoading={malayalamStarLoading}
+          href="/search?q=Mohanlal"
+        />
+
+        <ContentRow
+          title="Latest Kannada Star Movies"
+          subtitle="Featuring Sudeep"
+          contents={kannadaStarData?.items || []}
+          isLoading={kannadaStarLoading}
+          href="/search?q=Sudeep"
+        />
+
+        <ContentRow
+          title="Latest Bengali Star Movies"
+          subtitle="Featuring Jisshu Sengupta"
+          contents={bengaliStarData?.items || []}
+          isLoading={bengaliStarLoading}
+          href="/search?q=Jisshu+Sengupta"
         />
 
         {/* Top 10 */}

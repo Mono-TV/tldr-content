@@ -9,6 +9,7 @@ import type { Content } from '@/types';
 
 interface ContentRowProps {
   title: string;
+  subtitle?: string;
   contents: Content[];
   isLoading?: boolean;
   showRank?: boolean;
@@ -18,6 +19,7 @@ interface ContentRowProps {
 
 export function ContentRow({
   title,
+  subtitle,
   contents,
   isLoading = false,
   showRank = false,
@@ -41,7 +43,12 @@ export function ContentRow({
       {/* Header */}
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+            )}
+          </div>
           {href && (
             <a
               href={href}
