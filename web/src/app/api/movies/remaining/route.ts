@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import { fetchMoviesData } from '@/lib/fetch-movies-data';
 import { getRemainingMoviesData } from '@/lib/progressive-loading';
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
+// Enable route caching with revalidation
+export const revalidate = 300; // 5 minutes
+
 /**
  * API route to fetch remaining movies data (rows 11-48)
  * Used for progressive loading after initial page render
@@ -29,6 +35,3 @@ export async function GET() {
     );
   }
 }
-
-// Enable route caching with revalidation
-export const revalidate = 300; // 5 minutes
