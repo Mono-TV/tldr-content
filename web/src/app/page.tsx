@@ -172,8 +172,13 @@ export default function HomePage() {
 
     // Sort by rating and take top 15
     const sortedMovies = uniqueMovies.sort((a, b) => {
-      if (b.imdb_rating !== a.imdb_rating) return b.imdb_rating - a.imdb_rating;
-      if (b.imdb_rating_count !== a.imdb_rating_count) return b.imdb_rating_count - a.imdb_rating_count;
+      const ratingA = a.imdb_rating ?? 0;
+      const ratingB = b.imdb_rating ?? 0;
+      const votesA = a.imdb_rating_count ?? 0;
+      const votesB = b.imdb_rating_count ?? 0;
+
+      if (ratingB !== ratingA) return ratingB - ratingA;
+      if (votesB !== votesA) return votesB - votesA;
       return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
     });
 
