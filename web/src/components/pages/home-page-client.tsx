@@ -1,7 +1,7 @@
 'use client';
 
 import { Hero } from '@/components/hero/hero';
-import { ContentRow } from '@/components/content/content-row';
+import { ContentRow } from '@/components/sections/content-row';
 import type { HomepageData } from '@/lib/fetch-homepage-data';
 import Link from 'next/link';
 import { Film, Tv } from 'lucide-react';
