@@ -9,6 +9,7 @@ Complete guide to creating, managing, and customizing Top Rated Movies rows on t
 1. [Overview](#overview)
 2. [Database Schema](#database-schema)
 3. [Top Rated Movies Row Variants](#top-rated-movies-row-variants)
+   - [Latest Star Movies (Actor-Based Rows)](#6-latest-star-movies-actor-based-rows)
 4. [MongoDB Query Examples](#mongodb-query-examples)
 5. [API Query Examples](#api-query-examples)
 6. [Frontend Implementation](#frontend-implementation)
@@ -22,6 +23,8 @@ Complete guide to creating, managing, and customizing Top Rated Movies rows on t
 The homepage displays curated **Top Rated Movies** rows with different language filters, plus a **Top 10 This Week** row. Each Top Rated row shows 15 high-quality movies based on IMDb ratings and vote counts.
 
 **Current Homepage Rows:**
+
+### Top Rated Movies Rows (8 rows)
 1. Top Rated Movies (Last 5 years) - 50k votes
 2. Top Rated English Movies (Last 10 years) - 50k votes
 3. Top Rated Hindi Movies (Last 10 years) - 50k votes
@@ -30,7 +33,18 @@ The homepage displays curated **Top Rated Movies** rows with different language 
 6. Top Rated Telugu Movies (Last 10 years) - 5k votes
 7. Top Rated Malayalam Movies (Last 10 years) - 5k votes
 8. Top Rated Kannada Movies (Last 15 years) - 5k votes
-9. **Top 10 This Week** - Top 10 highest-rated content
+
+### Latest Star Movies Rows (7 rows)
+9. Latest Hindi Star Movies - Featuring Rajkummar Rao (20 recent movies)
+10. Latest English Star Movies - Featuring Dwayne Johnson (12 recent movies)
+11. Latest Tamil Star Movies - Featuring Dhanush (33 recent movies)
+12. Latest Telugu Star Movies - Featuring Ravi Teja (32 recent movies)
+13. Latest Malayalam Star Movies - Featuring Mohanlal (28 recent movies)
+14. Latest Kannada Star Movies - Featuring Sudeep (24 recent movies)
+15. Latest Bengali Star Movies - Featuring Jisshu Sengupta (31 recent movies)
+
+### Special Rows
+16. **Top 10 This Week** - Top 10 highest-rated content
 
 **Filter Strategy:**
 Different languages use different thresholds based on industry size and global reach:
@@ -228,6 +242,84 @@ db.merged_catalog.createIndex({ "genres.name": 1 })
 - Sorted by rating (descending)
 
 **Use Case:** Show high-quality movies from specific regions/countries
+
+---
+
+### 6. Latest Star Movies (Actor-Based Rows)
+
+**Overview:**
+Latest Star Movies rows showcase recent films featuring popular and active actors from each language. Unlike Top Rated rows which filter by rating thresholds, these rows use actor-based search to find movies where specific stars appear in the cast.
+
+**Row Variants (7 languages):**
+
+| Language | Featured Star | Recent Movies (2020-2026) | Rationale |
+|----------|--------------|---------------------------|-----------|
+| Hindi | Rajkummar Rao | 20 | Very active with diverse roles |
+| English | Dwayne Johnson | 12 | Consistent blockbuster output |
+| Tamil | Dhanush | 33 | Highly prolific, quality work |
+| Telugu | Ravi Teja | 32 | Mass appeal, high activity |
+| Malayalam | Mohanlal | 28 | Industry legend, still active |
+| Kannada | Sudeep | 24 | Major star with steady releases |
+| Bengali | Jisshu Sengupta | 31 | Versatile, pan-regional appeal |
+
+**Star Selection Criteria:**
+1. **Activity Level:** 10+ movies from 2020-2026
+2. **Balance:** Mix of established stars and rising talent
+3. **Quality:** Avoid stars with inflated counts (common names, database errors)
+4. **Representation:** One star per language to maintain diverse content
+
+**Filters:**
+- Search query: Actor name (e.g., "Rajkummar Rao")
+- Content type: movie
+- Year from: Last 5 years (dynamic)
+- Sorted by: IMDb rating (descending)
+- Limit: 15 movies
+
+**Implementation:**
+Uses `/api/search` endpoint with filters instead of direct MongoDB query:
+```javascript
+api.searchWithFilters('Rajkummar Rao', {
+  type: 'movie',
+  year_from: currentYear - 5,
+  sort: 'rating',
+  order: 'desc',
+  limit: 15
+})
+```
+
+**Subtitle Feature:**
+Each row includes a subtitle showing the featured star name (e.g., "Featuring Rajkummar Rao") to provide context and allow easy star rotation without changing row titles.
+
+**Use Case:**
+- Keep content fresh with recently-released movies
+- Leverage star power for audience engagement
+- Balance quality (rating-based sorting) with recency (5-year filter)
+- Easy updates by changing featured star names
+
+**Alternative Star Options (for rotation):**
+
+**Hindi:**
+- Salman Khan (19), Varun Dhawan (15), Ranveer Singh (15), Vicky Kaushal (14), Kartik Aaryan (13), Shah Rukh Khan (11)
+
+**Tamil:**
+- Ajith Kumar (11), Sivakarthikeyan (9), Rajinikanth (8), Kamal Haasan (8)
+
+**Telugu:**
+- Chiranjeevi (13), Mahesh Babu (9), Vijay Deverakonda (9), Ram Charan (7), Allu Arjun (3)
+
+**Malayalam:**
+- Mammootty (26), Prithviraj Sukumaran (24), Tovino Thomas (24), Fahadh Faasil (18), Dulquer Salmaan (15)
+
+**Kannada:**
+- Upendra (42), Shiva Rajkumar (18), Rishab Shetty (10), Puneeth Rajkumar (5), Rakshit Shetty (3)
+
+**Bengali:**
+- Abir Chatterjee (23), Ankush Hazra (15), Prosenjit Chatterjee (12)
+
+**English:**
+- Chris Hemsworth (10), Tom Cruise (7), Brad Pitt (6), Leonardo DiCaprio (4), Ryan Gosling (4)
+
+**Note:** Some actors (Vijay, Dev, Nani, Yash) show inflated counts due to common names matching multiple people. These are excluded from primary selection.
 
 ---
 
