@@ -1,6 +1,5 @@
-import { fetchShowsData } from '@/lib/fetch-shows-data';
+import { fetchInitialShowsData } from '@/lib/fetch-shows-data';
 import { ShowsPageClient } from '@/components/pages/shows-page-client';
-import { getInitialShowsData } from '@/lib/progressive-loading';
 
 /**
  * Shows Page - Server Component with Progressive Loading
@@ -25,16 +24,13 @@ export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
 export default async function ShowsPage() {
-  // Fetch all shows data on server
-  const allData = await fetchShowsData();
-
-  // Extract only first 10 rows for initial render
-  const initialData = getInitialShowsData(allData);
+  // Fetch ONLY first 10 rows on server (fast response)
+  const initialData = await fetchInitialShowsData();
 
   console.log('[Server] Passing initial shows data to client:', {
     initialRows: Object.keys(initialData).length
   });
 
-  // Pass initial data to client (client will lazy-load the rest)
+  // Pass initial data to client (client will lazy-load remaining 38 rows)
   return <ShowsPageClient initialData={initialData} />;
 }

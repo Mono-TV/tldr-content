@@ -339,3 +339,65 @@ export async function fetchShowsData(): Promise<ShowsData> {
     throw error;
   }
 }
+
+/**
+ * Fetch ONLY initial 10 rows for fast page load
+ * Used by progressive loading to reduce initial server response time
+ */
+export async function fetchInitialShowsData(): Promise<Partial<ShowsData>> {
+  const startTime = Date.now();
+  console.log('[ISR] Fetching initial shows data (first 10 rows)...');
+
+  // Year helpers
+  const currentYear = new Date().getFullYear();
+  const fiveYearsAgo = currentYear - 5;
+  const tenYearsAgo = currentYear - 10;
+  const fifteenYearsAgo = currentYear - 15;
+  const twentyYearsAgo = currentYear - 20;
+
+  try {
+    // Fetch only the first 10 rows in parallel
+    const [
+      featured,
+      topRatedRecent,
+      topRatedEnglish,
+      topRatedHindi,
+      topRatedBengali,
+      topRatedTamil,
+      topRatedTelugu,
+      topRatedMalayalam,
+      topRatedKannada,
+      topAction,
+    ] = await batchPromises([
+      () => fetchContent({ min_rating: 8, min_votes: 10000, type: 'show', sort: 'popularity', order: 'desc', limit: 5 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', year_from: fiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'bn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'show', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 1500, type: 'show', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 10000, type: 'show', genre: 'Action', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+    ]);
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched initial shows data in ${endTime - startTime}ms`);
+
+    return {
+      featured,
+      topRatedRecent,
+      topRatedEnglish,
+      topRatedHindi,
+      topRatedBengali,
+      topRatedTamil,
+      topRatedTelugu,
+      topRatedMalayalam,
+      topRatedKannada,
+      topAction,
+    };
+  } catch (error) {
+    console.error('[ISR] Error fetching initial shows data:', error);
+    throw error;
+  }
+}

@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/tldr-music/hotstar-ingestion/hotstar-ingestion:latest'
+      - '-f'
+      - 'Dockerfile.hotstar'
+      - '.'
+images:
+  - 'asia-south1-docker.pkg.dev/tldr-music/hotstar-ingestion/hotstar-ingestion:latest'
+timeout: 600s

@@ -319,3 +319,58 @@ export async function fetchMoviesData(): Promise<MoviesData> {
     throw error;
   }
 }
+
+/**
+ * Fetch ONLY initial 10 rows for fast page load
+ * Used by progressive loading to reduce initial server response time
+ */
+export async function fetchInitialMoviesData(): Promise<Partial<MoviesData>> {
+  const startTime = Date.now();
+  console.log('[ISR] Fetching initial movies data (first 10 rows)...');
+
+  try {
+    // Fetch only the first 10 rows in parallel
+    const [
+      featured,
+      topRatedRecent,
+      topRatedEnglish,
+      topRatedHindi,
+      topRatedBengali,
+      topRatedTamil,
+      topRatedTelugu,
+      topRatedMalayalam,
+      topRatedKannada,
+      topAction,
+    ] = await batchPromises([
+      () => fetchContent({ min_rating: 8, min_votes: 10000, type: 'movie', sort: 'popularity', order: 'desc', limit: 5 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'movie', year_from: fiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'movie', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'movie', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'movie', original_language: 'bn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 3000, type: 'movie', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'movie', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 1500, type: 'movie', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'movie', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 10000, type: 'movie', genre: 'Action', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+    ]);
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched initial movies data in ${endTime - startTime}ms`);
+
+    return {
+      featured,
+      topRatedRecent,
+      topRatedEnglish,
+      topRatedHindi,
+      topRatedBengali,
+      topRatedTamil,
+      topRatedTelugu,
+      topRatedMalayalam,
+      topRatedKannada,
+      topAction,
+    };
+  } catch (error) {
+    console.error('[ISR] Error fetching initial movies data:', error);
+    throw error;
+  }
+}

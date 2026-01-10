@@ -1,6 +1,5 @@
-import { fetchMoviesData } from '@/lib/fetch-movies-data';
+import { fetchInitialMoviesData } from '@/lib/fetch-movies-data';
 import { MoviesPageClient } from '@/components/pages/movies-page-client';
-import { getInitialMoviesData } from '@/lib/progressive-loading';
 
 /**
  * Movies Page - Server Component with Progressive Loading
@@ -28,12 +27,9 @@ export const revalidate = 300;
 export const dynamic = 'force-dynamic';
 
 export default async function MoviesPage() {
-  // Fetch all movies data on server
-  const allData = await fetchMoviesData();
+  // Fetch ONLY first 10 rows on server (fast response)
+  const initialData = await fetchInitialMoviesData();
 
-  // Extract only first 10 rows for initial render
-  const initialData = getInitialMoviesData(allData);
-
-  // Pass initial data to client (client will lazy-load the rest)
+  // Pass initial data to client (client will lazy-load remaining 38 rows)
   return <MoviesPageClient initialData={initialData} />;
 }
