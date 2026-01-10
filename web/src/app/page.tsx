@@ -179,7 +179,10 @@ export default function HomePage() {
 
       if (ratingB !== ratingA) return ratingB - ratingA;
       if (votesB !== votesA) return votesB - votesA;
-      return new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+
+      const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
+      const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
+      return dateB - dateA;
     });
 
     return { items: sortedMovies.slice(0, 15), total: sortedMovies.length };
