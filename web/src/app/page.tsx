@@ -20,8 +20,8 @@ import { HomePageClient } from '@/components/pages/home-page-client';
  * - No build-time API calls
  */
 
-// Enable ISR - revalidate every 5 minutes (300 seconds)
-export const revalidate = 300;
+// Temporarily disable ISR cache to force fresh data (will revert to 300)
+export const revalidate = 0;
 
 // Use dynamic rendering to generate on-demand (not at build time)
 // This prevents API timeouts when building in Docker/Cloud Run
