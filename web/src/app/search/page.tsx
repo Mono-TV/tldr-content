@@ -213,7 +213,7 @@ function SearchContent() {
   const { contentType: _, type: __, search: ___, ...displayFilters } = filters;
 
   const hasActiveFilters = Object.keys(displayFilters).some(
-    key => key !== 'page' && displayFilters[key as keyof ContentFilters] !== undefined
+    key => key !== 'page' && displayFilters[key as keyof typeof displayFilters] !== undefined
   );
 
   return (
