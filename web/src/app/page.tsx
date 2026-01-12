@@ -1,5 +1,5 @@
-import { fetchHomepageData } from '@/lib/fetch-homepage-data';
-import { HomePageClient } from '@/components/pages/home-page-client';
+import { fetchHomepageData } from "@/lib/fetch-homepage-data";
+import { HomePageClient } from "@/components/pages/home-page-client";
 
 /**
  * Homepage - Server Component with On-Demand ISR
@@ -20,7 +20,8 @@ import { HomePageClient } from '@/components/pages/home-page-client';
  * - No build-time API calls
  */
 
-// Enable ISR with 5-minute cache
+// Skip build-time pre-rendering, use on-demand ISR instead
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function HomePage() {
