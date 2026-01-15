@@ -1,10 +1,11 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
 import { DPadNavigationProvider } from '@/contexts/dpad-navigation-context';
 import { MotionProvider } from '@/components/ui/lazy-motion';
+import { LoadingBarWithSuspense } from '@/components/ui/loading-bar';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -27,6 +28,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <MotionProvider>
         <AuthProvider>
           <DPadNavigationProvider>
+            {/* Loading bar for route transitions */}
+            <Suspense fallback={null}>
+              <LoadingBarWithSuspense />
+            </Suspense>
             {children}
           </DPadNavigationProvider>
         </AuthProvider>
