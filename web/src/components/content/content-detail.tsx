@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn, formatRating, formatDuration, getImageUrl, getBackdropUrl, getRatingColor, extractYouTubeId, getPlatformLogoUrl } from '@/lib/utils';
+import { BLUR_DATA_URLS, IMAGE_SIZES } from '@/lib/image-utils';
 import { ContentRow } from '@/components/sections/content-row';
 import api from '@/services/api';
 
@@ -73,6 +74,9 @@ export function ContentDetail({ id }: ContentDetailProps) {
           fill
           className="object-cover"
           priority
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URLS.backdrop}
+          sizes={IMAGE_SIZES.backdrop}
         />
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
@@ -103,6 +107,10 @@ export function ContentDetail({ id }: ContentDetailProps) {
                 alt={content.title}
                 fill
                 className="object-cover"
+                priority
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URLS.poster}
+                sizes={IMAGE_SIZES.detailPoster}
               />
             </div>
           </m.div>
@@ -300,6 +308,9 @@ export function ContentDetail({ id }: ContentDetailProps) {
                         width={80}
                         height={80}
                         className="w-full h-full object-cover"
+                        placeholder="blur"
+                        blurDataURL={BLUR_DATA_URLS.profile}
+                        sizes={IMAGE_SIZES.profile}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-card-hover text-2xl font-bold text-muted-foreground">

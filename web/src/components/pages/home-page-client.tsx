@@ -26,7 +26,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Trending Now"
             contents={data.trending.items}
             href="/search?sort=popularity&order=desc"
-                      />
+            priorityCount={5}
+          />
         )}
 
         {/* Top Rated - Mix */}
@@ -35,7 +36,8 @@ export function HomePageClient({ data }: HomePageClientProps) {
             title="Top Rated"
             contents={data.topRated.items}
             href="/search?sort=rating&order=desc&min_rating=8"
-                      />
+            priorityCount={5}
+          />
         )}
 
         {/* Trending Movies */}

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { m } from 'framer-motion';
 import { Play, Star } from 'lucide-react';
 import { cn, getImageUrl, formatRating } from '@/lib/utils';
+import { BLUR_DATA_URLS, IMAGE_SIZES } from '@/lib/image-utils';
 import type { Content } from '@/types';
 import { FastAverageColor } from 'fast-average-color';
 import { useDPadNavigation } from '@/hooks/use-dpad-navigation';
@@ -196,8 +197,12 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                   src={getImageUrl(item.poster_url, 'md')}
                   alt={item.title}
                   fill
+                  priority={index < 5}
+                  loading={index < 5 ? 'eager' : 'lazy'}
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URLS.poster}
                   className="object-cover"
-                  sizes="233px"
+                  sizes={IMAGE_SIZES.heroPoster}
                 />
                 {/* Overlay on non-selected items */}
                 <div

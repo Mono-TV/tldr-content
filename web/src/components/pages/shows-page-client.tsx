@@ -274,12 +274,14 @@ export function ShowsPageClient({ criticalData }: ShowsPageClientProps) {
           title="Top Rated Shows"
           contents={criticalData.topRatedRecent?.items || []}
           href="/browse?type=show&min_rating=7.5&sort=rating"
+          priorityCount={5}
         />
 
         <ContentRow
           title="Top Rated English Shows"
           contents={criticalData.topRatedEnglish?.items || []}
           href="/browse?type=show&language=English&min_rating=7.5&sort=rating"
+          priorityCount={5}
         />
 
         <ContentRow

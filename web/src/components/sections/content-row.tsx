@@ -13,6 +13,8 @@ interface ContentRowProps {
   showRank?: boolean;
   href?: string;
   cardSize?: 'sm' | 'md' | 'lg';
+  /** Mark first N cards as priority (above-fold optimization) */
+  priorityCount?: number;
 }
 
 export function ContentRow({
@@ -23,6 +25,7 @@ export function ContentRow({
   showRank = false,
   href,
   cardSize = 'md',
+  priorityCount = 0,
 }: ContentRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +63,7 @@ export function ContentRow({
                   index={index}
                   showRank={showRank}
                   size={cardSize}
+                  priority={index < priorityCount}
                 />
               ))}
         </div>

@@ -275,12 +275,14 @@ export function MoviesPageClient({ criticalData }: MoviesPageClientProps) {
           title="Top Rated Movies"
           contents={criticalData.topRatedRecent?.items || []}
           href="/browse?type=movie&min_rating=7.5&sort=rating"
+          priorityCount={5}
         />
 
         <ContentRow
           title="Top Rated English Movies"
           contents={criticalData.topRatedEnglish?.items || []}
           href="/browse?type=movie&language=English&min_rating=7.5&sort=rating"
+          priorityCount={5}
         />
 
         <ContentRow

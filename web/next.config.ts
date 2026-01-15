@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
 
   // Image optimization with remote patterns
   images: {
+    // Enable modern image formats (WebP/AVIF) for better compression
+    formats: ['image/avif', 'image/webp'],
+    // Device breakpoints for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    // Image sizes for srcset generation
+    imageSizes: [16, 32, 48, 64, 96, 128, 192, 256, 384],
+    // Cache optimized images for 7 days
+    minimumCacheTTL: 60 * 60 * 24 * 7,
     remotePatterns: [
       {
         protocol: 'https',

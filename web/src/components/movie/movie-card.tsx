@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { m } from 'framer-motion';
 import { Star, Play } from 'lucide-react';
 import { cn, formatRating, getImageUrl, getRatingColor } from '@/lib/utils';
+import { BLUR_DATA_URLS, IMAGE_SIZES } from '@/lib/image-utils';
 import type { Content } from '@/types';
 
 interface MovieCardProps {
@@ -13,9 +14,18 @@ interface MovieCardProps {
   showRank?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  /** Mark image as priority for above-the-fold loading */
+  priority?: boolean;
 }
 
-export function MovieCard({ content, index, showRank = false, size = 'md', className }: MovieCardProps) {
+export function MovieCard({
+  content,
+  index,
+  showRank = false,
+  size = 'md',
+  className,
+  priority = false
+}: MovieCardProps) {
   const sizeClasses = {
     sm: 'w-32 md:w-36 lg:w-40',
     md: 'w-36 md:w-40 lg:w-48',
@@ -59,8 +69,12 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
             src={getImageUrl(content.poster_url, 'sm')}
             alt={content.title}
             fill
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URLS.poster}
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            sizes="(max-width: 768px) 150px, 200px"
+            sizes={IMAGE_SIZES.card[size]}
           />
 
           {/* Gradient Overlay - Always visible, enhanced on hover */}

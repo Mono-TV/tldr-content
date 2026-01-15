@@ -187,3 +187,87 @@ a:focus-visible {
 .dpad-focused {
   animation: dpad-focus-pulse 2s ease-in-out infinite;
 }
+
+/* Image shimmer loading effect */
+@keyframes image-shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.image-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--card) 0%,
+    var(--card-hover) 50%,
+    var(--card) 100%
+  );
+  background-size: 1000px 100%;
+  animation: image-shimmer 2s ease-in-out infinite;
+}
+
+/* Image loading state - shows shimmer until image loads */
+.image-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--card) 0%,
+    var(--card-hover) 50%,
+    var(--card) 100%
+  );
+  background-size: 1000px 100%;
+  animation: image-shimmer 2s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Hide shimmer when image is loaded */
+.image-loading.loaded::before {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+/* Optimized image container - prevents layout shift */
+.image-container {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--card);
+}
+
+/* Poster image container (2:3 aspect ratio) */
+.image-container-poster {
+  aspect-ratio: 2 / 3;
+}
+
+/* Backdrop image container (16:9 aspect ratio) */
+.image-container-backdrop {
+  aspect-ratio: 16 / 9;
+}
+
+/* Square image container (1:1 aspect ratio) */
+.image-container-square {
+  aspect-ratio: 1 / 1;
+}
+
+/* Image fade-in animation */
+@keyframes image-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.image-fade-in {
+  animation: image-fade-in 0.3s ease-out forwards;
+}
