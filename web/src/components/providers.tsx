@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
 import { DPadNavigationProvider } from '@/contexts/dpad-navigation-context';
+import { MotionProvider } from '@/components/ui/lazy-motion';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,11 +24,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <DPadNavigationProvider>
-          {children}
-        </DPadNavigationProvider>
-      </AuthProvider>
+      <MotionProvider>
+        <AuthProvider>
+          <DPadNavigationProvider>
+            {children}
+          </DPadNavigationProvider>
+        </AuthProvider>
+      </MotionProvider>
     </QueryClientProvider>
   );
 }

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Star, Play } from 'lucide-react';
 import { cn, formatRating, getImageUrl, getRatingColor } from '@/lib/utils';
 import type { Content } from '@/types';
@@ -29,7 +29,7 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
   };
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index ? index * 0.05 : 0 }}
@@ -102,7 +102,7 @@ export function MovieCard({ content, index, showRank = false, size = 'md', class
           </div>
         </div>
       </Link>
-    </motion.div>
+    </m.div>
   );
 }
 

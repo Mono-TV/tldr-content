@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion } from 'framer-motion';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
 import { cn } from '@/lib/utils';
 import type { Content } from '@/types';

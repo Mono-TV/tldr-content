@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Search, X, Film, Tv, Clock, TrendingUp, Grid3X3, LayoutGrid } from 'lucide-react';
 import { FilterBar, ActiveFilters } from '@/components/filters/filter-bar';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
@@ -246,7 +246,7 @@ export function SearchContent() {
         <AnimatePresence mode="wait">
           {debouncedQuery.length >= 2 ? (
             // Search Results with Filters
-            <motion.div
+            <m.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -378,7 +378,7 @@ export function SearchContent() {
                   )}
                 </div>
               ) : (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className={cn(
@@ -389,16 +389,16 @@ export function SearchContent() {
                   )}
                 >
                   {data?.items.map((content, index) => (
-                    <motion.div
+                    <m.div
                       key={content._id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.02 }}
                     >
                       <MovieCard content={content} size={viewMode === 'large' ? 'lg' : 'md'} />
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
+                </m.div>
               )}
 
               {/* Pagination */}
@@ -410,10 +410,10 @@ export function SearchContent() {
                   className="mt-12"
                 />
               )}
-            </motion.div>
+            </m.div>
           ) : (
             // Empty State - Recent & Trending
-            <motion.div
+            <m.div
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -458,19 +458,19 @@ export function SearchContent() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {trendingData.items.map((content, index) => (
-                      <motion.div
+                      <m.div
                         key={content._id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.03 }}
                       >
                         <MovieCard content={content} />
-                      </motion.div>
+                      </m.div>
                     ))}
                   </div>
                 </section>
               )}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

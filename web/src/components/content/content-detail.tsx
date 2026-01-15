@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   Star,
   Play,
@@ -92,7 +92,7 @@ export function ContentDetail({ id }: ContentDetailProps) {
       <div className="container mx-auto px-4 -mt-40 relative z-10">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Poster */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex-shrink-0"
@@ -105,10 +105,10 @@ export function ContentDetail({ id }: ContentDetailProps) {
                 className="object-cover"
               />
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Info */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -277,12 +277,12 @@ export function ContentDetail({ id }: ContentDetailProps) {
                 </div>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Cast Section */}
         {content.cast && content.cast.length > 0 && (
-          <motion.section
+          <m.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -312,12 +312,12 @@ export function ContentDetail({ id }: ContentDetailProps) {
                 </div>
               ))}
             </div>
-          </motion.section>
+          </m.section>
         )}
 
         {/* Similar Content */}
         {similarData?.items && similarData.items.length > 0 && (
-          <motion.section
+          <m.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -328,7 +328,7 @@ export function ContentDetail({ id }: ContentDetailProps) {
               contents={similarData.items.filter((c) => c.imdb_id !== content.imdb_id)}
               href={`/browse?genre=${content.genres?.[0]?.name || 'Action'}`}
             />
-          </motion.section>
+          </m.section>
         )}
       </div>
     </div>

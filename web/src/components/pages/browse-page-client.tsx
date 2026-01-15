@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Grid3X3, LayoutGrid, Film, Tv } from 'lucide-react';
 import { FilterBar, ActiveFilters } from '@/components/filters/filter-bar';
 import { MovieCard, MovieCardSkeleton } from '@/components/movie/movie-card';
@@ -217,7 +217,7 @@ export function BrowsePageClient({ initialData }: BrowsePageClientProps) {
             </button>
           </div>
         ) : (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={cn(
@@ -228,16 +228,16 @@ export function BrowsePageClient({ initialData }: BrowsePageClientProps) {
             )}
           >
             {displayData?.items.map((content, index) => (
-              <motion.div
+              <m.div
                 key={content._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.02 }}
               >
                 <MovieCard content={content} size={viewMode === 'large' ? 'lg' : 'md'} />
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         )}
 
         {/* Pagination */}

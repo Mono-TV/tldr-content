@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Play, Star } from 'lucide-react';
 import { cn, getImageUrl, formatRating } from '@/lib/utils';
 import type { Content } from '@/types';
@@ -102,7 +102,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       <div className="h-full flex">
         {/* Left Panel - 30% - Content Info (Fixed) */}
         <div className="w-[30%] min-w-[380px] flex-shrink-0 py-8 pl-12 pr-8 lg:pl-16 lg:pr-12 flex flex-col justify-center">
-          <motion.div
+          <m.div
             key={selectedItem._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
               <Play className="w-5 h-5 fill-white" />
               Watch Now
             </Link>
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Right Panel - 70% - Poster Carousel */}
@@ -164,7 +164,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
           {/* Scroll Container */}
           <div className="h-full flex items-center gap-10 px-16 overflow-x-scroll hide-scrollbar scroll-smooth">
             {items.map((item, index) => (
-              <motion.div
+              <m.div
                 key={item._id}
                 ref={(el) => {
                   posterRefs.current[index] = el;
@@ -216,7 +216,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                     </p>
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>

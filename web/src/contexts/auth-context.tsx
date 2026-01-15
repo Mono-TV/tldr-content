@@ -1,16 +1,16 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import {
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
+  isFirebaseConfigured,
+  onAuthStateChange,
+  signInWithGoogle as firebaseSignInWithGoogle,
+  signInWithEmail as firebaseSignInWithEmail,
+  signUpWithEmail as firebaseSignUpWithEmail,
   signOut as firebaseSignOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+  sendPasswordReset as firebaseSendPasswordReset,
+  type User,
+} from '@/lib/firebase-lazy';
 
 interface AuthContextType {
   user: User | null;
@@ -33,95 +33,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Skip auth state listener if Firebase is not configured
-    if (!auth) {
+    if (!isFirebaseConfigured()) {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    let unsubscribe: (() => void) | undefined;
 
-    return () => unsubscribe();
+    // Initialize auth state listener
+    const initAuth = async () => {
+      try {
+        unsubscribe = await onAuthStateChange((authUser) => {
+          setUser(authUser);
+          setLoading(false);
+        });
+      } catch (err) {
+        console.error('Failed to initialize auth:', err);
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
-  const signInWithGoogle = async () => {
-    if (!auth || !googleProvider) {
-      setError('Authentication is not configured');
-      return;
-    }
+  const signInWithGoogle = useCallback(async () => {
     try {
       setError(null);
-      await signInWithPopup(auth, googleProvider);
+      await firebaseSignInWithGoogle();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign in with Google';
       setError(message);
       throw err;
     }
-  };
+  }, []);
 
-  const signInWithEmail = async (email: string, password: string) => {
-    if (!auth) {
-      setError('Authentication is not configured');
-      return;
-    }
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      await signInWithEmailAndPassword(auth, email, password);
+      await firebaseSignInWithEmail(email, password);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign in';
       setError(message);
       throw err;
     }
-  };
+  }, []);
 
-  const signUpWithEmail = async (email: string, password: string) => {
-    if (!auth) {
-      setError('Authentication is not configured');
-      return;
-    }
+  const signUpWithEmail = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      await createUserWithEmailAndPassword(auth, email, password);
+      await firebaseSignUpWithEmail(email, password);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create account';
       setError(message);
       throw err;
     }
-  };
+  }, []);
 
-  const signOut = async () => {
-    if (!auth) {
-      setError('Authentication is not configured');
-      return;
-    }
+  const signOut = useCallback(async () => {
     try {
       setError(null);
-      await firebaseSignOut(auth);
+      await firebaseSignOut();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign out';
       setError(message);
       throw err;
     }
-  };
+  }, []);
 
-  const resetPassword = async (email: string) => {
-    if (!auth) {
-      setError('Authentication is not configured');
-      return;
-    }
+  const resetPassword = useCallback(async (email: string) => {
     try {
       setError(null);
-      await sendPasswordResetEmail(auth, email);
+      await firebaseSendPasswordReset(email);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to send reset email';
       setError(message);
       throw err;
     }
-  };
+  }, []);
 
-  const clearError = () => setError(null);
+  const clearError = useCallback(() => setError(null), []);
 
   return (
     <AuthContext.Provider

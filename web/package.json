@@ -11,8 +11,6 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
     "clsx": "^2.1.1",
-    "embla-carousel-autoplay": "^8.6.0",
-    "embla-carousel-react": "^8.6.0",
     "fast-average-color": "^9.5.0",
     "firebase": "^12.7.0",
     "framer-motion": "^12.24.10",
@@ -23,6 +21,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.1.2",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
