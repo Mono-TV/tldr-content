@@ -462,12 +462,129 @@ curl "https://content-api-401132033262.asia-south1.run.app/api/content?<filters>
 - ✅ Enabled ISR with 5-minute revalidation
 - **Impact**: 92% faster page loads, 0 client-side API calls
 
+### Phase 4: Route Prefetching (Completed - January 2026)
+- Intelligent route prefetching based on network conditions
+- Navbar hover prefetching for instant navigation
+- Homepage auto-prefetches Movies/Shows after 2s idle
+- Respects user's data saver and slow connections
+- **Impact**: Near-zero perceived navigation time
+
+**Key Files:**
+- `web/src/lib/network-utils.ts` - Network condition detection
+- `web/src/lib/client-api.ts` - Client-side prefetch data fetchers
+- `web/src/hooks/use-route-prefetch.ts` - Prefetch hooks
+
+**How It Works:**
+1. On homepage load, after 2 seconds idle, prefetch Movies/Shows routes
+2. When hovering navbar links (desktop), prefetch that route's data
+3. Uses `requestIdleCallback` to avoid blocking main thread
+4. Checks `navigator.connection` for network quality
+5. Skips prefetch on 2G, slow-2G, or data saver mode
+
 ### Future Optimizations (Planned)
 - [ ] Image optimization with Next.js Image component
 - [ ] CDN caching for API responses
 - [ ] Redis caching on backend
 - [ ] Lazy loading for below-fold content rows
 - [ ] Bundle size optimization
+
+---
+
+## Route Prefetching
+
+### Overview
+
+Route prefetching makes navigation feel instant by intelligently loading route data before the user clicks. The system respects network conditions and device capabilities.
+
+### Features
+
+**1. Homepage Auto-Prefetch:**
+- Triggers 2 seconds after homepage loads
+- Prefetches /movies and /shows routes and their critical data
+- Uses `requestIdleCallback` to avoid blocking the main thread
+
+**2. Navbar Hover Prefetch:**
+- Prefetches route when user hovers over nav links
+- 150ms debounce to prevent excessive calls during quick mouse movements
+- Only works on devices with hover support (desktop)
+
+**3. Network-Aware:**
+- Checks `navigator.connection` API for network quality
+- Skips prefetch on slow connections (2G, slow-2G)
+- Respects `saveData` user preference
+- Checks device memory (skips if < 2GB)
+
+### Usage
+
+**In Client Components:**
+```typescript
+import { useRoutePrefetch } from '@/hooks/use-route-prefetch';
+
+function MyComponent() {
+  // Auto-prefetch based on prediction map
+  useRoutePrefetch();
+
+  // Or specify custom routes
+  useRoutePrefetch({ routes: ['/custom-route'] });
+}
+```
+
+**For Navbar Links:**
+```typescript
+import { useNavbarPrefetch } from '@/hooks/use-route-prefetch';
+
+function Navbar() {
+  const { onMouseEnter } = useNavbarPrefetch();
+
+  return (
+    <Link href="/movies" onMouseEnter={() => onMouseEnter('/movies')}>
+      Movies
+    </Link>
+  );
+}
+```
+
+### Prediction Map
+
+Routes are prefetched based on the current page:
+
+| Current Page | Prefetched Routes |
+|--------------|-------------------|
+| `/` (Home)   | `/movies`, `/shows` |
+| `/movies`    | `/shows`, `/browse` |
+| `/shows`     | `/movies`, `/browse` |
+| `/browse`    | `/movies`, `/shows` |
+
+### Network Detection
+
+The `shouldPrefetch()` function checks:
+
+1. **Data Saver Mode**: `navigator.connection.saveData`
+2. **Effective Connection**: `navigator.connection.effectiveType`
+3. **Device Memory**: `navigator.deviceMemory`
+
+```typescript
+// Returns false if:
+// - User has data saver enabled
+// - Connection is slow-2g or 2g
+// - Device memory < 2GB
+
+// Returns true if:
+// - Network API not available (assume good connection)
+// - Connection is 3g or 4g
+// - Good device capabilities
+```
+
+### Testing
+
+Open browser DevTools console and look for prefetch logs:
+
+```
+[Prefetch] Scheduling prefetch for: /movies, /shows
+[Prefetch] Prefetching route: /movies
+[Prefetch] Prefetching data for: /movies
+[Prefetch] Prefetched critical movies data in 1234ms
+```
 
 ---
 

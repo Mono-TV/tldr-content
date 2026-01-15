@@ -8,6 +8,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X, User, Heart, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
+import { useNavbarPrefetch } from '@/hooks/use-route-prefetch';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -23,6 +24,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const { user, signOut, loading } = useAuth();
+  const { onMouseEnter: handleNavPrefetch } = useNavbarPrefetch();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +84,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className="relative py-1 group"
+                onMouseEnter={() => handleNavPrefetch(link.href)}
               >
                 <span
                   className={cn(

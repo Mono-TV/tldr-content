@@ -2,6 +2,7 @@
 
 import { HeroCarousel } from '@/components/sections/hero-carousel';
 import { ContentRow } from '@/components/sections/content-row';
+import { useRoutePrefetch } from '@/hooks/use-route-prefetch';
 import type { HomepageData } from '@/lib/fetch-homepage-data';
 
 interface HomePageClientProps {
@@ -9,6 +10,9 @@ interface HomePageClientProps {
 }
 
 export function HomePageClient({ data }: HomePageClientProps) {
+  // Enable route prefetching for Movies and Shows pages
+  // This runs after 2 seconds of idle time on the homepage
+  useRoutePrefetch();
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
