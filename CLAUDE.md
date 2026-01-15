@@ -632,12 +632,167 @@ Target metrics (all met ✅):
 
 ---
 
+## Sports Content Ingestion
+
+### Overview
+
+Sports content is ingested from the Hotstar API (`/match/search` endpoint) and stored in MongoDB's `hotstar_sports` collection. The ingestion script supports fetching up to 175,000+ sports items including cricket, football, kabaddi, and more.
+
+### Available Sports Content
+
+| Sport Type | Description |
+|------------|-------------|
+| Cricket | IPL, International matches, highlights |
+| Football | ISL, Premier League, Champions League |
+| Kabaddi | Pro Kabaddi League |
+| Hockey | Field hockey matches |
+| Badminton | BWF tournaments |
+| Tennis | Grand Slams, ATP/WTA |
+| American Football | NFL content |
+| Motorsports | F1, MotoGP |
+| ESports | Gaming tournaments |
+| And more... | Athletics, Baseball, MMA, Skating, Squash, Triathlon |
+
+### Ingestion Script
+
+**Location**: `scripts/ingest-hotstar-sports-mongo.js`
+
+**Usage**:
+```bash
+# Set MongoDB URI
+export MONGO_URI="mongodb://user:pass@host:27017/content_db?authSource=content_db"
+
+# Ingest all sports content (~175,000 items)
+node scripts/ingest-hotstar-sports-mongo.js
+
+# Ingest with limit (for testing)
+node scripts/ingest-hotstar-sports-mongo.js --limit=10000
+
+# Custom batch size (default: 1000, max: 1000)
+node scripts/ingest-hotstar-sports-mongo.js --limit=5000 --batch=500
+```
+
+**Features**:
+- Automatic Akamai token generation and refresh
+- Rate limiting (1 request/second)
+- Upsert support (updates existing, inserts new)
+- Phase 1: Standard pagination (first 10,000 items)
+- Phase 2: Date-based filtering (items beyond 10,000)
+- Progress logging with batch counts
+- Error recovery and retry logic
+
+### MongoDB Collection Schema
+
+**Collection**: `hotstar_sports`
+
+**Key Fields**:
+```javascript
+{
+  content_id: String,      // Unique Hotstar content ID
+  title: String,           // Match/event title
+  description: String,     // Event description
+  game_name: String,       // Sport type (Cricket, Football, etc.)
+  tournament_id: Number,   // Tournament identifier
+  sports_season_id: Number,// Season identifier
+  sports_season_name: String,
+  
+  // Timing
+  start_date: Number,      // Epoch timestamp
+  end_date: Number,
+  duration: Number,        // Duration in seconds
+  
+  // Access control
+  premium: Boolean,        // Premium content flag
+  vip: Boolean,           // VIP content flag
+  live: Boolean,          // Live stream flag
+  asset_status: String,   // PUBLISHED or UNPUBLISHED
+  
+  // Metadata
+  genre: Array,
+  lang: Array,            // Languages available
+  search_keywords: Array,
+  
+  // Media
+  thumbnail: String,      // Thumbnail URL
+  source_images: Array,   // Image variants
+  deep_link_url: String,  // Hotstar deep link
+  locators: Array,        // Platform-specific URLs
+  
+  // Timestamps
+  created_at: Date,
+  updated_at: Date,
+  last_synced_at: Date,
+  api_update_date: Number
+}
+```
+
+**Indexes Created**:
+- `content_id` (unique)
+- `game_name`
+- `start_date`
+- `tournament_id`
+- `live`
+- `asset_status`
+- Text index on `title` and `description`
+
+### Querying Sports Data
+
+```javascript
+// Get all cricket matches
+db.hotstar_sports.find({ game_name: 'Cricket' })
+
+// Get live sports
+db.hotstar_sports.find({ live: true })
+
+// Get published football content
+db.hotstar_sports.find({ 
+  game_name: 'Football', 
+  asset_status: 'PUBLISHED' 
+})
+
+// Search by title
+db.hotstar_sports.find({ 
+  $text: { $search: "India vs Australia" } 
+})
+
+// Get recent matches (last 7 days)
+const weekAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+db.hotstar_sports.find({ 
+  start_date: { $gte: weekAgo } 
+}).sort({ start_date: -1 })
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGO_URI` | MongoDB connection string | Required |
+| `DB_NAME` | Database name | `content_db` |
+| `HOTSTAR_API_BASE_URL` | Hotstar API base URL | `https://pp-catalog-api.hotstar.com` |
+| `HOTSTAR_PARTNER_ID` | Partner ID for API | `92837456123` |
+| `HOTSTAR_AKAMAI_SECRET` | Akamai secret for token generation | Set in env |
+
+### Ingestion Statistics (January 2026)
+
+| Metric | Value |
+|--------|-------|
+| Total Available | 175,041 |
+| Ingested | 10,000 |
+| Published | 5,732 |
+| Unpublished | 4,268 |
+| Sport Types | 16 |
+| Ingestion Time | ~40s per 10k items |
+
+---
+
 ## Documentation Files
 
 - **CLAUDE.md** (this file) - Development guidelines and ISR documentation
 - **PERFORMANCE_OPTIMIZATION_PLAN.md** - Comprehensive performance optimization strategy
 - **ISR_IMPLEMENTATION_STATUS.md** - ISR implementation progress tracking
 - **README.md** - Project setup and general documentation
+- **README_HOTSTAR.md** - Hotstar API integration guide
+- **HOTSTAR_API.md** - Complete Hotstar API reference
 
 ---
 
@@ -651,6 +806,7 @@ For questions or issues:
 
 ---
 
-**Last Updated**: January 10, 2026
+**Last Updated**: January 11, 2026
 **Performance Grade**: A+ (Excellent)
 **ISR Status**: ✅ Fully Implemented and Deployed
+**Sports Ingestion**: ✅ 10,000 items ingested

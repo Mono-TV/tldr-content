@@ -42,7 +42,7 @@ curl "https://pp-catalog-api.hotstar.com/movie/search?partner=92837456123&orderB
 - **51,495 Movies**
 - **TV Shows** (thousands)
 - **Episodes**
-- **Sports/Matches**
+- **175,000+ Sports/Matches** (Cricket, Football, Kabaddi, Hockey, and more)
 - **Live Content**
 
 ### API Endpoints
@@ -63,6 +63,7 @@ curl "https://pp-catalog-api.hotstar.com/movie/search?partner=92837456123&orderB
 | File | Purpose |
 |------|---------|
 | `scripts/generate-token.py` | ✅ Token generator (WORKING) |
+| `scripts/ingest-hotstar-sports-mongo.js` | ✅ Sports ingestion to MongoDB |
 | `web/.env.local` | Environment variables |
 | `web/src/lib/hotstar-api.ts` | TypeScript API client |
 
@@ -323,14 +324,65 @@ const movies = await fetchMovies({ size: 20 });
 
 ---
 
+## Sports Content Ingestion
+
+### Quick Start
+```bash
+# Set MongoDB URI
+export MONGO_URI="mongodb://user:pass@host:27017/content_db?authSource=content_db"
+
+# Ingest sports content (10,000 items)
+cd scripts
+node ingest-hotstar-sports-mongo.js --limit=10000
+
+# Ingest all 175,000+ sports items
+node ingest-hotstar-sports-mongo.js
+```
+
+### Available Sports
+| Sport | Examples |
+|-------|----------|
+| Cricket | IPL, International matches, highlights |
+| Football | ISL, Premier League, Champions League |
+| Kabaddi | Pro Kabaddi League |
+| Hockey | Field hockey matches |
+| Badminton | BWF tournaments |
+| Tennis | Grand Slams, ATP/WTA |
+| American Football | NFL content |
+| Motorsports | F1, MotoGP |
+| ESports | Gaming tournaments |
+| And more | Athletics, Baseball, MMA, Skating, Squash, Triathlon |
+
+### Query Sports Data
+```javascript
+// Get all cricket matches
+db.hotstar_sports.find({ game_name: 'Cricket' })
+
+// Get published football content
+db.hotstar_sports.find({ 
+  game_name: 'Football', 
+  asset_status: 'PUBLISHED' 
+})
+
+// Search by title
+db.hotstar_sports.find({ 
+  $text: { $search: "India vs Australia" } 
+})
+```
+
+See **CLAUDE.md** for complete sports ingestion documentation.
+
+---
+
 ## Next Steps
 
 1. ✅ **Token Generation Working** - `python3 scripts/generate-token.py`
 2. ✅ **API Access Confirmed** - 200 OK responses
-3. ⏭️ **Integrate into Homepage** - Add Hotstar content rows
-4. ⏭️ **Implement Auto-Refresh** - Token regeneration
-5. ⏭️ **Add Browse Page** - Hotstar content filtering
-6. ⏭️ **Cache Strategy** - ISR + React Query
+3. ✅ **Sports Ingestion Working** - 10,000+ items in MongoDB
+4. ⏭️ **Integrate into Homepage** - Add Hotstar content rows
+5. ⏭️ **Implement Auto-Refresh** - Token regeneration
+6. ⏭️ **Add Sports Page** - Sports content browsing
+7. ⏭️ **Cache Strategy** - ISR + React Query
 
 ---
 
@@ -361,8 +413,10 @@ const movies = await fetchMovies({ size: 20 });
 ---
 
 **API Status:** ✅ Operational
-**Content Available:** 51,495+ movies
-**Last Tested:** January 10, 2026
+**Movies Available:** 51,495+
+**Sports Available:** 175,000+
+**Sports Ingested:** 10,000 items in MongoDB
+**Last Tested:** January 11, 2026
 **Success Rate:** 100%
 
 🚀 **Ready to integrate!**

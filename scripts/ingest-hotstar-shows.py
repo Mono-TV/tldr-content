@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Initial full ingestion of all Hotstar movies
-Time: ~1-2 minutes for 51,495 movies
+Initial full ingestion of all Hotstar TV shows
+Time: TBD based on total count (ignoring episodes for now)
 
 Usage:
-    python3 scripts/ingest-hotstar-movies.py
+    python3 scripts/ingest-hotstar-shows.py
 
 Environment Variables:
     DB_USER - PostgreSQL username (default: postgres)
@@ -49,7 +49,7 @@ RATE_LIMIT_DELAY = 1.0  # seconds
 CIRCUIT_BREAKER_WAIT = 60  # seconds
 
 
-class HotstarIngestion:
+class HotstarShowsIngestion:
     def __init__(self):
         try:
             if USE_CLOUD_DB:
@@ -98,10 +98,10 @@ class HotstarIngestion:
             print(f"❌ Token generation error: {e}")
             sys.exit(1)
 
-    def fetch_movies_batch(self, offset: int = 0, size: int = 1000,
+    def fetch_shows_batch(self, offset: int = 0, size: int = 1000,
                           from_date: Optional[int] = None,
                           to_date: Optional[int] = None) -> Dict:
-        """Fetch a batch of movies from Hotstar API"""
+        """Fetch a batch of TV shows from Hotstar API"""
         params = {
             'partner': PARTNER_ID,
             'orderBy': 'contentId',
@@ -125,7 +125,7 @@ class HotstarIngestion:
         }
 
         response = requests.get(
-            f'{HOTSTAR_API_BASE}/movie/search',
+            f'{HOTSTAR_API_BASE}/show/search',
             params=params,
             headers=headers,
             timeout=30
@@ -135,62 +135,65 @@ class HotstarIngestion:
             # Token expired, regenerate
             print("⚠️  Token expired, regenerating...")
             self.token = self.generate_fresh_token()
-            return self.fetch_movies_batch(offset, size, from_date, to_date)
+            return self.fetch_shows_batch(offset, size, from_date, to_date)
 
         response.raise_for_status()
         return response.json()
 
-    def save_movie(self, movie: Dict) -> None:
-        """Save a single movie to database"""
+    def save_show(self, show: Dict) -> None:
+        """Save a single TV show to database"""
         # Prepare all fields with defaults for missing values
-        movie_data = {
-            'id': movie.get('id'),
-            'contentId': movie.get('contentId'),
-            'title': movie.get('title'),
-            'description': movie.get('description'),
-            'contentType': movie.get('contentType'),
-            'year': movie.get('year'),
-            'duration': movie.get('duration'),
-            'premium': movie.get('premium', False),
-            'vip': movie.get('vip', False),
-            'paid': movie.get('paid', False),
-            'assetStatus': movie.get('assetStatus'),
-            'startDate': movie.get('startDate'),
-            'endDate': movie.get('endDate'),
-            'broadCastDate': movie.get('broadCastDate'),  # May be missing
-            'thumbnail': movie.get('thumbnail'),
-            'portraitThumbnail': movie.get('portraitThumbnail'),
-            'deepLinkUrl': movie.get('deepLinkUrl'),
-            'deepLinkUrlForLivingRoom': movie.get('deepLinkUrlForLivingRoom'),
-            'playUri': movie.get('playUri'),
-            'parentalRating': movie.get('parentalRating'),
-            'parentalRatingName': movie.get('parentalRatingName'),
-            'updateDate': movie.get('updateDate'),
+        show_data = {
+            'id': show.get('id'),
+            'contentId': str(show.get('contentId')),  # Convert to string
+            'title': show.get('title'),
+            'description': show.get('description'),
+            'contentType': show.get('contentType'),
+            'season_count': show.get('seasonCount', 0),
+            'episode_count': show.get('episodeCount', 0),
+            'year': show.get('year'),
+            'duration': show.get('duration'),
+            'premium': show.get('premium', False),
+            'vip': show.get('vip', False),
+            'paid': show.get('paid', False),
+            'assetStatus': show.get('assetStatus'),
+            'startDate': show.get('startDate'),
+            'endDate': show.get('endDate'),
+            'broadCastDate': show.get('broadCastDate'),
+            'thumbnail': show.get('thumbnail'),
+            'portraitThumbnail': show.get('portraitThumbnail'),
+            'deepLinkUrl': show.get('deepLinkUrl'),
+            'deepLinkUrlForLivingRoom': show.get('deepLinkUrlForLivingRoom'),
+            'playUri': show.get('playUri'),
+            'parentalRating': show.get('parentalRating'),
+            'parentalRatingName': show.get('parentalRatingName'),
+            'updateDate': show.get('updateDate'),
         }
 
         # Prepare JSONB fields
         json_fields = {
-            'genre': json.dumps(movie.get('genre', [])),
-            'lang': json.dumps(movie.get('lang', [])),
-            'langObjs': json.dumps(movie.get('langObjs', [])),
-            'images': json.dumps(movie.get('images', [])),
-            'sourceImages': json.dumps(movie.get('sourceImages', [])),
-            'locators': json.dumps(movie.get('locators', [])),
-            'actors': json.dumps(movie.get('actors', [])),
-            'directors': json.dumps(movie.get('directors', [])),
-            'producers': json.dumps(movie.get('producers', [])),
-            'anchors': json.dumps(movie.get('anchors', [])),
-            'searchKeywords': json.dumps(movie.get('searchKeywords', [])),
-            'trailers': json.dumps(movie.get('trailers', [])),
-            'trailerDeeplinks': json.dumps(movie.get('trailerDeeplinks', [])),
-            'channelObject': json.dumps(movie.get('channelObject')),
-            'raw': json.dumps(movie)
+            'genre': json.dumps(show.get('genre', [])),
+            'lang': json.dumps(show.get('lang', [])),
+            'langObjs': json.dumps(show.get('langObjs', [])),
+            'images': json.dumps(show.get('images', [])),
+            'sourceImages': json.dumps(show.get('sourceImages', [])),
+            'locators': json.dumps(show.get('locators', [])),
+            'actors': json.dumps(show.get('actors', [])),
+            'directors': json.dumps(show.get('directors', [])),
+            'producers': json.dumps(show.get('producers', [])),
+            'anchors': json.dumps(show.get('anchors', [])),
+            'searchKeywords': json.dumps(show.get('searchKeywords', [])),
+            'trailers': json.dumps(show.get('trailers', [])),
+            'trailerDeeplinks': json.dumps(show.get('trailerDeeplinks', [])),
+            'channelObject': json.dumps(show.get('channelObject')),
+            'raw': json.dumps(show)
         }
 
         self.cursor.execute("""
-            INSERT INTO hotstar_movies (
+            INSERT INTO hotstar_shows (
                 hotstar_id, content_id, title, description, content_type,
-                year, duration, genre, lang, lang_objs,
+                season_count, episode_count, year, duration,
+                genre, lang, lang_objs,
                 premium, vip, paid, asset_status,
                 start_date, end_date, broadcast_date,
                 thumbnail, portrait_thumbnail, images, source_images,
@@ -201,7 +204,8 @@ class HotstarIngestion:
                 channel_object, api_update_date, raw_response
             ) VALUES (
                 %(id)s, %(contentId)s, %(title)s, %(description)s, %(contentType)s,
-                %(year)s, %(duration)s, %(genre)s, %(lang)s, %(langObjs)s,
+                %(season_count)s, %(episode_count)s, %(year)s, %(duration)s,
+                %(genre)s, %(lang)s, %(langObjs)s,
                 %(premium)s, %(vip)s, %(paid)s, %(assetStatus)s,
                 %(startDate)s, %(endDate)s, %(broadCastDate)s,
                 %(thumbnail)s, %(portraitThumbnail)s, %(images)s, %(sourceImages)s,
@@ -214,6 +218,8 @@ class HotstarIngestion:
             ON CONFLICT (content_id) DO UPDATE SET
                 title = EXCLUDED.title,
                 description = EXCLUDED.description,
+                season_count = EXCLUDED.season_count,
+                episode_count = EXCLUDED.episode_count,
                 year = EXCLUDED.year,
                 duration = EXCLUDED.duration,
                 genre = EXCLUDED.genre,
@@ -242,7 +248,7 @@ class HotstarIngestion:
                 raw_response = EXCLUDED.raw_response,
                 last_synced_at = CURRENT_TIMESTAMP
         """, {
-            **movie_data,
+            **show_data,
             **json_fields
         })
 
@@ -276,49 +282,71 @@ class HotstarIngestion:
 
         self.conn.commit()
 
-    def ingest_all_movies(self):
+    def ingest_all_shows(self):
         """Main ingestion function"""
         print("=" * 60)
-        print("HOTSTAR MOVIE INGESTION - INITIAL FULL SYNC")
+        print("HOTSTAR TV SHOWS INGESTION - INITIAL FULL SYNC")
         print("=" * 60)
 
         start_time = time.time()
-        self.sync_log_id = self.start_sync_log('initial')
+        self.sync_log_id = self.start_sync_log('shows_initial')
 
-        total_movies = 0
+        total_shows = 0
         items_added = 0
         items_updated = 0
         api_requests = 0
         errors = []
 
         try:
-            # Phase 1: First 10,000 movies (simple pagination)
-            print("\n📥 Phase 1: Fetching first 10,000 movies...")
+            # Phase 1: First 10,000 shows (simple pagination)
+            print("\n📥 Phase 1: Fetching first 10,000 TV shows...")
             print("-" * 60)
 
             for offset in range(0, 10000, 1000):
                 batch_num = offset // 1000 + 1
-                print(f"  Batch {batch_num}/10: Movies {offset:,} to {offset+1000:,}")
+                print(f"  Batch {batch_num}/10: Shows {offset:,} to {offset+1000:,}")
 
                 try:
-                    data = self.fetch_movies_batch(offset=offset, size=1000)
+                    data = self.fetch_shows_batch(offset=offset, size=1000)
                     api_requests += 1
 
-                    movies = data['body']['results']['items']
+                    shows = data['body']['results']['items']
 
-                    for movie in movies:
+                    if not shows:
+                        print(f"  No more shows found, stopping at offset {offset}")
+                        break
+
+                    for show in shows:
                         try:
-                            self.save_movie(movie)
-                            total_movies += 1
-                            items_added += 1
+                            # Check if show exists (convert contentId to string)
+                            content_id = str(show['contentId'])
+                            self.cursor.execute("""
+                                SELECT id FROM hotstar_shows
+                                WHERE content_id = %s
+                            """, (content_id,))
+
+                            exists = self.cursor.fetchone()
+
+                            self.save_show(show)
+                            total_shows += 1
+
+                            if exists:
+                                items_updated += 1
+                            else:
+                                items_added += 1
+
                         except Exception as e:
                             errors.append({
-                                'movie_id': movie.get('contentId'),
+                                'show_id': show.get('contentId'),
                                 'error': str(e)
                             })
 
                     self.conn.commit()
-                    print(f"  ✓ Saved {len(movies)} movies (Total: {total_movies:,})")
+                    print(f"  ✓ Saved {len(shows)} shows (Total: {total_shows:,})")
+
+                    if len(shows) < 1000:
+                        print(f"  Reached end of shows (got {len(shows)} items)")
+                        break
 
                 except Exception as e:
                     print(f"  ✗ Error: {e}")
@@ -328,81 +356,6 @@ class HotstarIngestion:
 
                 time.sleep(RATE_LIMIT_DELAY)
 
-            # Phase 2: Remaining movies (date-based)
-            print(f"\n📥 Phase 2: Fetching remaining movies (date-based)...")
-            print("-" * 60)
-
-            date_ranges = [
-                (2024, 2025, "2024-2025"),
-                (2023, 2024, "2023"),
-                (2022, 2023, "2022"),
-                (2021, 2022, "2021"),
-                (2020, 2021, "2020"),
-                (2019, 2020, "2019"),
-                (2018, 2019, "2018"),
-                (2017, 2018, "2017"),
-                (2016, 2017, "2016"),
-                (2010, 2016, "2010-2015"),
-                (2000, 2010, "2000-2009"),
-                (1990, 2000, "1990-1999"),
-            ]
-
-            for from_year, to_year, label in date_ranges:
-                print(f"\n  📅 Fetching {label} movies...")
-
-                from_date = int(datetime(from_year, 1, 1).timestamp())
-                to_date = int(datetime(to_year, 12, 31, 23, 59, 59).timestamp())
-
-                offset = 0
-                batch_count = 0
-
-                while True:
-                    try:
-                        data = self.fetch_movies_batch(
-                            offset=offset,
-                            size=1000,
-                            from_date=from_date,
-                            to_date=to_date
-                        )
-                        api_requests += 1
-
-                        movies = data['body']['results']['items']
-                        if not movies:
-                            break
-
-                        batch_count += 1
-
-                        for movie in movies:
-                            try:
-                                self.save_movie(movie)
-                                total_movies += 1
-                                items_added += 1
-                            except Exception as e:
-                                errors.append({
-                                    'movie_id': movie.get('contentId'),
-                                    'error': str(e)
-                                })
-
-                        self.conn.commit()
-                        print(f"    Batch {batch_count}: +{len(movies)} movies (Total: {total_movies:,})")
-
-                        offset += 1000
-
-                        if len(movies) < 1000:
-                            break
-
-                        # Check pagination limit
-                        if offset + 1000 > 10000:
-                            break
-
-                    except Exception as e:
-                        print(f"    ✗ Error: {e}")
-                        errors.append({'year_range': label, 'error': str(e)})
-                        time.sleep(CIRCUIT_BREAKER_WAIT)
-                        continue
-
-                    time.sleep(RATE_LIMIT_DELAY)
-
             # Success
             elapsed = time.time() - start_time
 
@@ -410,7 +363,7 @@ class HotstarIngestion:
                 self.sync_log_id,
                 completed_at=datetime.now(),
                 status='completed',
-                total_items_fetched=total_movies,
+                total_items_fetched=total_shows,
                 items_added=items_added,
                 items_updated=items_updated,
                 api_requests_made=api_requests,
@@ -421,7 +374,7 @@ class HotstarIngestion:
             print("\n" + "=" * 60)
             print("✅ INGESTION COMPLETE!")
             print("=" * 60)
-            print(f"  Total Movies:     {total_movies:,}")
+            print(f"  Total TV Shows:   {total_shows:,}")
             print(f"  Items Added:      {items_added:,}")
             print(f"  Items Updated:    {items_updated:,}")
             print(f"  API Requests:     {api_requests:,}")
@@ -436,7 +389,7 @@ class HotstarIngestion:
                 self.sync_log_id,
                 completed_at=datetime.now(),
                 status='failed',
-                total_items_fetched=total_movies,
+                total_items_fetched=total_shows,
                 items_added=items_added,
                 api_requests_made=api_requests,
                 errors=json.dumps(errors + [{'fatal': str(e)}]),
@@ -452,7 +405,7 @@ class HotstarIngestion:
 
 
 def main():
-    print("🚀 Starting Hotstar Movie Ingestion...")
+    print("🚀 Starting Hotstar TV Shows Ingestion...")
     if USE_CLOUD_DB:
         print(f"   Database: Cloud SQL (hotstar_source)")
         print(f"   Connection: {os.getenv('CLOUD_SQL_CONNECTION_NAME', 'Not set')}")
@@ -461,8 +414,8 @@ def main():
         print(f"   Host: {DB_CONFIG['host']}:{DB_CONFIG['port']}")
     print()
 
-    ingestion = HotstarIngestion()
-    ingestion.ingest_all_movies()
+    ingestion = HotstarShowsIngestion()
+    ingestion.ingest_all_shows()
 
 
 if __name__ == '__main__':

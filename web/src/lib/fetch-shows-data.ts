@@ -341,22 +341,88 @@ export async function fetchShowsData(): Promise<ShowsData> {
 }
 
 /**
- * Fetch ONLY initial 10 rows for fast page load
- * Used by progressive loading to reduce initial server response time
+ * Critical Shows Data interface - contains the 10 above-the-fold rows
+ * These are fetched on the server and rendered immediately
  */
-export async function fetchInitialShowsData(): Promise<Partial<ShowsData>> {
-  const startTime = Date.now();
-  console.log('[ISR] Fetching initial shows data (first 10 rows)...');
+export interface CriticalShowsData {
+  featured: any;
+  topRatedRecent: any;
+  topRatedEnglish: any;
+  topRatedHindi: any;
+  topRatedBengali: any;
+  topRatedTamil: any;
+  topRatedTelugu: any;
+  topRatedMalayalam: any;
+  topRatedKannada: any;
+  topAction: any;
+}
 
-  // Year helpers
-  const currentYear = new Date().getFullYear();
-  const fiveYearsAgo = currentYear - 5;
-  const tenYearsAgo = currentYear - 10;
-  const fifteenYearsAgo = currentYear - 15;
-  const twentyYearsAgo = currentYear - 20;
+/**
+ * Remaining Shows Data interface - contains 38 lazy-loaded rows
+ * These are fetched client-side progressively
+ */
+export interface RemainingShowsData {
+  // Remaining Action rows
+  topActionEnglish: any;
+  topActionHindi: any;
+  topActionTamil: any;
+  topActionTelugu: any;
+  topActionMalayalam: any;
+  topActionKannada: any;
+  topActionBengali: any;
+
+  // Top Comedy Shows
+  topComedy: any;
+  topComedyEnglish: any;
+  topComedyHindi: any;
+  topComedyTamil: any;
+  topComedyTelugu: any;
+  topComedyMalayalam: any;
+  topComedyKannada: any;
+  topComedyBengali: any;
+
+  // Top Drama Shows
+  topDrama: any;
+  topDramaEnglish: any;
+  topDramaHindi: any;
+  topDramaTamil: any;
+  topDramaTelugu: any;
+  topDramaMalayalam: any;
+  topDramaKannada: any;
+  topDramaBengali: any;
+
+  // Top Thriller Shows
+  topThriller: any;
+  topThrillerEnglish: any;
+  topThrillerHindi: any;
+  topThrillerTamil: any;
+  topThrillerTelugu: any;
+  topThrillerMalayalam: any;
+  topThrillerKannada: any;
+  topThrillerBengali: any;
+
+  // Latest Star Shows
+  hindiStar: any;
+  englishStar: any;
+  tamilStar: any;
+  teluguStar: any;
+  malayalamStar: any;
+  kannadaStar: any;
+  bengaliStar: any;
+
+  // Top 10
+  topRated: any;
+}
+
+/**
+ * Fetch CRITICAL 10 rows for fast initial page load
+ * Used by ISR - these are pre-rendered and cached
+ */
+export async function fetchCriticalShowsData(): Promise<CriticalShowsData> {
+  const startTime = Date.now();
+  console.log('[ISR] Fetching critical shows data (10 above-the-fold rows)...');
 
   try {
-    // Fetch only the first 10 rows in parallel
     const [
       featured,
       topRatedRecent,
@@ -369,20 +435,20 @@ export async function fetchInitialShowsData(): Promise<Partial<ShowsData>> {
       topRatedKannada,
       topAction,
     ] = await batchPromises([
-      () => fetchContent({ min_rating: 8, min_votes: 10000, type: 'show', sort: 'popularity', order: 'desc', limit: 5 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', year_from: fiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 8, type: 'show', sort: 'popularity', order: 'desc', limit: 5 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', year_from: fiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
       () => fetchContent({ min_rating: 7.5, min_votes: 10000, type: 'show', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'bn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'show', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 1500, type: 'show', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 1000, type: 'show', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
-      () => fetchContent({ min_rating: 7.0, min_votes: 10000, type: 'show', genre: 'Action', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'bn', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 2000, type: 'show', original_language: 'ta', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 1000, type: 'show', original_language: 'te', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 500, type: 'show', original_language: 'ml', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 300, type: 'show', original_language: 'kn', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Action', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
     ]);
 
     const endTime = Date.now();
-    console.log(`[ISR] Fetched initial shows data in ${endTime - startTime}ms`);
+    console.log(`[ISR] Fetched critical shows data in ${endTime - startTime}ms`);
 
     return {
       featured,
@@ -397,7 +463,175 @@ export async function fetchInitialShowsData(): Promise<Partial<ShowsData>> {
       topAction,
     };
   } catch (error) {
-    console.error('[ISR] Error fetching initial shows data:', error);
+    console.error('[ISR] Error fetching critical shows data:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch REMAINING 38 rows for progressive loading
+ * Used by client-side lazy loading after initial render
+ */
+export async function fetchRemainingShowsData(): Promise<RemainingShowsData> {
+  const startTime = Date.now();
+  console.log('[ISR] Fetching remaining shows data (38 rows)...');
+
+  try {
+    const [
+      // Remaining Action rows (7)
+      topActionEnglish,
+      topActionHindi,
+      topActionTamil,
+      topActionTelugu,
+      topActionMalayalam,
+      topActionKannada,
+      topActionBengali,
+
+      // Top Comedy Shows (8)
+      topComedy,
+      topComedyEnglish,
+      topComedyHindi,
+      topComedyTamil,
+      topComedyTelugu,
+      topComedyMalayalam,
+      topComedyKannada,
+      topComedyBengali,
+
+      // Top Drama Shows (8)
+      topDrama,
+      topDramaEnglish,
+      topDramaHindi,
+      topDramaTamil,
+      topDramaTelugu,
+      topDramaMalayalam,
+      topDramaKannada,
+      topDramaBengali,
+
+      // Top Thriller Shows (8)
+      topThriller,
+      topThrillerEnglish,
+      topThrillerHindi,
+      topThrillerTamil,
+      topThrillerTelugu,
+      topThrillerMalayalam,
+      topThrillerKannada,
+      topThrillerBengali,
+
+      // Latest Star Shows (7)
+      hindiStar,
+      englishStar,
+      tamilStar,
+      teluguStar,
+      malayalamStar,
+      kannadaStar,
+      bengaliStar,
+
+      // Top 10 (1)
+      topRated,
+    ] = await batchPromises([
+      // Remaining Action rows
+      () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Action', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 3000, type: 'show', genre: 'Action', original_language: 'hi', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Action', original_language: 'ta', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 300, type: 'show', genre: 'Action', original_language: 'te', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 200, type: 'show', genre: 'Action', original_language: 'ml', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Action', original_language: 'kn', sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Action', original_language: 'bn', sort: 'rating', order: 'desc', limit: 15 }),
+
+      // Top Comedy Shows rows
+      () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Comedy', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Comedy', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 3000, type: 'show', genre: 'Comedy', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 400, type: 'show', genre: 'Comedy', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 300, type: 'show', genre: 'Comedy', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 200, type: 'show', genre: 'Comedy', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Comedy', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 100, type: 'show', genre: 'Comedy', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+
+      // Top Drama Shows rows
+      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Drama', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.5, min_votes: 20000, type: 'show', genre: 'Drama', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 5000, type: 'show', genre: 'Drama', original_language: 'hi', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Drama', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 400, type: 'show', genre: 'Drama', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 300, type: 'show', genre: 'Drama', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Drama', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Drama', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+
+      // Top Thriller Shows rows
+      () => fetchContent({ min_rating: 6.5, min_votes: 10000, type: 'show', genre: 'Thriller', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 7.0, min_votes: 20000, type: 'show', genre: 'Thriller', original_language: 'en', year_from: tenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.5, min_votes: 4000, type: 'show', genre: 'Thriller', original_language: 'hi', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 600, type: 'show', genre: 'Thriller', original_language: 'ta', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 6.0, min_votes: 500, type: 'show', genre: 'Thriller', original_language: 'te', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 300, type: 'show', genre: 'Thriller', original_language: 'ml', year_from: fifteenYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Thriller', original_language: 'kn', year_from: twentyYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+      () => fetchContent({ min_rating: 5.5, min_votes: 150, type: 'show', genre: 'Thriller', original_language: 'bn', year_from: twentyFiveYearsAgo, sort: 'rating', order: 'desc', limit: 15 }),
+
+      // Latest Star Shows
+      () => fetchMultipleStarMovies(['Rajkummar Rao', 'Varun Dhawan', 'Vicky Kaushal', 'Kartik Aaryan'], 'show'),
+      () => fetchMultipleStarMovies(['Bryan Cranston', 'Pedro Pascal', 'Millie Bobby Brown', 'Henry Cavill'], 'show'),
+      () => fetchMultipleStarMovies(['Dhanush', 'Ajith Kumar', 'Sivakarthikeyan', 'Rajinikanth'], 'show'),
+      () => fetchMultipleStarMovies(['Ravi Teja', 'Mahesh Babu', 'Vijay Deverakonda', 'Ram Charan'], 'show'),
+      () => fetchMultipleStarMovies(['Mohanlal', 'Mammootty', 'Fahadh Faasil', 'Tovino Thomas'], 'show'),
+      () => fetchMultipleStarMovies(['Sudeep', 'Shiva Rajkumar', 'Rishab Shetty', 'Upendra'], 'show'),
+      () => fetchMultipleStarMovies(['Jisshu Sengupta', 'Prosenjit Chatterjee', 'Abir Chatterjee'], 'show'),
+
+      // Top 10
+      () => fetchContent({ min_rating: 8, min_votes: 50000, type: 'show', sort: 'rating', order: 'desc', limit: 10 }),
+    ]);
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched remaining shows data in ${endTime - startTime}ms`);
+
+    return {
+      topActionEnglish,
+      topActionHindi,
+      topActionTamil,
+      topActionTelugu,
+      topActionMalayalam,
+      topActionKannada,
+      topActionBengali,
+
+      topComedy,
+      topComedyEnglish,
+      topComedyHindi,
+      topComedyTamil,
+      topComedyTelugu,
+      topComedyMalayalam,
+      topComedyKannada,
+      topComedyBengali,
+
+      topDrama,
+      topDramaEnglish,
+      topDramaHindi,
+      topDramaTamil,
+      topDramaTelugu,
+      topDramaMalayalam,
+      topDramaKannada,
+      topDramaBengali,
+
+      topThriller,
+      topThrillerEnglish,
+      topThrillerHindi,
+      topThrillerTamil,
+      topThrillerTelugu,
+      topThrillerMalayalam,
+      topThrillerKannada,
+      topThrillerBengali,
+
+      hindiStar,
+      englishStar,
+      tamilStar,
+      teluguStar,
+      malayalamStar,
+      kannadaStar,
+      bengaliStar,
+
+      topRated,
+    };
+  } catch (error) {
+    console.error('[ISR] Error fetching remaining shows data:', error);
     throw error;
   }
 }

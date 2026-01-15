@@ -86,16 +86,7 @@ class HotstarDailySync:
             for line in result.stdout.split('\n'):
                 if line.startswith('st='):
                     token = line.strip()
-
-                    # Save to database
-                    expires_at = datetime.now() + timedelta(seconds=2000)
-                    self.cursor.execute("""
-                        INSERT INTO hotstar_api_tokens
-                        (token, expires_at, is_active)
-                        VALUES (%s, %s, true)
-                    """, (token, expires_at))
-                    self.conn.commit()
-
+                    print(f"✅ Token generated successfully")
                     return token
 
             raise Exception("No token found in generate-token.py output")
@@ -148,7 +139,33 @@ class HotstarDailySync:
 
     def save_movie(self, movie: Dict) -> None:
         """Save a single movie to database"""
-        # Convert None values and prepare JSONB fields
+        # Prepare all fields with defaults for missing values
+        movie_data = {
+            'id': movie.get('id'),
+            'contentId': movie.get('contentId'),
+            'title': movie.get('title'),
+            'description': movie.get('description'),
+            'contentType': movie.get('contentType'),
+            'year': movie.get('year'),
+            'duration': movie.get('duration'),
+            'premium': movie.get('premium', False),
+            'vip': movie.get('vip', False),
+            'paid': movie.get('paid', False),
+            'assetStatus': movie.get('assetStatus'),
+            'startDate': movie.get('startDate'),
+            'endDate': movie.get('endDate'),
+            'broadCastDate': movie.get('broadCastDate'),  # May be missing
+            'thumbnail': movie.get('thumbnail'),
+            'portraitThumbnail': movie.get('portraitThumbnail'),
+            'deepLinkUrl': movie.get('deepLinkUrl'),
+            'deepLinkUrlForLivingRoom': movie.get('deepLinkUrlForLivingRoom'),
+            'playUri': movie.get('playUri'),
+            'parentalRating': movie.get('parentalRating'),
+            'parentalRatingName': movie.get('parentalRatingName'),
+            'updateDate': movie.get('updateDate'),
+        }
+
+        # Prepare JSONB fields
         json_fields = {
             'genre': json.dumps(movie.get('genre', [])),
             'lang': json.dumps(movie.get('lang', [])),
@@ -222,7 +239,7 @@ class HotstarDailySync:
                 raw_response = EXCLUDED.raw_response,
                 last_synced_at = CURRENT_TIMESTAMP
         """, {
-            **movie,
+            **movie_data,
             **json_fields
         })
 
