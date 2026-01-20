@@ -4,7 +4,14 @@
  */
 
 import { MongoClient, Db } from 'mongodb';
-import type { SportsContent, SportsResponse } from '@/types/sports';
+import type {
+  SportsContent,
+  SportsResponse,
+  SportCollection,
+  Tournament,
+  TournamentResponse
+} from '@/types/sports';
+import { SPORT_ICONS, SPORT_DISPLAY_NAMES, sportToSlug } from '@/types/sports';
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI || '';
@@ -274,5 +281,208 @@ export async function fetchCriticalSportsData(): Promise<CriticalSportsData> {
   } catch (error) {
     console.error('[ISR] Error fetching critical sports data:', error);
     throw error;
+  }
+}
+
+/**
+ * Fetch all sport collections with their tournament counts
+ */
+export async function fetchSportCollections(): Promise<SportCollection[]> {
+  console.log('[ISR] Fetching sport collections...');
+  const startTime = Date.now();
+
+  try {
+    const db = await getDatabase();
+    const collection = db.collection(COLLECTION_NAME);
+
+    // Aggregate to get sport stats
+    const results = await collection.aggregate([
+      {
+        $match: {
+          asset_status: 'PUBLISHED',
+          title: { $not: /automation|test/i },
+        }
+      },
+      {
+        $group: {
+          _id: '$game_name',
+          matchCount: { $sum: 1 },
+          tournaments: { $addToSet: '$sports_season_name' },
+          thumbnail: { $first: '$thumbnail' },
+        }
+      },
+      {
+        $project: {
+          name: '$_id',
+          matchCount: 1,
+          tournamentCount: { $size: '$tournaments' },
+          thumbnail: 1,
+        }
+      },
+      { $sort: { matchCount: -1 } },
+    ]).toArray();
+
+    // Filter out invalid/meta categories
+    const excludedCategories = ['Specials', 'Sports'];
+
+    const collections: SportCollection[] = results
+      .filter(r => r.name && !excludedCategories.includes(r.name)) // Filter out null and excluded
+      .map(r => ({
+        name: r.name,
+        displayName: SPORT_DISPLAY_NAMES[r.name] || r.name,
+        icon: SPORT_ICONS[r.name] || '🏆',
+        slug: sportToSlug(r.name),
+        tournamentCount: r.tournamentCount || 0,
+        matchCount: r.matchCount || 0,
+        thumbnail: r.thumbnail,
+      }));
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${collections.length} sport collections in ${endTime - startTime}ms`);
+
+    return collections;
+  } catch (error) {
+    console.error('[ISR] Error fetching sport collections:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch tournaments for a specific sport
+ */
+export async function fetchTournaments(sportName: string): Promise<TournamentResponse> {
+  console.log(`[ISR] Fetching tournaments for ${sportName}...`);
+  const startTime = Date.now();
+
+  try {
+    const db = await getDatabase();
+    const collection = db.collection(COLLECTION_NAME);
+
+    const results = await collection.aggregate([
+      {
+        $match: {
+          game_name: sportName,
+          asset_status: 'PUBLISHED',
+          title: { $not: /automation|test/i },
+          sports_season_name: { $ne: null },
+        }
+      },
+      {
+        $group: {
+          _id: {
+            id: '$sports_season_id',
+            name: '$sports_season_name',
+          },
+          matchCount: { $sum: 1 },
+          thumbnail: { $first: '$thumbnail' },
+          latestMatchDate: { $max: '$start_date' },
+        }
+      },
+      {
+        $project: {
+          id: '$_id.id',
+          name: '$_id.name',
+          matchCount: 1,
+          thumbnail: 1,
+          latestMatchDate: 1,
+        }
+      },
+      { $sort: { latestMatchDate: -1 } },
+    ]).toArray();
+
+    const tournaments: Tournament[] = results
+      .filter(r => r.name) // Filter out null names
+      .map(r => ({
+        id: r.id || null,
+        name: r.name,
+        sportName,
+        matchCount: r.matchCount || 0,
+        thumbnail: r.thumbnail,
+        latestMatchDate: r.latestMatchDate,
+      }));
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${tournaments.length} tournaments in ${endTime - startTime}ms`);
+
+    return {
+      tournaments,
+      total: tournaments.length,
+    };
+  } catch (error) {
+    console.error(`[ISR] Error fetching tournaments for ${sportName}:`, error);
+    return { tournaments: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch matches for a specific tournament
+ */
+export async function fetchTournamentMatches(
+  sportName: string,
+  tournamentId: number | string
+): Promise<SportsResponse> {
+  console.log(`[ISR] Fetching matches for tournament ${tournamentId}...`);
+  const startTime = Date.now();
+
+  try {
+    const db = await getDatabase();
+    const collection = db.collection(COLLECTION_NAME);
+
+    const query: Record<string, any> = {
+      game_name: sportName,
+      asset_status: 'PUBLISHED',
+      title: { $not: /automation|test/i },
+    };
+
+    // Tournament ID could be a number or we match by name
+    if (typeof tournamentId === 'number' || !isNaN(Number(tournamentId))) {
+      query.sports_season_id = Number(tournamentId);
+    }
+
+    const items = await collection
+      .find(query)
+      .sort({ start_date: -1 })
+      .toArray();
+
+    const transformedItems: SportsContent[] = items.map((item) => ({
+      _id: item._id.toString(),
+      content_id: item.content_id,
+      hotstar_id: item.hotstar_id,
+      title: item.title,
+      description: item.description,
+      game_name: item.game_name,
+      genre: item.genre,
+      tournament_id: item.tournament_id,
+      tournament_name: item.tournament_name,
+      sports_season_id: item.sports_season_id,
+      sports_season_name: item.sports_season_name,
+      start_date: item.start_date,
+      end_date: item.end_date,
+      duration: item.duration,
+      live: item.live,
+      asset_status: item.asset_status,
+      premium: item.premium,
+      vip: item.vip,
+      lang: item.lang,
+      thumbnail: item.thumbnail,
+      source_images: item.source_images,
+      deep_link_url: item.deep_link_url,
+      locators: item.locators,
+      search_keywords: item.search_keywords,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      last_synced_at: item.last_synced_at,
+    }));
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${transformedItems.length} matches in ${endTime - startTime}ms`);
+
+    return {
+      items: transformedItems,
+      total: transformedItems.length,
+    };
+  } catch (error) {
+    console.error(`[ISR] Error fetching tournament matches:`, error);
+    return { items: [], total: 0 };
   }
 }

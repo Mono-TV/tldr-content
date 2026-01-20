@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'img.hotstar.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'secure-media.hotstar.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img1.hotstarext.com',
+      },
     ],
   },
 

@@ -1,19 +1,22 @@
-import { ContentRowSkeleton } from '@/components/ui/skeletons';
-import { SportsHeroSkeleton } from '@/components/sports/sports-hero';
-
 export default function SportsLoading() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Skeleton - Spotlight style */}
-      <SportsHeroSkeleton />
+    <div className="min-h-screen pb-20">
+      {/* Header Skeleton */}
+      <div className="pt-24 pb-8 px-12 lg:px-16">
+        <div className="h-12 w-48 bg-card rounded skeleton mb-2" />
+        <div className="h-6 w-64 bg-card rounded skeleton" />
+      </div>
 
-      {/* Content Rows Skeletons */}
-      <div className="-mt-20 relative z-10 pb-20 space-y-8 pl-12 lg:pl-16">
-        <ContentRowSkeleton count={8} />
-        <ContentRowSkeleton count={8} />
-        <ContentRowSkeleton count={8} />
-        <ContentRowSkeleton count={8} />
-        <ContentRowSkeleton count={8} />
+      {/* Sport Collections Grid Skeleton */}
+      <div className="px-12 lg:px-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[4/3] rounded-xl bg-card skeleton"
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
