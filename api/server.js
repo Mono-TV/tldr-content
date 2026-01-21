@@ -503,6 +503,226 @@ app.get('/api/recent', async (req, res) => {
   }
 });
 
+// ============================================
+// SPORTS API ENDPOINTS (Hotstar Sports Data)
+// ============================================
+
+const SPORTS_COLLECTION = 'hotstar_sports';
+
+// Excluded sport categories
+const EXCLUDED_SPORTS = ['Specials', 'Sports'];
+
+// Get all sport collections with tournament counts
+app.get('/api/sports/collections', async (req, res) => {
+  try {
+    const results = await db.collection(SPORTS_COLLECTION).aggregate([
+      {
+        $match: {
+          asset_status: 'PUBLISHED',
+          title: { $not: /automation|test/i },
+        }
+      },
+      {
+        $group: {
+          _id: '$game_name',
+          matchCount: { $sum: 1 },
+          tournaments: { $addToSet: '$sports_season_name' },
+          thumbnail: { $first: '$thumbnail' },
+        }
+      },
+      {
+        $project: {
+          name: '$_id',
+          matchCount: 1,
+          tournamentCount: { $size: '$tournaments' },
+          thumbnail: 1,
+        }
+      },
+      { $sort: { matchCount: -1 } },
+    ]).toArray();
+
+    const collections = results
+      .filter(r => r.name && !EXCLUDED_SPORTS.includes(r.name))
+      .map(r => ({
+        name: r.name,
+        matchCount: r.matchCount || 0,
+        tournamentCount: r.tournamentCount || 0,
+        thumbnail: r.thumbnail,
+      }));
+
+    res.json({ items: collections, total: collections.length });
+  } catch (error) {
+    console.error('Error fetching sport collections:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get tournaments for a specific sport
+app.get('/api/sports/tournaments/:sport', async (req, res) => {
+  try {
+    const sportName = req.params.sport;
+
+    const results = await db.collection(SPORTS_COLLECTION).aggregate([
+      {
+        $match: {
+          game_name: sportName,
+          asset_status: 'PUBLISHED',
+          title: { $not: /automation|test/i },
+          sports_season_name: { $ne: null },
+        }
+      },
+      {
+        $group: {
+          _id: {
+            id: '$sports_season_id',
+            name: '$sports_season_name',
+          },
+          matchCount: { $sum: 1 },
+          thumbnail: { $first: '$thumbnail' },
+          latestMatchDate: { $max: '$start_date' },
+        }
+      },
+      {
+        $project: {
+          id: '$_id.id',
+          name: '$_id.name',
+          matchCount: 1,
+          thumbnail: 1,
+          latestMatchDate: 1,
+        }
+      },
+      { $sort: { latestMatchDate: -1 } },
+    ]).toArray();
+
+    const tournaments = results
+      .filter(r => r.name)
+      .map(r => ({
+        id: r.id || null,
+        name: r.name,
+        sportName,
+        matchCount: r.matchCount || 0,
+        thumbnail: r.thumbnail,
+        latestMatchDate: r.latestMatchDate,
+      }));
+
+    res.json({ items: tournaments, total: tournaments.length });
+  } catch (error) {
+    console.error('Error fetching tournaments:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get matches for a specific tournament
+app.get('/api/sports/matches/:sport/:tournamentId', async (req, res) => {
+  try {
+    const { sport: sportName, tournamentId } = req.params;
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+
+    const query = {
+      game_name: sportName,
+      asset_status: 'PUBLISHED',
+      title: { $not: /automation|test/i },
+    };
+
+    // Tournament ID could be a number
+    if (tournamentId && !isNaN(Number(tournamentId))) {
+      query.sports_season_id = Number(tournamentId);
+    }
+
+    const items = await db.collection(SPORTS_COLLECTION)
+      .find(query)
+      .sort({ start_date: -1 })
+      .limit(limit)
+      .toArray();
+
+    // Get tournament name from first item
+    const tournamentName = items[0]?.sports_season_name || 'Tournament';
+
+    res.json({
+      items,
+      total: items.length,
+      tournamentName,
+      sportName,
+    });
+  } catch (error) {
+    console.error('Error fetching tournament matches:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get sports content with filters
+app.get('/api/sports', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const query = {
+      asset_status: 'PUBLISHED',
+      title: { $not: /automation|test/i },
+    };
+
+    if (req.query.game_name) {
+      query.game_name = req.query.game_name;
+    }
+
+    if (req.query.live === 'true') {
+      query.live = true;
+    }
+
+    const sortField = req.query.sort || 'start_date';
+    const sortOrder = req.query.order === 'asc' ? 1 : -1;
+
+    const [items, total] = await Promise.all([
+      db.collection(SPORTS_COLLECTION)
+        .find(query)
+        .sort({ [sortField]: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      db.collection(SPORTS_COLLECTION).countDocuments(query)
+    ]);
+
+    res.json({
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching sports:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get featured sports content (for hero)
+app.get('/api/sports/featured', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 5, 20);
+
+    const items = await db.collection(SPORTS_COLLECTION)
+      .find({
+        asset_status: 'PUBLISHED',
+        title: { $not: /automation|test/i },
+      })
+      .sort({ start_date: -1 })
+      .limit(limit)
+      .toArray();
+
+    res.json({ items, total: items.length });
+  } catch (error) {
+    console.error('Error fetching featured sports:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ============================================
+// END SPORTS API ENDPOINTS
+// ============================================
+
 // Get stats
 app.get('/api/stats', async (req, res) => {
   try {

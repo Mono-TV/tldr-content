@@ -26,8 +26,8 @@ export default async function TournamentPage({ params }: TournamentPageProps) {
     notFound();
   }
 
-  // Get tournament name from first item
-  const tournamentName = matchesData.items[0]?.sports_season_name || 'Tournament';
+  // Get tournament name from API response or first item
+  const tournamentName = matchesData.tournamentName || matchesData.items[0]?.sports_season_name || 'Tournament';
 
   return (
     <TournamentMatchesPage

@@ -1,9 +1,8 @@
 /**
  * Server-side sports data fetching for ISR
- * Fetches directly from MongoDB
+ * Fetches from content-api instead of direct MongoDB
  */
 
-import { MongoClient, Db } from 'mongodb';
 import type {
   SportsContent,
   SportsResponse,
@@ -13,118 +12,158 @@ import type {
 } from '@/types/sports';
 import { SPORT_ICONS, SPORT_DISPLAY_NAMES, sportToSlug } from '@/types/sports';
 
-// MongoDB connection
-const MONGO_URI = process.env.MONGO_URI || '';
-const DB_NAME = process.env.DB_NAME || 'content_db';
-const COLLECTION_NAME = 'hotstar_sports';
+// API base URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://content-api-401132033262.asia-south1.run.app';
 
-let cachedClient: MongoClient | null = null;
-let cachedDb: Db | null = null;
+/**
+ * Fetch sport collections from API
+ */
+export async function fetchSportCollections(): Promise<SportCollection[]> {
+  console.log('[ISR] Fetching sport collections from API...');
+  const startTime = Date.now();
 
-async function getDatabase(): Promise<Db> {
-  if (cachedDb) {
-    return cachedDb;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/sports/collections`, {
+      next: { revalidate: 300 }, // 5 minute cache
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const collections: SportCollection[] = data.items.map((r: any) => ({
+      name: r.name,
+      displayName: SPORT_DISPLAY_NAMES[r.name] || r.name,
+      icon: SPORT_ICONS[r.name] || '🏆',
+      slug: sportToSlug(r.name),
+      tournamentCount: r.tournamentCount || 0,
+      matchCount: r.matchCount || 0,
+      thumbnail: r.thumbnail,
+    }));
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${collections.length} sport collections in ${endTime - startTime}ms`);
+
+    return collections;
+  } catch (error) {
+    console.error('[ISR] Error fetching sport collections:', error);
+    return [];
   }
-
-  if (!MONGO_URI) {
-    throw new Error('MONGO_URI environment variable is not set');
-  }
-
-  const client = new MongoClient(MONGO_URI);
-  await client.connect();
-
-  cachedClient = client;
-  cachedDb = client.db(DB_NAME);
-
-  return cachedDb;
-}
-
-interface FetchSportsOptions {
-  game_name?: string;
-  asset_status?: 'PUBLISHED' | 'UNPUBLISHED';
-  live?: boolean;
-  lang?: string;
-  limit?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
 }
 
 /**
- * Fetch sports content from MongoDB
+ * Fetch tournaments for a specific sport
  */
-export async function fetchSportsContent(options: FetchSportsOptions = {}): Promise<SportsResponse> {
+export async function fetchTournaments(sportName: string): Promise<TournamentResponse> {
+  console.log(`[ISR] Fetching tournaments for ${sportName} from API...`);
+  const startTime = Date.now();
+
   try {
-    const db = await getDatabase();
-    const collection = db.collection(COLLECTION_NAME);
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/tournaments/${encodeURIComponent(sportName)}`,
+      { next: { revalidate: 300 } }
+    );
 
-    // Build query
-    const query: Record<string, any> = {
-      // Exclude test/automation content
-      title: { $not: /automation|test/i },
-    };
-
-    if (options.asset_status) {
-      query.asset_status = options.asset_status;
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
 
-    if (options.game_name) {
-      query.game_name = options.game_name;
-    }
+    const data = await response.json();
 
-    if (options.live !== undefined) {
-      query.live = options.live;
-    }
-
-    if (options.lang) {
-      query.lang = options.lang;
-    }
-
-    // Build sort
-    const sortField = options.sort || 'start_date';
-    const sortOrder = options.order === 'asc' ? 1 : -1;
-
-    const limit = options.limit || 15;
-
-    const items = await collection
-      .find(query)
-      .sort({ [sortField]: sortOrder })
-      .limit(limit)
-      .toArray();
-
-    // Transform MongoDB documents to SportsContent
-    const transformedItems: SportsContent[] = items.map((item) => ({
-      _id: item._id.toString(),
-      content_id: item.content_id,
-      hotstar_id: item.hotstar_id,
-      title: item.title,
-      description: item.description,
-      game_name: item.game_name,
-      genre: item.genre,
-      tournament_id: item.tournament_id,
-      tournament_name: item.tournament_name,
-      sports_season_id: item.sports_season_id,
-      sports_season_name: item.sports_season_name,
-      start_date: item.start_date,
-      end_date: item.end_date,
-      duration: item.duration,
-      live: item.live,
-      asset_status: item.asset_status,
-      premium: item.premium,
-      vip: item.vip,
-      lang: item.lang,
-      thumbnail: item.thumbnail,
-      source_images: item.source_images,
-      deep_link_url: item.deep_link_url,
-      locators: item.locators,
-      search_keywords: item.search_keywords,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      last_synced_at: item.last_synced_at,
+    const tournaments: Tournament[] = data.items.map((r: any) => ({
+      id: r.id || null,
+      name: r.name,
+      sportName: r.sportName || sportName,
+      matchCount: r.matchCount || 0,
+      thumbnail: r.thumbnail,
+      latestMatchDate: r.latestMatchDate,
     }));
 
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${tournaments.length} tournaments in ${endTime - startTime}ms`);
+
     return {
-      items: transformedItems,
-      total: transformedItems.length,
+      tournaments,
+      total: tournaments.length,
+    };
+  } catch (error) {
+    console.error(`[ISR] Error fetching tournaments for ${sportName}:`, error);
+    return { tournaments: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch matches for a specific tournament
+ */
+export async function fetchTournamentMatches(
+  sportName: string,
+  tournamentId: number | string
+): Promise<SportsResponse & { tournamentName?: string }> {
+  console.log(`[ISR] Fetching matches for tournament ${tournamentId} from API...`);
+  const startTime = Date.now();
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/matches/${encodeURIComponent(sportName)}/${tournamentId}`,
+      { next: { revalidate: 300 } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched ${data.items?.length || 0} matches in ${endTime - startTime}ms`);
+
+    return {
+      items: data.items || [],
+      total: data.total || 0,
+      tournamentName: data.tournamentName,
+    };
+  } catch (error) {
+    console.error(`[ISR] Error fetching tournament matches:`, error);
+    return { items: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch sports content with filters
+ */
+export async function fetchSportsContent(options: {
+  game_name?: string;
+  asset_status?: 'PUBLISHED' | 'UNPUBLISHED';
+  live?: boolean;
+  limit?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+} = {}): Promise<SportsResponse> {
+  try {
+    const params = new URLSearchParams();
+
+    if (options.game_name) params.set('game_name', options.game_name);
+    if (options.live) params.set('live', 'true');
+    if (options.limit) params.set('limit', options.limit.toString());
+    if (options.sort) params.set('sort', options.sort);
+    if (options.order) params.set('order', options.order);
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports?${params.toString()}`,
+      { next: { revalidate: 300 } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      items: data.items || [],
+      total: data.pagination?.total || data.items?.length || 0,
     };
   } catch (error) {
     console.error('[Sports] Error fetching sports content:', error);
@@ -133,13 +172,36 @@ export async function fetchSportsContent(options: FetchSportsOptions = {}): Prom
 }
 
 /**
+ * Fetch featured sports content (for hero)
+ */
+export async function fetchFeaturedSports(limit: number = 5): Promise<SportsResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/featured?limit=${limit}`,
+      { next: { revalidate: 300 } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      items: data.items || [],
+      total: data.total || 0,
+    };
+  } catch (error) {
+    console.error('[Sports] Error fetching featured sports:', error);
+    return { items: [], total: 0 };
+  }
+}
+
+/**
  * Sports data interface for page
  */
 export interface SportsPageData {
-  // Hero - Featured/Live content
   featured: SportsResponse;
-
-  // By Sport Type
   cricket: SportsResponse;
   football: SportsResponse;
   tennis: SportsResponse;
@@ -152,8 +214,6 @@ export interface SportsPageData {
   tabletennis: SportsResponse;
   americanFootball: SportsResponse;
   athletics: SportsResponse;
-
-  // Recent content
   recentAll: SportsResponse;
 }
 
@@ -181,47 +241,20 @@ export async function fetchSportsPageData(): Promise<SportsPageData> {
       athletics,
       recentAll,
     ] = await Promise.all([
-      // Featured - Recent published content (hero carousel)
-      fetchSportsContent({ asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 5 }),
-
-      // Cricket
-      fetchSportsContent({ game_name: 'Cricket', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Football
-      fetchSportsContent({ game_name: 'Football', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Tennis
-      fetchSportsContent({ game_name: 'Tennis', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Kabaddi
-      fetchSportsContent({ game_name: 'Kabaddi', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Badminton
-      fetchSportsContent({ game_name: 'Badminton', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Hockey
-      fetchSportsContent({ game_name: 'Hockey', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Esports
-      fetchSportsContent({ game_name: 'ESports', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Formula 1
-      fetchSportsContent({ game_name: 'Formula 1', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // MMA
-      fetchSportsContent({ game_name: 'Mixed Martial Arts', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Table Tennis
-      fetchSportsContent({ game_name: 'Table Tennis', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // American Football
-      fetchSportsContent({ game_name: 'American Football', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Athletics
-      fetchSportsContent({ game_name: 'Athletics', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-
-      // Recent All (for variety)
-      fetchSportsContent({ asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 20 }),
+      fetchFeaturedSports(5),
+      fetchSportsContent({ game_name: 'Cricket', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Football', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Tennis', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Kabaddi', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Badminton', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Hockey', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'ESports', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Formula 1', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Mixed Martial Arts', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Table Tennis', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'American Football', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Athletics', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ sort: 'start_date', order: 'desc', limit: 20 }),
     ]);
 
     const endTime = Date.now();
@@ -268,10 +301,10 @@ export async function fetchCriticalSportsData(): Promise<CriticalSportsData> {
 
   try {
     const [featured, cricket, football, kabaddi] = await Promise.all([
-      fetchSportsContent({ asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 5 }),
-      fetchSportsContent({ game_name: 'Cricket', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-      fetchSportsContent({ game_name: 'Football', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
-      fetchSportsContent({ game_name: 'Kabaddi', asset_status: 'PUBLISHED', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchFeaturedSports(5),
+      fetchSportsContent({ game_name: 'Cricket', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Football', sort: 'start_date', order: 'desc', limit: 15 }),
+      fetchSportsContent({ game_name: 'Kabaddi', sort: 'start_date', order: 'desc', limit: 15 }),
     ]);
 
     const endTime = Date.now();
@@ -281,208 +314,5 @@ export async function fetchCriticalSportsData(): Promise<CriticalSportsData> {
   } catch (error) {
     console.error('[ISR] Error fetching critical sports data:', error);
     throw error;
-  }
-}
-
-/**
- * Fetch all sport collections with their tournament counts
- */
-export async function fetchSportCollections(): Promise<SportCollection[]> {
-  console.log('[ISR] Fetching sport collections...');
-  const startTime = Date.now();
-
-  try {
-    const db = await getDatabase();
-    const collection = db.collection(COLLECTION_NAME);
-
-    // Aggregate to get sport stats
-    const results = await collection.aggregate([
-      {
-        $match: {
-          asset_status: 'PUBLISHED',
-          title: { $not: /automation|test/i },
-        }
-      },
-      {
-        $group: {
-          _id: '$game_name',
-          matchCount: { $sum: 1 },
-          tournaments: { $addToSet: '$sports_season_name' },
-          thumbnail: { $first: '$thumbnail' },
-        }
-      },
-      {
-        $project: {
-          name: '$_id',
-          matchCount: 1,
-          tournamentCount: { $size: '$tournaments' },
-          thumbnail: 1,
-        }
-      },
-      { $sort: { matchCount: -1 } },
-    ]).toArray();
-
-    // Filter out invalid/meta categories
-    const excludedCategories = ['Specials', 'Sports'];
-
-    const collections: SportCollection[] = results
-      .filter(r => r.name && !excludedCategories.includes(r.name)) // Filter out null and excluded
-      .map(r => ({
-        name: r.name,
-        displayName: SPORT_DISPLAY_NAMES[r.name] || r.name,
-        icon: SPORT_ICONS[r.name] || '🏆',
-        slug: sportToSlug(r.name),
-        tournamentCount: r.tournamentCount || 0,
-        matchCount: r.matchCount || 0,
-        thumbnail: r.thumbnail,
-      }));
-
-    const endTime = Date.now();
-    console.log(`[ISR] Fetched ${collections.length} sport collections in ${endTime - startTime}ms`);
-
-    return collections;
-  } catch (error) {
-    console.error('[ISR] Error fetching sport collections:', error);
-    return [];
-  }
-}
-
-/**
- * Fetch tournaments for a specific sport
- */
-export async function fetchTournaments(sportName: string): Promise<TournamentResponse> {
-  console.log(`[ISR] Fetching tournaments for ${sportName}...`);
-  const startTime = Date.now();
-
-  try {
-    const db = await getDatabase();
-    const collection = db.collection(COLLECTION_NAME);
-
-    const results = await collection.aggregate([
-      {
-        $match: {
-          game_name: sportName,
-          asset_status: 'PUBLISHED',
-          title: { $not: /automation|test/i },
-          sports_season_name: { $ne: null },
-        }
-      },
-      {
-        $group: {
-          _id: {
-            id: '$sports_season_id',
-            name: '$sports_season_name',
-          },
-          matchCount: { $sum: 1 },
-          thumbnail: { $first: '$thumbnail' },
-          latestMatchDate: { $max: '$start_date' },
-        }
-      },
-      {
-        $project: {
-          id: '$_id.id',
-          name: '$_id.name',
-          matchCount: 1,
-          thumbnail: 1,
-          latestMatchDate: 1,
-        }
-      },
-      { $sort: { latestMatchDate: -1 } },
-    ]).toArray();
-
-    const tournaments: Tournament[] = results
-      .filter(r => r.name) // Filter out null names
-      .map(r => ({
-        id: r.id || null,
-        name: r.name,
-        sportName,
-        matchCount: r.matchCount || 0,
-        thumbnail: r.thumbnail,
-        latestMatchDate: r.latestMatchDate,
-      }));
-
-    const endTime = Date.now();
-    console.log(`[ISR] Fetched ${tournaments.length} tournaments in ${endTime - startTime}ms`);
-
-    return {
-      tournaments,
-      total: tournaments.length,
-    };
-  } catch (error) {
-    console.error(`[ISR] Error fetching tournaments for ${sportName}:`, error);
-    return { tournaments: [], total: 0 };
-  }
-}
-
-/**
- * Fetch matches for a specific tournament
- */
-export async function fetchTournamentMatches(
-  sportName: string,
-  tournamentId: number | string
-): Promise<SportsResponse> {
-  console.log(`[ISR] Fetching matches for tournament ${tournamentId}...`);
-  const startTime = Date.now();
-
-  try {
-    const db = await getDatabase();
-    const collection = db.collection(COLLECTION_NAME);
-
-    const query: Record<string, any> = {
-      game_name: sportName,
-      asset_status: 'PUBLISHED',
-      title: { $not: /automation|test/i },
-    };
-
-    // Tournament ID could be a number or we match by name
-    if (typeof tournamentId === 'number' || !isNaN(Number(tournamentId))) {
-      query.sports_season_id = Number(tournamentId);
-    }
-
-    const items = await collection
-      .find(query)
-      .sort({ start_date: -1 })
-      .toArray();
-
-    const transformedItems: SportsContent[] = items.map((item) => ({
-      _id: item._id.toString(),
-      content_id: item.content_id,
-      hotstar_id: item.hotstar_id,
-      title: item.title,
-      description: item.description,
-      game_name: item.game_name,
-      genre: item.genre,
-      tournament_id: item.tournament_id,
-      tournament_name: item.tournament_name,
-      sports_season_id: item.sports_season_id,
-      sports_season_name: item.sports_season_name,
-      start_date: item.start_date,
-      end_date: item.end_date,
-      duration: item.duration,
-      live: item.live,
-      asset_status: item.asset_status,
-      premium: item.premium,
-      vip: item.vip,
-      lang: item.lang,
-      thumbnail: item.thumbnail,
-      source_images: item.source_images,
-      deep_link_url: item.deep_link_url,
-      locators: item.locators,
-      search_keywords: item.search_keywords,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      last_synced_at: item.last_synced_at,
-    }));
-
-    const endTime = Date.now();
-    console.log(`[ISR] Fetched ${transformedItems.length} matches in ${endTime - startTime}ms`);
-
-    return {
-      items: transformedItems,
-      total: transformedItems.length,
-    };
-  } catch (error) {
-    console.error(`[ISR] Error fetching tournament matches:`, error);
-    return { items: [], total: 0 };
   }
 }
