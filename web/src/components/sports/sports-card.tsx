@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { BLUR_DATA_URLS, IMAGE_SIZES } from '@/lib/image-utils';
 import type { SportsContent } from '@/types/sports';
 import { SPORT_ICONS } from '@/types/sports';
+import { CountdownBadge } from './countdown-badge';
 
 interface SportsCardProps {
   content: SportsContent;
@@ -15,6 +16,7 @@ interface SportsCardProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   priority?: boolean;
+  showCountdown?: boolean;
 }
 
 function formatDate(timestamp?: number): string {
@@ -40,6 +42,7 @@ export function SportsCard({
   size = 'md',
   className,
   priority = false,
+  showCountdown = false,
 }: SportsCardProps) {
   const sizeClasses = {
     sm: 'w-40 md:w-44 lg:w-48',
@@ -104,6 +107,14 @@ export function SportsCard({
               <Radio className="w-3 h-3 animate-pulse" />
               <span className="text-xs font-bold uppercase">Live</span>
             </div>
+          )}
+
+          {/* Countdown Badge - show for upcoming matches */}
+          {showCountdown && !content.live && content.start_date && content.start_date > Math.floor(Date.now() / 1000) && (
+            <CountdownBadge
+              startDate={content.start_date}
+              className="absolute top-2 left-2"
+            />
           )}
 
           {/* Sport Badge */}

@@ -13,6 +13,8 @@ import { useDPadNavigation } from '@/hooks/use-dpad-navigation';
 
 interface SportsHeroProps {
   items: SportsContent[];
+  isLive?: boolean;
+  title?: string;
 }
 
 function formatDate(timestamp?: number): string {
@@ -35,13 +37,16 @@ function getImageUrl(content: SportsContent): string {
   return content.thumbnail || content.source_images?.[0]?.url || '';
 }
 
-export function SportsHero({ items }: SportsHeroProps) {
+export function SportsHero({ items, isLive = false, title }: SportsHeroProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [dominantColor, setDominantColor] = useState('0, 0, 0');
   const [isDPadMode, setIsDPadMode] = useState(false);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   if (items.length === 0) return null;
+
+  // Check if selected item is actually live
+  const hasLiveContent = isLive || items.some(item => item.live);
 
   const selectedItem = items[selectedIndex];
   const sportIcon = SPORT_ICONS[selectedItem.game_name] || '🏆';
@@ -133,8 +138,15 @@ export function SportsHero({ items }: SportsHeroProps) {
             transition={{ duration: 0.4, ease: 'easeOut' }}
             className="space-y-5"
           >
+            {/* Section Title */}
+            {title && (
+              <h2 className="text-sm font-bold uppercase tracking-widest text-accent">
+                {title}
+              </h2>
+            )}
+
             {/* Live Badge */}
-            {selectedItem.live && (
+            {(selectedItem.live || hasLiveContent) && (
               <div className="inline-flex items-center gap-2 bg-red-600 rounded-full px-4 py-1.5">
                 <Radio className="w-4 h-4 animate-pulse" />
                 <span className="text-sm font-bold uppercase tracking-wider">Live</span>

@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import { SportsCard, SportsCardSkeleton } from './sports-card';
 import { cn } from '@/lib/utils';
 import type { SportsContent } from '@/types/sports';
@@ -14,6 +16,8 @@ interface SportsRowProps {
   sportType?: string;
   cardSize?: 'sm' | 'md' | 'lg';
   priorityCount?: number;
+  href?: string;
+  showCountdown?: boolean;
 }
 
 export function SportsRow({
@@ -24,6 +28,8 @@ export function SportsRow({
   sportType,
   cardSize = 'md',
   priorityCount = 0,
+  href,
+  showCountdown = false,
 }: SportsRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const sportIcon = sportType ? SPORT_ICONS[sportType] : undefined;
@@ -37,13 +43,24 @@ export function SportsRow({
     <section className="relative py-6">
       {/* Header */}
       <div className="px-4 sm:px-6 lg:px-8 mb-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-            {sportIcon && <span>{sportIcon}</span>}
-            {title}
-          </h2>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+              {sportIcon && <span>{sportIcon}</span>}
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+            )}
+          </div>
+          {href && (
+            <Link
+              href={href}
+              className="flex items-center gap-1 text-sm font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              View All
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           )}
         </div>
       </div>
@@ -70,6 +87,7 @@ export function SportsRow({
                   index={index}
                   size={cardSize}
                   priority={index < priorityCount}
+                  showCountdown={showCountdown}
                 />
               ))}
         </div>

@@ -198,6 +198,91 @@ export async function fetchFeaturedSports(limit: number = 5): Promise<SportsResp
 }
 
 /**
+ * Fetch currently live sports content
+ */
+export async function fetchLiveSports(limit: number = 15): Promise<SportsResponse> {
+  console.log('[ISR] Fetching live sports...');
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/live?limit=${limit}`,
+      { next: { revalidate: 60 } } // 1-minute cache for live content
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      items: data.items || [],
+      total: data.total || 0,
+    };
+  } catch (error) {
+    console.error('[Sports] Error fetching live sports:', error);
+    return { items: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch upcoming sports content (next 24 hours)
+ */
+export async function fetchUpcomingSports(limit: number = 20): Promise<SportsResponse> {
+  console.log('[ISR] Fetching upcoming sports...');
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/upcoming?limit=${limit}`,
+      { next: { revalidate: 300 } } // 5-minute cache
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      items: data.items || [],
+      total: data.total || 0,
+    };
+  } catch (error) {
+    console.error('[Sports] Error fetching upcoming sports:', error);
+    return { items: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch recent content for a specific sport (live first, then by date)
+ */
+export async function fetchRecentSportContent(
+  sportName: string,
+  limit: number = 15
+): Promise<SportsResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/sports/recent/${encodeURIComponent(sportName)}?limit=${limit}`,
+      { next: { revalidate: 300 } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return {
+      items: data.items || [],
+      total: data.total || 0,
+    };
+  } catch (error) {
+    console.error(`[Sports] Error fetching recent ${sportName}:`, error);
+    return { items: [], total: 0 };
+  }
+}
+
+/**
  * Sports data interface for page
  */
 export interface SportsPageData {
@@ -313,6 +398,71 @@ export async function fetchCriticalSportsData(): Promise<CriticalSportsData> {
     return { featured, cricket, football, kabaddi };
   } catch (error) {
     console.error('[ISR] Error fetching critical sports data:', error);
+    throw error;
+  }
+}
+
+/**
+ * Sports homepage data interface (redesigned)
+ */
+export interface SportsHomepageData {
+  live: SportsResponse;
+  upcoming: SportsResponse;
+  featured: SportsResponse;
+  cricket: SportsResponse;
+  football: SportsResponse;
+  kabaddi: SportsResponse;
+  tennis: SportsResponse;
+  badminton: SportsResponse;
+  collections: SportCollection[];
+}
+
+/**
+ * Fetch all sports homepage data in parallel (redesigned)
+ */
+export async function fetchSportsHomepageData(): Promise<SportsHomepageData> {
+  console.log('[ISR] Fetching sports homepage data...');
+  const startTime = Date.now();
+
+  try {
+    const [
+      live,
+      upcoming,
+      featured,
+      cricket,
+      football,
+      kabaddi,
+      tennis,
+      badminton,
+      collections,
+    ] = await Promise.all([
+      fetchLiveSports(15),
+      fetchUpcomingSports(20),
+      fetchFeaturedSports(10),
+      fetchRecentSportContent('Cricket', 15),
+      fetchRecentSportContent('Football', 15),
+      fetchRecentSportContent('Kabaddi', 15),
+      fetchRecentSportContent('Tennis', 15),
+      fetchRecentSportContent('Badminton', 15),
+      fetchSportCollections(),
+    ]);
+
+    const endTime = Date.now();
+    console.log(`[ISR] Fetched sports homepage data in ${endTime - startTime}ms`);
+
+    return {
+      live,
+      upcoming,
+      featured,
+      cricket,
+      football,
+      kabaddi,
+      tennis,
+      badminton,
+      collections,
+    };
+  } catch (error) {
+    console.error('[ISR] Error fetching sports homepage data:', error);
     throw error;
   }
 }

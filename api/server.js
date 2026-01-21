@@ -719,6 +719,75 @@ app.get('/api/sports/featured', async (req, res) => {
   }
 });
 
+// Get currently live sports content
+app.get('/api/sports/live', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 15, 50);
+
+    const items = await db.collection(SPORTS_COLLECTION)
+      .find({
+        live: true,
+        asset_status: 'PUBLISHED',
+        title: { $not: /automation|test/i },
+      })
+      .sort({ start_date: -1 })
+      .limit(limit)
+      .toArray();
+
+    res.json({ items, total: items.length });
+  } catch (error) {
+    console.error('Error fetching live sports:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get upcoming sports content (next 24 hours)
+app.get('/api/sports/upcoming', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const now = Math.floor(Date.now() / 1000);
+    const next24h = now + (24 * 60 * 60);
+
+    const items = await db.collection(SPORTS_COLLECTION)
+      .find({
+        start_date: { $gt: now, $lt: next24h },
+        asset_status: 'PUBLISHED',
+        title: { $not: /automation|test/i },
+      })
+      .sort({ start_date: 1 }) // Ascending - soonest first
+      .limit(limit)
+      .toArray();
+
+    res.json({ items, total: items.length });
+  } catch (error) {
+    console.error('Error fetching upcoming sports:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get recent content for a specific sport (live first, then by date)
+app.get('/api/sports/recent/:sport', async (req, res) => {
+  try {
+    const sportName = req.params.sport;
+    const limit = Math.min(parseInt(req.query.limit) || 15, 100);
+
+    const items = await db.collection(SPORTS_COLLECTION)
+      .find({
+        game_name: sportName,
+        asset_status: 'PUBLISHED',
+        title: { $not: /automation|test/i },
+      })
+      .sort({ live: -1, start_date: -1 }) // Live first, then most recent
+      .limit(limit)
+      .toArray();
+
+    res.json({ items, total: items.length });
+  } catch (error) {
+    console.error(`Error fetching recent ${req.params.sport}:`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ============================================
 // END SPORTS API ENDPOINTS
 // ============================================

@@ -1,21 +1,26 @@
-import { fetchSportCollections } from '@/lib/fetch-sports-data';
-import { SportsCollectionsPage } from '@/components/pages/sports-collections-page';
+import { fetchSportsHomepageData } from '@/lib/fetch-sports-data';
+import { SportsHomepage } from '@/components/pages/sports-homepage';
 
 /**
- * Sports Page - Shows all sport collections
+ * Sports Page - Dynamic sports homepage with live and time-aware content
  *
- * Structure:
- * 1. /sports - List of sports (Cricket, Football, etc.)
- * 2. /sports/[sport] - Tournaments for that sport
- * 3. /sports/[sport]/[tournamentId] - Matches for that tournament
+ * Layout:
+ * 1. Hero - Live matches (or featured if none live)
+ * 2. Starting Soon - Matches in next 24 hours
+ * 3. Sport Rows - Cricket, Football, Kabaddi, Tennis, Badminton
+ * 4. All Sports Grid - Browse all sports categories
+ *
+ * Navigation:
+ * - /sports - This page
+ * - /sports/[sport] - Tournaments for that sport
+ * - /sports/[sport]/[tournamentId] - Matches for that tournament
  */
 
-// Enable ISR with 5-minute cache
-export const revalidate = 300;
-export const dynamic = 'force-static';
+// ISR with 1-minute cache for live content freshness
+export const revalidate = 60;
 
 export default async function SportsPage() {
-  const collections = await fetchSportCollections();
+  const data = await fetchSportsHomepageData();
 
-  return <SportsCollectionsPage collections={collections} />;
+  return <SportsHomepage data={data} />;
 }
